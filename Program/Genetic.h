@@ -39,6 +39,9 @@ private:
 	// OX Crossover
 	void crossoverOX(Individual * result, const Individual * parent1, const Individual * parent2);
 
+	// EAX Crossover
+	void crossoverEAX(Individual * result, const Individual * parent1, const Individual * parent2);
+
 public:
 
     // Running the genetic algorithm until maxIterNonProd consecutive iterations or a time limit
