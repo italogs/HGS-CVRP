@@ -6,13 +6,12 @@ void Genetic::run(int maxIterNonProd, int timeLimit)
 {
 	int nbIterNonProd = 1;
 	int nbIter;
-	bool singleBlock = false;
 	for (nbIter = 0; nbIterNonProd <= maxIterNonProd && clock() / CLOCKS_PER_SEC < timeLimit; nbIter++)
 	{
 		/* SELECTION AND CROSSOVER */
 		// crossoverOX(offspring, population->getBinaryTournament(), population->getBinaryTournament());
 
-		crossoverEAX(offspring, population->getBinaryTournament(), population->getBinaryTournament(),singleBlock);
+		crossoverEAX(offspring, population->getBinaryTournament(), population->getBinaryTournament());
 
 		/* LOCAL SEARCH */
 		localSearch->run(offspring, params->penaltyCapacity, params->penaltyDuration);
@@ -32,11 +31,8 @@ void Genetic::run(int maxIterNonProd, int timeLimit)
 
 		/* DIVERSIFICATION, PENALTY MANAGEMENT AND TRACES */
 		if (nbIter % 100 == 0)
-		{
 			population->managePenalties();
-			// singleBlock = !singleBlock;
-		}
-			
+
 		if (nbIter % 500 == 0)
 			population->printState(nbIter, nbIterNonProd);
 
@@ -52,44 +48,16 @@ void Genetic::run(int maxIterNonProd, int timeLimit)
 	std::cout << "nbIter: " << nbIter << std::endl;
 }
 
-#define DEBUG_MODE false
-
-void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const Individual *parentB, bool singleBlock)
+void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const Individual *parentB)
 {
-	if (DEBUG_MODE)
-	{
-		std::cout << "Routes A: \n";
-		for (int i = 0; i < parentA->chromR.size(); i++)
-		{
-			if (parentA->chromR[i].size() > 0)
-			{
-				std::cout << "Route #" << i << ": ";
-				for (int j = 0; j < parentA->chromR[i].size(); j++)
-					std::cout << parentA->chromR[i][j] << " - ";
-				std::cout << std::endl;
-			}
-		}
-
-		std::cout << "Routes B: \n";
-		for (int i = 0; i < parentB->chromR.size(); i++)
-		{
-			if (parentB->chromR[i].size() > 0)
-			{
-				std::cout << "Route #" << i << ": ";
-				for (int j = 0; j < parentB->chromR[i].size(); j++)
-					std::cout << parentB->chromR[i][j] << " - ";
-				std::cout << std::endl;
-			}
-		}
-		std::cout << std::endl;
-	}
-
+	bool singleBlock = false;
 	/* GAB is a list of adjacencies */
 	/* We use (E_A \union E_B) \ (E_A \intersect E_B )*/
 	/* each pair corresponds to the destiny vertex and which parent (true for parentA / false for parentB) */
 	std::vector<std::vector<std::pair<int, bool>>> copy_GAB, GAB = std::vector<std::vector<std::pair<int, bool>>>(this->params->nbClients + 1);
 	std::vector<std::vector<int>> AB_cycles;
 	std::multiset<std::pair<std::set<int>, bool>> GAB_edges;
+
 	//1st Phase - Generate auxiliary graph GAB
 	for (int i = 1; i <= params->nbClients; i++)
 	{
@@ -130,6 +98,7 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 			GAB_edges.insert(std::make_pair(edge, parentValue));
 		}
 
+		//Making the checkings for parentB
 		int B_endpoint1 = parentB->successors[i];
 		int B_endpoint2 = parentB->predecessors[i];
 		if (i > B_endpoint1)
@@ -164,23 +133,9 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 			GAB_edges.insert(std::make_pair(edge, parentValue));
 		}
 	}
-	if (DEBUG_MODE)
-		std::cout << std::endl;
 
 	// Copy of GAB
 	copy_GAB = GAB;
-
-	if (DEBUG_MODE)
-	{
-		for (int i = 0; i < GAB.size(); i++)
-		{
-			std::cout << i << "==> ";
-			for (int j = 0; j < GAB[i].size(); j++)
-				std::cout << GAB[i][j].first << "(" << GAB[i][j].second << "): ";
-			std::cout << std::endl;
-		}
-		std::cout << std::endl;
-	}
 
 	// 2nd phase - Create AB-cycles
 	bool hasEdges = true;
@@ -188,30 +143,19 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 	{
 		hasEdges = false;
 		int predecessor = -1;
-		bool foundPredecessor = false;
 		//We find an initial node: predecessor
 		for (predecessor = 0; predecessor <= params->nbClients; predecessor++)
 		{
 			if (GAB[predecessor].size() > 0)
-			{
-				foundPredecessor = true;
 				break;
-			}
 		}
-		if (!foundPredecessor)
-		{
-			oxCalls++;
-			//It happens when parentA and parentB are equal
-			exit(0);
-			this->crossoverOX(result, parentA, parentB);
-			return;
-		}
-
-		//We "randomly" select its first adjacent node
-		//We, therefore, have an initial edge an its origin (parentA or parentB)
-		//The sucessor node will be anyway selected in the first iteration of the next loop
+		//We select its first adjacent node to obtain its origin (parentA or parentB)
+		//The successor node will be anyway selected in the first iteration of the next loop
 		bool edgeParent = GAB[predecessor][0].second;
+
+		// We use this variable below
 		bool edgeParentFirst = edgeParent;
+
 		//To store the cycle's vertices
 		std::vector<int> giant_cycle;
 		giant_cycle.push_back(predecessor);
@@ -220,19 +164,11 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 		std::multiset<std::pair<std::set<int>, bool>> usedEdges;
 		while (1)
 		{
-			if (DEBUG_MODE)
-			{
-				std::cout << "\npredecessor:" << predecessor << std::endl;
-				std::cout << "GAB[predecessor].size():" << GAB[predecessor].size() << std::endl;
-			}
-
-			//We select the sucessor node
-			int candidateNode = -1;
+			//We select the successor node (note: the loop will have at most 4 elements, except depot)
+			int successor = -1;
+			int indexSuccessor = 0;
 			for (int i = 0; i < GAB[predecessor].size(); i++)
 			{
-				if (DEBUG_MODE)
-					std::cout << "GAB[predecessor][i].first:" << GAB[predecessor][i].first << std::endl;
-
 				if (GAB[predecessor][i].second == edgeParent)
 				{
 					std::set<int> edge;
@@ -240,77 +176,53 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 					edge.insert(GAB[predecessor][i].first);
 					auto key = std::make_pair(edge, edgeParent);
 					auto it = usedEdges.find(key);
+					//We test two cases: (1) when the edge was not used in the cycle; (2) if we have two edges from same parent (i.e., one-client route)
 					if (it == usedEdges.end() || GAB_edges.count(std::make_pair(edge, edgeParent)) > 1)
 					{
-						candidateNode = GAB[predecessor][i].first;
-						if (giant_cycle.size() > 1 && candidateNode != giant_cycle[giant_cycle.size() - 2])
+						successor = GAB[predecessor][i].first;
+						indexSuccessor = i;
+						//We avoid the overlap of equal edges from different parents: 0(A)1(B)2(A)1(B)....
+						//Commenting the conditional below allows this overlapping
+						if (giant_cycle.size() > 1 && successor != giant_cycle[giant_cycle.size() - 2])
 							break;
 					}
 				}
 			}
 
-			if (candidateNode < 0) //No means that this conditional is true
+			if (successor < 0) //No means that this conditional is true
 			{
 				std::cout << "não pode entrar aqui" << std::endl;
 				exit(0);
 			}
-			if (DEBUG_MODE)
-			{
-				std::cout << "edgeParent: " << edgeParent << std::endl;
-				std::cout << "candidateNode: " << candidateNode << std::endl;
-			}
 
-			//Include the sucessor node into the cycle
-			// And save the edge
-			giant_cycle.push_back(candidateNode);
+			//Include the successor node into the cycle and save the edge
+			giant_cycle.push_back(successor);
 			std::set<int> usedEdge;
 			usedEdge.insert(predecessor);
-			usedEdge.insert(candidateNode);
+			usedEdge.insert(successor);
 			usedEdges.insert(std::make_pair(usedEdge, edgeParent));
+
+			//All used edges are deleted from the list of adjacencies
+			GAB[predecessor].erase(GAB[predecessor].begin() + indexSuccessor);
+			for (int i = 0; i < GAB[successor].size(); i++)
+			{
+				if (GAB[successor][i].first == predecessor && GAB[successor][i].second == edgeParent)
+					GAB[successor].erase(GAB[successor].begin() + i);
+			}
+
 			if (giant_cycle.size() > 1 && (giant_cycle[giant_cycle.size() - 1] == giant_cycle[0]))
 				break;
 
 			edgeParent = !edgeParent;
-			predecessor = candidateNode;
-		}
-
-		//All used edges are deleted from the list of adjacencies
-		edgeParent = edgeParentFirst;
-		for (int i = 0; i < giant_cycle.size() - 1; i++)
-		{
-			for (int j = 0; j < GAB[giant_cycle[i]].size(); j++)
-			{
-				if (GAB[giant_cycle[i]][j].first == giant_cycle[i + 1] && GAB[giant_cycle[i]][j].second == edgeParent)
-				{
-					GAB[giant_cycle[i]].erase(GAB[giant_cycle[i]].begin() + j);
-					break;
-				}
-			}
-			for (int j = 0; j < GAB[giant_cycle[i + 1]].size(); j++)
-			{
-				if (GAB[giant_cycle[i + 1]][j].first == giant_cycle[i] && GAB[giant_cycle[i + 1]][j].second == edgeParent)
-				{
-					GAB[giant_cycle[i + 1]].erase(GAB[giant_cycle[i + 1]].begin() + j);
-					break;
-				}
-			}
-			edgeParent = !edgeParent;
+			predecessor = successor;
 		}
 
 		//An AB_cycle is then formed
 		AB_cycles.push_back(giant_cycle);
 
-		if (DEBUG_MODE)
-		{
-			for (int i = 0; i < GAB.size(); i++)
-			{
-				std::cout << i << "==> ";
-				for (int j = 0; j < GAB[i].size(); j++)
-					std::cout << GAB[i][j].first << "(" << GAB[i][j].second << "): ";
-				std::cout << std::endl;
-			}
-			std::cout << std::endl;
-		}
+		//If singleBlock is true, we only need one cycle
+		if (singleBlock)
+			break;
 
 		// If all edges have been used, we break the loop
 		for (int i = 0; i <= params->nbClients; i++)
@@ -330,7 +242,7 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 	//3rd phase - Form E_sets
 	//There're two strategies:
 	//Single strategy - select one AB_cycle at random
-	//Block strategy - select one AB_cycle at random, then include all AB_cycles that share at least one node of the first AB_cycle
+	//Block strategy - select one AB_cycle at random, then include all AB_cycles that contain at least one node of the first AB_cycle
 	bool blockStrategy = !singleBlock;
 	int indexInitialE_set = std::rand() % AB_cycles.size();
 	std::vector<int> E_set = AB_cycles[indexInitialE_set];
@@ -363,6 +275,7 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 		}
 	}
 
+	//We iterate over all selected E_sets
 	for (int k = 0; k < selectedE_sets.size(); k++)
 	{
 		E_set = AB_cycles[selectedE_sets[k]];
@@ -377,78 +290,52 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 			}
 		}
 
-		if (DEBUG_MODE)
-		{
-			std::cout << "edgeParent: " << edgeParent << std::endl;
-			std::cout << "Antes: ";
-			for (int i = 0; i < result->chromT.size(); i++)
-				std::cout << result->chromT[i] << ",";
-			std::cout << std::endl;
-		}
-
 		//From the E_set, we introduce all edges.
 		//When the first occurrence of the edge (one endpoint is found),
-		//THe another endpoint is placed right after it and the remaining nodes are shifted to right
+		//The another endpoint is placed right after it and the remaining nodes are reversed and shifted to right
 		//We don't "merge" subtours. We just place them on the bigtour and the split algorithm will take of making this job.
 		for (int i = 0; i < E_set.size() - 1; i++)
 		{
-			if (DEBUG_MODE)
-				std::cout << E_set[i] << " " << E_set[i + 1] << std::endl;
+			//So far, we avoid edges that contain the depot
 			if (E_set[i] == 0 || E_set[i + 1] == 0)
 				continue;
-			else
+			//We only regard edges that are from parentB, since the solution is based on parentA
+			else if (!edgeParent)
 			{
-				if (!edgeParent)
+				for (int j = 0; j < result->chromT.size(); j++)
 				{
-					if (DEBUG_MODE)
-						std::cout << "Considered i: " << i << std::endl;
-					for (int j = 0; j < result->chromT.size(); j++)
+					if (result->chromT[j] == E_set[i] || result->chromT[j] == E_set[i + 1])
 					{
+						//Node found
+						//The next nodes are stored and shifted right after the node adjacent of it in the cycle
+						std::vector<int> remainingNodes;
 						if (result->chromT[j] == E_set[i])
 						{
-							if (DEBUG_MODE)
-								std::cout << "Caso 1" << std::endl;
-							std::vector<int> remainingNodes;
 							for (int k = j + 1; k < result->chromT.size(); k++)
 							{
 								if (result->chromT[k] != E_set[i + 1])
 									remainingNodes.push_back(result->chromT[k]);
 							}
 							result->chromT[j + 1] = E_set[i + 1];
-							for (int k = 0; k < remainingNodes.size(); k++)
-								result->chromT[j + 2 + k] = remainingNodes[k];
-							break;
 						}
 						else if (result->chromT[j] == E_set[i + 1])
 						{
-							if (DEBUG_MODE)
-								std::cout << "Caso 2" << std::endl;
-							std::vector<int> remainingNodes;
 							for (int k = j + 1; k < result->chromT.size(); k++)
 							{
 								if (result->chromT[k] != E_set[i])
 									remainingNodes.push_back(result->chromT[k]);
 							}
 							result->chromT[j + 1] = E_set[i];
-							for (int k = 0; k < remainingNodes.size(); k++)
-								result->chromT[j + 2 + k] = remainingNodes[k];
-							break;
 						}
+						std::reverse(remainingNodes.begin(), remainingNodes.end());
+						for (int k = 0; k < remainingNodes.size(); k++)
+							result->chromT[j + 2 + k] = remainingNodes[k];
+						break;
 					}
 				}
 			}
 			edgeParent = !edgeParent;
 		}
-	}
-	if (DEBUG_MODE)
-	{
-		std::cout << "Final chromT" << std::endl;
-		for (int j = 0; j < result->chromT.size(); j++)
-			std::cout << result->chromT[j] << ",";
-		std::cout << std::endl;
-		std::cout
-			<< "\nFIM EAX" << std::endl;
-		std::cout << "parentA->myCostSol.nbRoutes: " << parentA->myCostSol.nbRoutes << std::endl;
 	}
 	// Completing the individual with the Split algorithm
 	split->generalSplit(result, parentA->myCostSol.nbRoutes);
