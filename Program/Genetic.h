@@ -41,7 +41,7 @@ private:
 	void crossoverOX(Individual * result, const Individual * parent1, const Individual * parent2);
 
 	// EAX Crossover
-	void crossoverEAX(Individual * result, const Individual * parent1, const Individual * parent2);
+	void crossoverEAX(Individual *result, const Individual *parentA, const Individual *parentB, bool singleBlock);
 
 public:
 

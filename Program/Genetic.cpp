@@ -6,12 +6,13 @@ void Genetic::run(int maxIterNonProd, int timeLimit)
 {
 	int nbIterNonProd = 1;
 	int nbIter;
+	bool singleBlock = false;
 	for (nbIter = 0; nbIterNonProd <= maxIterNonProd && clock() / CLOCKS_PER_SEC < timeLimit; nbIter++)
 	{
 		/* SELECTION AND CROSSOVER */
 		// crossoverOX(offspring, population->getBinaryTournament(), population->getBinaryTournament());
 
-		crossoverEAX(offspring, population->getBinaryTournament(), population->getBinaryTournament());
+		crossoverEAX(offspring, population->getBinaryTournament(), population->getBinaryTournament(),singleBlock);
 
 		/* LOCAL SEARCH */
 		localSearch->run(offspring, params->penaltyCapacity, params->penaltyDuration);
@@ -31,7 +32,11 @@ void Genetic::run(int maxIterNonProd, int timeLimit)
 
 		/* DIVERSIFICATION, PENALTY MANAGEMENT AND TRACES */
 		if (nbIter % 100 == 0)
+		{
 			population->managePenalties();
+			// singleBlock = !singleBlock;
+		}
+			
 		if (nbIter % 500 == 0)
 			population->printState(nbIter, nbIterNonProd);
 
@@ -49,7 +54,7 @@ void Genetic::run(int maxIterNonProd, int timeLimit)
 
 #define DEBUG_MODE false
 
-void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const Individual *parentB)
+void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const Individual *parentB, bool singleBlock)
 {
 	if (DEBUG_MODE)
 	{
@@ -322,11 +327,45 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 	for (int i = 0; i < parentA->chromT.size(); i++)
 		result->chromT[i] = parentA->chromT[i];
 
-	//3rd phase - Create E_SET
-	for (int k = 0; k < AB_cycles.size() && k < 2; k++)
+	//3rd phase - Form E_sets
+	//There're two strategies:
+	//Single strategy - select one AB_cycle at random
+	//Block strategy - select one AB_cycle at random, then include all AB_cycles that share at least one node of the first AB_cycle
+	bool blockStrategy = !singleBlock;
+	int indexInitialE_set = std::rand() % AB_cycles.size();
+	std::vector<int> E_set = AB_cycles[indexInitialE_set];
+	std::vector<int> selectedE_sets;
+	selectedE_sets.push_back(indexInitialE_set);
+	if (blockStrategy)
 	{
-		std::vector<int> E_set = AB_cycles[k];
+		//Have all vertices stored
+		std::set<int> verticesInitialE_set;
+		for (int i = 0; i < E_set.size(); i++)
+		{
+			if (E_set[i] != 0)
+				verticesInitialE_set.insert(E_set[i]);
+		}
 
+		for (int i = 0; i < AB_cycles.size(); i++)
+		{
+			if (i == indexInitialE_set)
+				continue;
+
+			for (int j = 0; j < AB_cycles[i].size(); j++)
+			{
+				//If at least one vertice of an AB_cycle is common to the initial one, we save the index of the E_set
+				if (verticesInitialE_set.find(AB_cycles[i][j]) != verticesInitialE_set.end())
+				{
+					selectedE_sets.push_back(i);
+					break;
+				}
+			}
+		}
+	}
+
+	for (int k = 0; k < selectedE_sets.size(); k++)
+	{
+		E_set = AB_cycles[selectedE_sets[k]];
 		//We collect the first edgeParent of the E_set
 		bool edgeParent = true;
 		for (int i = 0; i < copy_GAB[E_set[0]].size(); i++)
