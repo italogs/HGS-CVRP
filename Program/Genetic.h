@@ -26,6 +26,7 @@ SOFTWARE.*/
 #include "Population.h"
 #include "Individual.h"
 
+static int oxCalls = 0;
 class Genetic
 {
 private:

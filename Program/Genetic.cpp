@@ -5,7 +5,8 @@
 void Genetic::run(int maxIterNonProd, int timeLimit)
 {
 	int nbIterNonProd = 1;
-	for (int nbIter = 0; nbIterNonProd <= maxIterNonProd && clock() / CLOCKS_PER_SEC < timeLimit; nbIter++)
+	int nbIter;
+	for (nbIter = 0; nbIterNonProd <= maxIterNonProd && clock() / CLOCKS_PER_SEC < timeLimit; nbIter++)
 	{
 		/* SELECTION AND CROSSOVER */
 		// crossoverOX(offspring, population->getBinaryTournament(), population->getBinaryTournament());
@@ -41,6 +42,9 @@ void Genetic::run(int maxIterNonProd, int timeLimit)
 			nbIterNonProd = 1;
 		}
 	}
+
+	std::cout << "oxCalls: " << oxCalls << std::endl;
+	std::cout << "nbIter: " << nbIter << std::endl;
 }
 
 #define DEBUG_MODE false
