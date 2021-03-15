@@ -168,14 +168,6 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 							successor = i;
 							bestCostInsertion = params->timeCost[predecessor][i];
 						}
-						//We avoid the overlap of equal edges from different parents: 0(A)1(B)2(A)1(B)....
-						//Commenting the conditional below allows this overlapping
-						// params->
-						// if (giant_cycle.size() > 1 && successor != giant_cycle[giant_cycle.size() - 2].first.second)
-						// {
-						// 	successor = i;
-						// 	break;
-						// }
 					}
 				}
 			}
@@ -239,12 +231,11 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 	//There're two strategies:
 	//Single strategy - select one AB_cycle at random
 	//Block strategy - select one AB_cycle at random, then include all AB_cycles that contain at least one node of the first AB_cycle
-	bool blockStrategy = !singleBlock;
 	int indexInitialE_set = std::rand() % AB_cycles.size();
 	std::vector<std::pair<std::pair<int, int>, bool>> E_set = AB_cycles[indexInitialE_set];
 	std::vector<int> selectedE_sets;
 	selectedE_sets.push_back(indexInitialE_set);
-	if (blockStrategy)
+	if (!singleBlock)
 	{
 		//Have all vertices stored
 		std::set<int> verticesInitialE_set;
@@ -252,8 +243,6 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 		{
 			if (E_set[i].first.first != 0)
 				verticesInitialE_set.insert(E_set[i].first.first);
-			else if (E_set[i].first.second != 0)
-				verticesInitialE_set.insert(E_set[i].first.second);
 		}
 
 		for (int i = 0; i < AB_cycles.size(); i++)
@@ -264,7 +253,7 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 			for (int j = 0; j < AB_cycles[i].size(); j++)
 			{
 				//If at least one vertice of an AB_cycle is common to the initial one, we save the index of the E_set
-				if (verticesInitialE_set.find(AB_cycles[i][j].first.first) != verticesInitialE_set.end())
+				if (AB_cycles[i][j].first.first != 0 && verticesInitialE_set.find(AB_cycles[i][j].first.first) != verticesInitialE_set.end())
 				{
 					selectedE_sets.push_back(i);
 					break;
@@ -291,37 +280,61 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 			//We only regard edges that are from parentB, since the solution is based on parentA
 			else if (!E_set[i].second)
 			{
+				//Node found
+				//The next nodes are stored and shifted right after the node adjacent of it in the cycle
+				std::vector<int> remainingNodes;
+				remainingNodes.push_back(0);
 				for (int j = 0; j < result->chromT.size(); j++)
 				{
-					if (result->chromT[j] == E_set[i].first.first || result->chromT[j] == E_set[i].first.second)
+					if (result->chromT[j] != E_set[i].first.first && result->chromT[j] != E_set[i].first.second)
+						remainingNodes.push_back(result->chromT[j]);
+				}
+				remainingNodes.push_back(0);
+
+				int bestIndexInsertion = 0; // index of chromT
+				double bestCostInsertion = params->timeCost[0][E_set[i].first.first] + params->timeCost[E_set[i].first.second][result->chromT[0]];
+				bool flip = false;
+				//We search for the best insertion of the arc
+				for (int j = 0; j < remainingNodes.size() - 1; j++)
+				{
+					if (params->timeCost[remainingNodes[j]][E_set[i].first.first] + params->timeCost[E_set[i].first.second][remainingNodes[j + 1]] < bestCostInsertion)
 					{
-						//Node found
-						//The next nodes are stored and shifted right after the node adjacent of it in the cycle
-						std::vector<int> remainingNodes;
-						if (result->chromT[j] == E_set[i].first.first)
-						{
-							for (int k = j + 1; k < result->chromT.size(); k++)
-							{
-								if (result->chromT[k] != E_set[i].first.second)
-									remainingNodes.push_back(result->chromT[k]);
-							}
-							result->chromT[j + 1] = E_set[i].first.second;
-						}
-						else if (result->chromT[j] == E_set[i].first.second)
-						{
-							for (int k = j + 1; k < result->chromT.size(); k++)
-							{
-								if (result->chromT[k] != E_set[i].first.first)
-									remainingNodes.push_back(result->chromT[k]);
-							}
-							result->chromT[j + 1] = E_set[i].first.first;
-						}
-						std::reverse(remainingNodes.begin(), remainingNodes.end());
-						for (int k = 0; k < remainingNodes.size(); k++)
-							result->chromT[j + 2 + k] = remainingNodes[k];
-						break;
+						bestCostInsertion = params->timeCost[remainingNodes[j]][E_set[i].first.first] + params->timeCost[E_set[i].first.second][remainingNodes[j + 1]];
+						bestIndexInsertion = j;
+						flip = false;
+					}
+					if (params->timeCost[remainingNodes[j]][E_set[i].first.second] + params->timeCost[E_set[i].first.first][remainingNodes[j + 1]] < bestCostInsertion)
+					{
+						bestCostInsertion = params->timeCost[remainingNodes[j]][E_set[i].first.second] + params->timeCost[E_set[i].first.first][remainingNodes[j + 1]];
+						bestIndexInsertion = j;
+						flip = true;
 					}
 				}
+				//Select 0, then we preserve index 0 and put on the right
+				int remainingNodesIndex = 1;
+				for (int j = 0; j < result->chromT.size(); j++)
+				{
+					if (j == bestIndexInsertion)
+					{
+						if (flip)
+						{
+							result->chromT[j] = E_set[i].first.second;
+							j++;
+							result->chromT[j] = E_set[i].first.first;
+						}
+						else
+						{
+							result->chromT[j] = E_set[i].first.first;
+							j++;
+							result->chromT[j] = E_set[i].first.second;
+						}
+					}
+					else
+					{
+						result->chromT[j] = remainingNodes[remainingNodesIndex++];
+					}
+				}
+				break;
 			}
 		}
 	}
