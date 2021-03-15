@@ -50,9 +50,17 @@ void Genetic::run(int maxIterNonProd, int timeLimit)
 
 void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const Individual *parentB)
 {
-	bool singleBlock = false;
-	/* GAB is a list of adjacencies */
-	/* We use (E_A \union E_B) \ (E_A \intersect E_B )*/
+	//We must have two distinct solutions. To avoid many computations, we compare by the solution cost value
+	while (parentA->myCostSol.penalizedCost == parentB->myCostSol.penalizedCost)
+		parentB = this->population->getBinaryTournament();
+
+	//Two strategies in genering the E_sets and merging them
+	//Single strategy - select one AB_cycle at random
+	//Block strategy - select one AB_cycle at random, then include all AB_cycles that contain at least one node of the first AB_cycle
+	bool singleStrategy = false;
+
+	/* GAB is an adjacency matrix */
+	/* We use the edges from the following resulting set: (E_A \union E_B) \ (E_A \intersect E_B )*/
 	int **GAB_A = new int *[this->params->nbClients + 1];
 	int **GAB_B = new int *[this->params->nbClients + 1];
 
@@ -75,37 +83,49 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 	for (int i = 1; i <= params->nbClients; i++)
 	{
 		// We have two edges (forward and backward) for each client.
-		// We only need to check the edge endpoints
-		int A_endpoint1 = parentA->successors[i];
-		int A_endpoint2 = parentA->predecessors[i];
-
-		if (i > A_endpoint1)
+		// We only need to check both edge endpoints
+		int A_successor = parentA->successors[i];
+		int A_predecessor = parentA->predecessors[i];
+		int B_successor = parentB->successors[i];
+		int B_predecessor = parentB->predecessors[i];
+		if (A_successor != B_successor && A_successor != B_predecessor && B_successor != B_predecessor)
 		{
-			GAB_A[i][A_endpoint1]++;
-			GAB_A[A_endpoint1][i]++;
+			GAB_A[i][A_successor] = 1;
+			GAB_A[A_successor][i] = 1;
 		}
 
-		if (i > A_endpoint2)
+		if (A_predecessor != B_successor && A_predecessor != B_predecessor && B_successor != B_predecessor)
 		{
-			GAB_A[i][A_endpoint2]++;
-			GAB_A[A_endpoint2][i]++;
+			GAB_A[i][A_predecessor] = 1;
+			GAB_A[A_predecessor][i] = 1;
+		}
+
+		if (A_successor == A_predecessor)
+		{
+			GAB_A[i][A_predecessor]++;
+			GAB_A[A_predecessor][i]++;
 		}
 
 		//Making the checkings for parentB
-		int B_endpoint1 = parentB->successors[i];
-		int B_endpoint2 = parentB->predecessors[i];
-		if (i > B_endpoint1)
+		if (B_successor != A_successor && B_successor != A_predecessor && A_successor != A_predecessor)
 		{
-			GAB_B[i][B_endpoint1]++;
-			GAB_B[B_endpoint1][i]++;
+			GAB_B[i][B_successor] = 1;
+			GAB_B[B_successor][i] = 1;
 		}
 
-		if (i > B_endpoint2)
+		if (B_predecessor != A_successor && B_predecessor != A_predecessor && A_successor != A_predecessor)
 		{
-			GAB_B[i][B_endpoint2]++;
-			GAB_B[B_endpoint2][i]++;
+			GAB_B[i][B_predecessor] = 1;
+			GAB_B[B_predecessor][i] = 1;
+		}
+
+		if (B_successor == B_predecessor)
+		{
+			GAB_B[i][B_predecessor]++;
+			GAB_B[B_predecessor][i]++;
 		}
 	}
+
 	//AB_Cycles: each AB_Cycle is a sequence of [(i,j) and parent edge]
 	std::vector<std::vector<std::pair<std::pair<int, int>, bool>>> AB_cycles;
 	// 2nd phase - Create AB-cycles
@@ -115,10 +135,12 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 		hasEdges = false;
 		int predecessor = -1;
 		//We find an initial node: predecessor
+		//We select an adjacent node to obtain its origin (parentA or parentB) as edgeParent
+		//It guarantees that an initial edge exists at the first iteration.
 		bool edgeParent = true;
 		for (int i = 0; i <= this->params->nbClients; i++)
 		{
-			for (int j = 0; j <= this->params->nbClients; j++)
+			for (int j = i + 1; j <= this->params->nbClients; j++)
 			{
 				if (GAB_A[i][j] > 0)
 				{
@@ -137,9 +159,6 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 			}
 		}
 
-		//We select its first adjacent node to obtain its origin (parentA or parentB)
-		//The successor node will be anyway selected in the first iteration of the next loop
-
 		//To store the cycle's vertices
 		std::vector<std::pair<std::pair<int, int>, bool>> giant_cycle;
 
@@ -147,13 +166,14 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 		std::multiset<std::pair<std::set<int>, bool>> usedEdges;
 		while (1)
 		{
-			//We select the successor node (note: the loop will have at most 4 elements, except depot)
+			//We select the successor node having the predecessor already set
+			//This selection is based on the best arc to be selected (full greedy here)
 			int successor = -1;
-			int indexSuccessor = 0;
 			double bestCostInsertion = 1e24;
 
 			for (int i = 0; i <= params->nbClients; i++)
 			{
+				//Checking if there're available edges
 				if ((edgeParent && GAB_A[predecessor][i] > 0) || (!edgeParent && GAB_B[predecessor][i] > 0))
 				{
 					std::set<int> edge({predecessor, i});
@@ -162,7 +182,6 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 					//We test two cases: (1) when the edge was not used in the cycle; (2) if we have two edges from same parent (i.e., one-client route)
 					if (it == usedEdges.end() || (edgeParent && GAB_A[predecessor][i] > 1) || (!edgeParent && GAB_B[predecessor][i] > 1))
 					{
-
 						if (params->timeCost[predecessor][i] < bestCostInsertion)
 						{
 							successor = i;
@@ -174,7 +193,7 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 
 			if (successor < 0) //No means that this conditional is true
 			{
-				std::cout << "não pode entrar aqui" << std::endl;
+				std::cout << "There's a bug! Please, check!" << std::endl;
 				exit(0);
 			}
 
@@ -183,6 +202,7 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 			usedEdges.insert(std::make_pair(usedEdge, edgeParent));
 			giant_cycle.push_back(std::make_pair(std::make_pair(predecessor, successor), edgeParent));
 
+			//Update edge usage
 			if (edgeParent)
 			{
 				GAB_A[predecessor][successor]--;
@@ -194,9 +214,11 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 				GAB_B[successor][predecessor]--;
 			}
 
+			// If a cycle was formed, we break the loop
 			if (giant_cycle.size() > 1 && (giant_cycle[giant_cycle.size() - 1].first.second == giant_cycle[0].first.first))
 				break;
 
+			// Otherwise, update predecessor and flip edgeParent
 			edgeParent = !edgeParent;
 			predecessor = successor;
 		}
@@ -204,14 +226,14 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 		//An AB_cycle is then formed
 		AB_cycles.push_back(giant_cycle);
 
-		//If singleBlock is true, we only need one cycle
-		if (singleBlock)
+		//If singleStrategy is true, we only need one cycle, break the main loop
+		if (singleStrategy)
 			break;
 
-		// If all edges have been used, we break the loop
+		// If all edges have been used, we break the main loop
 		for (int i = 0; i <= this->params->nbClients; i++)
 		{
-			for (int j = 0; j <= this->params->nbClients; j++)
+			for (int j = i + 1; j <= this->params->nbClients; j++)
 			{
 				if (GAB_A[i][j] > 0 || GAB_B[i][j] > 0)
 				{
@@ -231,31 +253,28 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 	//There're two strategies:
 	//Single strategy - select one AB_cycle at random
 	//Block strategy - select one AB_cycle at random, then include all AB_cycles that contain at least one node of the first AB_cycle
-	int indexInitialE_set = std::rand() % AB_cycles.size();
-	std::vector<std::pair<std::pair<int, int>, bool>> E_set = AB_cycles[indexInitialE_set];
-	std::vector<int> selectedE_sets;
-	selectedE_sets.push_back(indexInitialE_set);
-	if (!singleBlock)
+	int indexAB_center = std::rand() % AB_cycles.size();
+	std::vector<std::pair<std::pair<int, int>, bool>> E_set = AB_cycles[indexAB_center];
+	std::vector<int> indexSelectedE_sets;
+	indexSelectedE_sets.push_back(indexAB_center);
+	if (!singleStrategy)
 	{
 		//Have all vertices stored
 		std::set<int> verticesInitialE_set;
 		for (int i = 0; i < E_set.size(); i++)
-		{
-			if (E_set[i].first.first != 0)
-				verticesInitialE_set.insert(E_set[i].first.first);
-		}
+			verticesInitialE_set.insert(E_set[i].first.first);
 
 		for (int i = 0; i < AB_cycles.size(); i++)
 		{
-			if (i == indexInitialE_set)
+			if (i == indexAB_center)
 				continue;
 
 			for (int j = 0; j < AB_cycles[i].size(); j++)
 			{
 				//If at least one vertice of an AB_cycle is common to the initial one, we save the index of the E_set
-				if (AB_cycles[i][j].first.first != 0 && verticesInitialE_set.find(AB_cycles[i][j].first.first) != verticesInitialE_set.end())
+				if (verticesInitialE_set.find(AB_cycles[i][j].first.first) != verticesInitialE_set.end())
 				{
-					selectedE_sets.push_back(i);
+					indexSelectedE_sets.push_back(i);
 					break;
 				}
 			}
@@ -263,15 +282,13 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 	}
 
 	//We iterate over all selected E_sets
-	for (int k = 0; k < selectedE_sets.size(); k++)
+	for (int k = 0; k < indexSelectedE_sets.size(); k++)
 	{
-		E_set = AB_cycles[selectedE_sets[k]];
+		E_set = AB_cycles[indexSelectedE_sets[k]];
 
 		//From the E_set, we introduce all edges.
-		//When the first occurrence of the edge (one endpoint is found),
-		//The another endpoint is placed right after it and the remaining nodes are reversed and shifted to right
-		//We don't "merge" subtours. We just place them on the bigtour and the split algorithm will take of making this job.
-
+		//For each arc (and its reverse ordering), we select the best place for its insertion within chromT
+		//So far, We don't consider arcs involving the depot
 		for (int i = 0; i < E_set.size(); i++)
 		{
 			//So far, we avoid edges that contain the depot
@@ -280,8 +297,6 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 			//We only regard edges that are from parentB, since the solution is based on parentA
 			else if (!E_set[i].second)
 			{
-				//Node found
-				//The next nodes are stored and shifted right after the node adjacent of it in the cycle
 				std::vector<int> remainingNodes;
 				remainingNodes.push_back(0);
 				for (int j = 0; j < result->chromT.size(); j++)
@@ -330,9 +345,7 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 						}
 					}
 					else
-					{
 						result->chromT[j] = remainingNodes[remainingNodesIndex++];
-					}
 				}
 				break;
 			}
