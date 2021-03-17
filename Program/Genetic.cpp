@@ -1,7 +1,5 @@
 #include "Genetic.h"
 
-#define CrossTypeEAX
-
 void Genetic::run(int maxIterNonProd, int timeLimit)
 {
 	int nbIterNonProd = 1;
@@ -44,7 +42,6 @@ void Genetic::run(int maxIterNonProd, int timeLimit)
 		}
 	}
 
-	std::cout << "oxCalls: " << oxCalls << std::endl;
 	std::cout << "nbIter: " << nbIter << std::endl;
 }
 
@@ -63,11 +60,17 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 	/* We use the edges from the following resulting set: (E_A \union E_B) \ (E_A \intersect E_B )*/
 	int **GAB_A = new int *[this->params->nbClients + 1];
 	int **GAB_B = new int *[this->params->nbClients + 1];
+	int **GAB_union = new int *[this->params->nbClients + 1];
+	int **GAB_intersection = new int *[this->params->nbClients + 1];
+	int **GAB_difference = new int *[this->params->nbClients + 1];
 
 	for (int i = 0; i <= this->params->nbClients; i++)
 	{
 		GAB_A[i] = new int[this->params->nbClients + 1];
 		GAB_B[i] = new int[this->params->nbClients + 1];
+		GAB_union[i] = new int[this->params->nbClients + 1];
+		GAB_intersection[i] = new int[this->params->nbClients + 1];
+		GAB_difference[i] = new int[this->params->nbClients + 1];
 	}
 
 	for (int i = 0; i <= this->params->nbClients; i++)
@@ -76,53 +79,90 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 		{
 			GAB_A[i][j] = 0;
 			GAB_B[i][j] = 0;
+			GAB_union[i][j] = 0;
+			GAB_intersection[i][j] = 0;
+			GAB_difference[i][j] = 0;
 		}
 	}
 
-	//1st Phase - Generate auxiliary graph GAB
+	// Possível problema: Quando a rota tem um cliente e este mesmo cliente não é único em outra rota do outro pai, a diferença no final será 1 ou 2 arestas?
 	for (int i = 1; i <= params->nbClients; i++)
 	{
-		// We have two edges (forward and backward) for each client.
-		// We only need to check both edge endpoints
 		int A_successor = parentA->successors[i];
 		int A_predecessor = parentA->predecessors[i];
 		int B_successor = parentB->successors[i];
 		int B_predecessor = parentB->predecessors[i];
-		if (A_successor != B_successor && A_successor != B_predecessor && B_successor != B_predecessor)
-		{
-			GAB_A[i][A_successor] = 1;
-			GAB_A[A_successor][i] = 1;
-		}
 
-		if (A_predecessor != B_successor && A_predecessor != B_predecessor && B_successor != B_predecessor)
-		{
-			GAB_A[i][A_predecessor] = 1;
-			GAB_A[A_predecessor][i] = 1;
-		}
+		std::set<int> edge_A1({A_predecessor, i});
+		std::set<int> edge_A2({i, A_successor});
 
-		if (A_successor == A_predecessor)
+		std::set<int> edge_B1({B_predecessor, i});
+		std::set<int> edge_B2({i, B_successor});
+
+		if (edge_A1 == edge_A2)
 		{
-			GAB_A[i][A_predecessor]++;
+			// edge_A1
 			GAB_A[A_predecessor][i]++;
+			GAB_A[i][A_predecessor]++;
+
+			// edge_A2
+			GAB_A[i][A_successor]++;
+			GAB_A[A_successor][i]++;
+		}
+		else
+		{
+			if (GAB_A[A_predecessor][i] == 0)
+			{
+				// edge_A1
+				GAB_A[A_predecessor][i]++;
+				GAB_A[i][A_predecessor]++;
+			}
+
+			if (GAB_A[A_successor][i] == 0)
+			{
+				// edge_A2
+				GAB_A[i][A_successor]++;
+				GAB_A[A_successor][i]++;
+			}
 		}
 
-		//Making the checkings for parentB
-		if (B_successor != A_successor && B_successor != A_predecessor && A_successor != A_predecessor)
+		if (edge_B1 == edge_B2)
 		{
-			GAB_B[i][B_successor] = 1;
-			GAB_B[B_successor][i] = 1;
-		}
-
-		if (B_predecessor != A_successor && B_predecessor != A_predecessor && A_successor != A_predecessor)
-		{
-			GAB_B[i][B_predecessor] = 1;
-			GAB_B[B_predecessor][i] = 1;
-		}
-
-		if (B_successor == B_predecessor)
-		{
-			GAB_B[i][B_predecessor]++;
+			// edge_B1
 			GAB_B[B_predecessor][i]++;
+			GAB_B[i][B_predecessor]++;
+
+			// edge_B2
+			GAB_B[i][B_successor]++;
+			GAB_B[B_successor][i]++;
+		}
+		else
+		{
+			if (GAB_B[B_predecessor][i] == 0)
+			{
+				// edge_A1
+				GAB_B[B_predecessor][i]++;
+				GAB_B[i][B_predecessor]++;
+			}
+			if (GAB_B[B_successor][i] == 0)
+			{
+				// edge_A2
+				GAB_B[i][B_successor]++;
+				GAB_B[B_successor][i]++;
+			}
+		}
+	}
+
+	for (int i = 0; i <= params->nbClients; i++)
+	{
+		for (int j = i + 1; j <= params->nbClients; j++)
+		{
+			GAB_union[i][j] = (GAB_A[i][j] + GAB_B[i][j]);
+			GAB_union[j][i] = GAB_union[i][j];
+			GAB_intersection[i][j] = abs(GAB_A[i][j] - GAB_B[i][j]);
+			GAB_intersection[j][i] = GAB_intersection[i][j];
+			GAB_difference[i][j] = GAB_union[i][j] - GAB_intersection[i][j];
+			GAB_difference[j][i] = GAB_difference[i][j];
 		}
 	}
 
@@ -164,6 +204,9 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 
 		//To access all used edges (avoid repetitions or back-and-forth situations)
 		std::multiset<std::pair<std::set<int>, bool>> usedEdges;
+		std::set<int> usedVertices;
+		usedVertices.insert(predecessor);
+
 		while (1)
 		{
 			//We select the successor node having the predecessor already set
@@ -173,6 +216,8 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 
 			for (int i = 0; i <= params->nbClients; i++)
 			{
+				if (predecessor == i)
+					continue;
 				//Checking if there're available edges
 				if ((edgeParent && GAB_A[predecessor][i] > 0) || (!edgeParent && GAB_B[predecessor][i] > 0))
 				{
@@ -186,6 +231,7 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 						{
 							successor = i;
 							bestCostInsertion = params->timeCost[predecessor][i];
+							// break;
 						}
 					}
 				}
@@ -193,15 +239,72 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 
 			if (successor < 0) //No means that this conditional is true
 			{
-				std::cout << "There's a bug! Please, check!" << std::endl;
-				exit(0);
+				int i;
+				for (i = 0; i < giant_cycle.size(); i++)
+				{
+					if (predecessor == giant_cycle[i].first.first)
+					{
+						break;
+					}
+				}
+
+				if (i == giant_cycle.size())
+				{
+					edgeParent = !edgeParent;
+					for (int i = 0; i <= params->nbClients; i++)
+					{
+						//Checking if there're available edges
+						if ((edgeParent && GAB_A[predecessor][i] > 0) || (!edgeParent && GAB_B[predecessor][i] > 0))
+						{
+							std::set<int> edge({predecessor, i});
+							auto key = std::make_pair(edge, edgeParent);
+							auto it = usedEdges.find(key);
+							//We test two cases: (1) when the edge was not used in the cycle; (2) if we have two edges from same parent (i.e., one-client route)
+							if (it == usedEdges.end() || (edgeParent && GAB_A[predecessor][i] > 0) || (!edgeParent && GAB_B[predecessor][i] > 0))
+							{
+								// if (params->timeCost[predecessor][i] < bestCostInsertion)
+								{
+									successor = i;
+									bestCostInsertion = params->timeCost[predecessor][i];
+									break;
+								}
+							}
+						}
+					}
+
+					if (successor < 0)
+					{
+						std::cout << "AGORA FUDEU PRA VALER:" << std::endl;
+						exit(0);
+					}
+				}
+				else
+				{
+					std::cout << "This can be eliminated;" << std::endl;
+					exit(0);
+					for (int j = 0; j < i; j++)
+					{
+						if (giant_cycle[j].second)
+						{
+							GAB_A[giant_cycle[j].first.first][giant_cycle[j].first.second]++;
+							GAB_A[giant_cycle[j].first.second][giant_cycle[j].first.first]++;
+						}
+						else
+						{
+							GAB_B[giant_cycle[j].first.first][giant_cycle[j].first.second]++;
+							GAB_B[giant_cycle[j].first.second][giant_cycle[j].first.first]++;
+						}
+						giant_cycle.erase(giant_cycle.begin());
+					}
+					break;
+				}
 			}
 
 			//Include the successor node into the cycle and save the edge
 			std::set<int> usedEdge({predecessor, successor});
 			usedEdges.insert(std::make_pair(usedEdge, edgeParent));
 			giant_cycle.push_back(std::make_pair(std::make_pair(predecessor, successor), edgeParent));
-
+			usedVertices.insert(successor);
 			//Update edge usage
 			if (edgeParent)
 			{
@@ -245,6 +348,20 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 		}
 	}
 
+	if (!singleStrategy)
+	{
+		for (int i = 0; i <= this->params->nbClients; i++)
+		{
+			for (int j = 0; j <= this->params->nbClients; j++)
+			{
+				if (GAB_A[i][j] > 0 || GAB_B[i][j] > 0)
+				{
+					std::cout << "ops" << std::endl;
+					exit(0);
+				}
+			}
+		}
+	}
 	//We construct the offspring based on parentA
 	for (int i = 0; i < parentA->chromT.size(); i++)
 		result->chromT[i] = parentA->chromT[i];
@@ -257,12 +374,19 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 	std::vector<std::pair<std::pair<int, int>, bool>> E_set = AB_cycles[indexAB_center];
 	std::vector<int> indexSelectedE_sets;
 	indexSelectedE_sets.push_back(indexAB_center);
+	std::set<int> E_set_vertices;
+	std::set<int> E_set_center_vertices;
+	for (int i = 0; i < E_set.size(); i++)
+	{
+		if (!E_set[i].second && (E_set[i].first.first != 0 && E_set[i].first.second != 0))
+		{
+			E_set_center_vertices.insert(E_set[i].first.first);
+			E_set_center_vertices.insert(E_set[i].first.second);
+		}
+	}
+
 	if (!singleStrategy)
 	{
-		//Have all vertices stored
-		std::set<int> verticesInitialE_set;
-		for (int i = 0; i < E_set.size(); i++)
-			verticesInitialE_set.insert(E_set[i].first.first);
 
 		for (int i = 0; i < AB_cycles.size(); i++)
 		{
@@ -272,95 +396,122 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 			for (int j = 0; j < AB_cycles[i].size(); j++)
 			{
 				//If at least one vertice of an AB_cycle is common to the initial one, we save the index of the E_set
-				if (verticesInitialE_set.find(AB_cycles[i][j].first.first) != verticesInitialE_set.end())
+				if (!AB_cycles[i][j].second && E_set_center_vertices.find(AB_cycles[i][j].first.first) != E_set_center_vertices.end())
 				{
 					indexSelectedE_sets.push_back(i);
 					break;
 				}
 			}
+			if (indexSelectedE_sets[indexSelectedE_sets.size() - 1] == i)
+			{
+				for (int j = 0; j < AB_cycles[i].size(); j++)
+				{
+					if (!AB_cycles[i][j].second && (AB_cycles[i][j].first.first != 0 && AB_cycles[i][j].first.second != 0))
+					{
+						E_set_vertices.insert(AB_cycles[i][j].first.first);
+						E_set_vertices.insert(AB_cycles[i][j].first.second);
+					}
+				}
+			}
 		}
 	}
+
+	std::vector<int> remainingNodes;
+	remainingNodes.push_back(0);
+	for (int i = 0; i < parentA->chromT.size(); i++)
+	{
+		if (E_set_vertices.find(parentA->chromT[i]) == E_set_vertices.end() && E_set_center_vertices.find(parentA->chromT[i]) == E_set_center_vertices.end())
+			remainingNodes.push_back(parentA->chromT[i]);
+	}
+	remainingNodes.push_back(0);
 
 	//We iterate over all selected E_sets
 	for (int k = 0; k < indexSelectedE_sets.size(); k++)
 	{
 		E_set = AB_cycles[indexSelectedE_sets[k]];
 
-		//From the E_set, we introduce all edges.
-		//For each arc (and its reverse ordering), we select the best place for its insertion within chromT
-		//So far, We don't consider arcs involving the depot
 		for (int i = 0; i < E_set.size(); i++)
 		{
 			//So far, we avoid edges that contain the depot
 			if (E_set[i].first.first == 0 || E_set[i].first.second == 0)
 				continue;
-			//We only regard edges that are from parentB, since the solution is based on parentA
-			else if (!E_set[i].second)
-			{
-				std::vector<int> remainingNodes;
-				remainingNodes.push_back(0);
-				for (int j = 0; j < result->chromT.size(); j++)
-				{
-					if (result->chromT[j] != E_set[i].first.first && result->chromT[j] != E_set[i].first.second)
-						remainingNodes.push_back(result->chromT[j]);
-				}
-				remainingNodes.push_back(0);
 
-				int bestIndexInsertion = 0; // index of chromT
-				double bestCostInsertion = params->timeCost[0][E_set[i].first.first] + params->timeCost[E_set[i].first.second][result->chromT[0]];
-				bool flip = false;
-				//We search for the best insertion of the arc
-				for (int j = 0; j < remainingNodes.size() - 1; j++)
+			if (!E_set[i].second)
+			{
+				int bestIndexInsertion = 1;
+				double bestCostInsertion = 1e32;
+				std::vector<int>::iterator it_edge_i = std::find(remainingNodes.begin(), remainingNodes.end(), E_set[i].first.first);
+				std::vector<int>::iterator it_edge_j = std::find(remainingNodes.begin(), remainingNodes.end(), E_set[i].first.second);
+				if (it_edge_i == remainingNodes.end() && it_edge_j == remainingNodes.end())
 				{
-					if (params->timeCost[remainingNodes[j]][E_set[i].first.first] + params->timeCost[E_set[i].first.second][remainingNodes[j + 1]] < bestCostInsertion)
+					//We search for the best spot to insert the arc
+					for (int j = 0; j < remainingNodes.size() - 1; j++)
 					{
-						bestCostInsertion = params->timeCost[remainingNodes[j]][E_set[i].first.first] + params->timeCost[E_set[i].first.second][remainingNodes[j + 1]];
-						bestIndexInsertion = j;
-						flip = false;
+						if (params->timeCost[remainingNodes[j]][E_set[i].first.first] + params->timeCost[E_set[i].first.second][remainingNodes[j + 1]] < bestCostInsertion)
+						{
+							bestCostInsertion = params->timeCost[remainingNodes[j]][E_set[i].first.first] + params->timeCost[E_set[i].first.second][remainingNodes[j + 1]];
+							bestIndexInsertion = j + 1;
+						}
 					}
-					if (params->timeCost[remainingNodes[j]][E_set[i].first.second] + params->timeCost[E_set[i].first.first][remainingNodes[j + 1]] < bestCostInsertion)
+					int myarray[2];
 					{
-						bestCostInsertion = params->timeCost[remainingNodes[j]][E_set[i].first.second] + params->timeCost[E_set[i].first.first][remainingNodes[j + 1]];
-						bestIndexInsertion = j;
-						flip = true;
+						myarray[0] = E_set[i].first.first;
+						myarray[1] = E_set[i].first.second;
 					}
+					remainingNodes.insert(remainingNodes.begin() + bestIndexInsertion, myarray, myarray + 2);
 				}
-				//Select 0, then we preserve index 0 and put on the right
-				int remainingNodesIndex = 1;
-				for (int j = 0; j < result->chromT.size(); j++)
+				else if (it_edge_i != remainingNodes.end() && it_edge_j != remainingNodes.end())
 				{
-					if (j == bestIndexInsertion)
+					int pos_i = it_edge_i - remainingNodes.begin();
+					int pos_j = it_edge_j - remainingNodes.begin();
+					if (pos_i < pos_j)
 					{
-						if (flip)
-						{
-							result->chromT[j] = E_set[i].first.second;
-							j++;
-							result->chromT[j] = E_set[i].first.first;
-						}
-						else
-						{
-							result->chromT[j] = E_set[i].first.first;
-							j++;
-							result->chromT[j] = E_set[i].first.second;
-						}
+						remainingNodes.erase(it_edge_j);
+						int myarray[1] = {E_set[i].first.second};
+						remainingNodes.insert(it_edge_i, myarray, myarray + 1);
 					}
 					else
-						result->chromT[j] = remainingNodes[remainingNodesIndex++];
+					{
+						remainingNodes.erase(it_edge_i);
+						int myarray[1] = {E_set[i].first.first};
+						remainingNodes.insert(it_edge_j, myarray, myarray + 1);
+					}
 				}
-				break;
+				else
+				{
+					if (it_edge_i == remainingNodes.end())
+					{
+						int myarray[] = {E_set[i].first.first};
+						remainingNodes.insert(it_edge_j, myarray, myarray + 1);
+					}
+					else
+					{
+						int myarray[] = {E_set[i].first.second};
+						remainingNodes.insert(it_edge_i, myarray, myarray + 1);
+					}
+				}
 			}
 		}
 	}
 	// Completing the individual with the Split algorithm
+	for (int i = 0; i < result->chromT.size(); i++)
+		result->chromT[i] = remainingNodes[i + 1];
+
 	split->generalSplit(result, parentA->myCostSol.nbRoutes);
 
 	for (int i = 0; i <= this->params->nbClients; i++)
 	{
 		delete[] GAB_A[i];
 		delete[] GAB_B[i];
+		delete[] GAB_union[i];
+		delete[] GAB_intersection[i];
+		delete[] GAB_difference[i];
 	}
 	delete[] GAB_A;
 	delete[] GAB_B;
+	delete[] GAB_union;
+	delete[] GAB_intersection;
+	delete[] GAB_difference;
 }
 
 void Genetic::crossoverOX(Individual *result, const Individual *parent1, const Individual *parent2)
