@@ -56,8 +56,10 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 	//Block strategy - select one AB_cycle at random, then include all AB_cycles that contain at least one node of the first AB_cycle
 	bool singleStrategy = false;
 
-	/* GAB is an adjacency matrix */
-	/* We use the edges from the following resulting set: (E_A \union E_B) \ (E_A \intersect E_B )*/
+	//1st phase
+	/* We use the edges from the following resulting set: (E_A \union E_B) \ (E_A \intersection E_B ) */
+
+	/* Initializing matrix (n+1)x(n+1) */
 	int **GAB_A = new int *[this->params->nbClients + 1];
 	int **GAB_B = new int *[this->params->nbClients + 1];
 	int **GAB_union = new int *[this->params->nbClients + 1];
@@ -75,17 +77,17 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 
 	for (int i = 0; i <= this->params->nbClients; i++)
 	{
-		for (int j = 0; j <= this->params->nbClients; j++)
+		for (int j = i + 1; j <= this->params->nbClients; j++)
 		{
-			GAB_A[i][j] = 0;
-			GAB_B[i][j] = 0;
-			GAB_union[i][j] = 0;
-			GAB_intersection[i][j] = 0;
-			GAB_difference[i][j] = 0;
+			GAB_A[i][j] = GAB_A[j][i] = 0;
+			GAB_B[i][j] = GAB_B[j][i] = 0;
+			GAB_union[i][j] = GAB_union[j][i] = 0;
+			GAB_intersection[i][j] = GAB_intersection[j][i] = 0;
+			GAB_difference[i][j] = GAB_difference[j][i] = 0;
 		}
 	}
 
-	// Possível problema: Quando a rota tem um cliente e este mesmo cliente não é único em outra rota do outro pai, a diferença no final será 1 ou 2 arestas?
+	/* Accouting the number of edges from each parent */
 	for (int i = 1; i <= params->nbClients; i++)
 	{
 		int A_successor = parentA->successors[i];
@@ -99,6 +101,7 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 		std::set<int> edge_B1({B_predecessor, i});
 		std::set<int> edge_B2({i, B_successor});
 
+		//One-client route
 		if (edge_A1 == edge_A2)
 		{
 			// edge_A1
@@ -111,21 +114,15 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 		}
 		else
 		{
-			if (GAB_A[A_predecessor][i] == 0)
-			{
-				// edge_A1
-				GAB_A[A_predecessor][i]++;
-				GAB_A[i][A_predecessor]++;
-			}
-
-			if (GAB_A[A_successor][i] == 0)
-			{
-				// edge_A2
-				GAB_A[i][A_successor]++;
-				GAB_A[A_successor][i]++;
-			}
+			// edge_A1
+			GAB_A[A_predecessor][i] = 1;
+			GAB_A[i][A_predecessor] = 1;
+			// edge_A2
+			GAB_A[i][A_successor] = 1;
+			GAB_A[A_successor][i] = 1;
 		}
 
+		//One-client route
 		if (edge_B1 == edge_B2)
 		{
 			// edge_B1
@@ -138,21 +135,16 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 		}
 		else
 		{
-			if (GAB_B[B_predecessor][i] == 0)
-			{
-				// edge_A1
-				GAB_B[B_predecessor][i]++;
-				GAB_B[i][B_predecessor]++;
-			}
-			if (GAB_B[B_successor][i] == 0)
-			{
-				// edge_A2
-				GAB_B[i][B_successor]++;
-				GAB_B[B_successor][i]++;
-			}
+			// edge_A1
+			GAB_B[B_predecessor][i] = 1;
+			GAB_B[i][B_predecessor] = 1;
+			// edge_A2
+			GAB_B[i][B_successor] = 1;
+			GAB_B[B_successor][i] = 1;
 		}
 	}
 
+	/* Accounting (E_A \union E_B) \ (E_A \intersect E_B ) */
 	for (int i = 0; i <= params->nbClients; i++)
 	{
 		for (int j = i + 1; j <= params->nbClients; j++)
@@ -161,14 +153,54 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 			GAB_union[j][i] = GAB_union[i][j];
 			GAB_intersection[i][j] = abs(GAB_A[i][j] - GAB_B[i][j]);
 			GAB_intersection[j][i] = GAB_intersection[i][j];
-			GAB_difference[i][j] = GAB_union[i][j] - GAB_intersection[i][j];
+			GAB_difference[i][j] = abs(GAB_union[i][j] - GAB_intersection[i][j]);
 			GAB_difference[j][i] = GAB_difference[i][j];
 		}
 	}
+	for (int i = 0; i <= params->nbClients; i++)
+	{
+		for (int j = i + 1; j <= params->nbClients; j++)
+		{
+			GAB_A[i][j] = 0;
+			GAB_A[j][i] = 0;
+			GAB_B[i][i] = 0;
+			GAB_B[j][j] = 0;
+		}
+	}
 
-	//AB_Cycles: each AB_Cycle is a sequence of [(i,j) and parent edge]
-	std::vector<std::vector<std::pair<std::pair<int, int>, bool>>> AB_cycles;
+	// /* For each existing arc in GAB_difference */
+	for (int i = 0; i <= params->nbClients; i++)
+	{
+		for (int j = i + 1; j <= params->nbClients; j++)
+		{
+			if (GAB_difference[i][j] > 0)
+			{
+				//One client route in parentA
+				if (parentA->successors[i] == 0 && parentA->predecessors[i] == 0)
+					GAB_A[j][i] = GAB_A[i][j] = GAB_difference[i][j];
+
+				//One client route in parentB
+				else if (parentB->successors[i] == 0 && parentB->predecessors[i] == 0)
+					GAB_A[j][i] = GAB_A[i][j] = GAB_difference[i][j];
+
+				else
+				{
+					//ParentA has (i,j) and parentB doesn't
+					if ((parentA->successors[i] == j || parentA->predecessors[i] == j) && (parentB->successors[i] != j && parentB->predecessors[i] != j))
+						GAB_A[j][i] = GAB_A[i][j] = GAB_difference[i][j];
+
+					//ParentA doesn't have (i,j) and parentB does
+					else if ((parentA->successors[i] != j && parentA->predecessors[i] != j) && (parentB->successors[i] == j || parentB->predecessors[i] == j))
+						GAB_B[j][i] = GAB_B[i][j] = GAB_difference[i][j];
+				}
+			}
+		}
+	}
+
 	// 2nd phase - Create AB-cycles
+	//AB_Cycles: each AB_Cycle is a sequence of [(i,j) and parent edge]
+	//parent edge is a boolean to identify if this edge came from parentA(true) or parentB(false)
+	std::vector<std::vector<std::pair<std::pair<int, int>, bool>>> AB_cycles;
 	bool hasEdges = true;
 	while (hasEdges)
 	{
@@ -199,7 +231,8 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 			}
 		}
 
-		//To store the cycle's vertices
+		//Store the cycle's arcs and its edge parent
+		//Arcs are saved as pair to maintain the its ordering
 		std::vector<std::pair<std::pair<int, int>, bool>> giant_cycle;
 
 		//To access all used edges (avoid repetitions or back-and-forth situations)
@@ -237,17 +270,16 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 				}
 			}
 
-			if (successor < 0) //No means that this conditional is true
+			//No successor found in the first attempt
+			if (successor < 0)
 			{
 				int i;
 				for (i = 0; i < giant_cycle.size(); i++)
 				{
 					if (predecessor == giant_cycle[i].first.first)
-					{
 						break;
-					}
 				}
-
+				//There's no subcycle. So we select an edge of the previous used edgeParent to continue.
 				if (i == giant_cycle.size())
 				{
 					edgeParent = !edgeParent;
@@ -274,11 +306,11 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 
 					if (successor < 0)
 					{
-						std::cout << "AGORA FUDEU PRA VALER:" << std::endl;
+						std::cout << "Error. No successor found." << std::endl;
 						exit(0);
 					}
 				}
-				else
+				else // This may be removed later. Its purpose was to identify all non-subcycle edges.
 				{
 					std::cout << "This can be eliminated;" << std::endl;
 					exit(0);
@@ -348,15 +380,16 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 		}
 	}
 
+	//A step to check if all edges have been used when we are not in the single block strategy
 	if (!singleStrategy)
 	{
 		for (int i = 0; i <= this->params->nbClients; i++)
 		{
-			for (int j = 0; j <= this->params->nbClients; j++)
+			for (int j = i + 1; j <= this->params->nbClients; j++)
 			{
 				if (GAB_A[i][j] > 0 || GAB_B[i][j] > 0)
 				{
-					std::cout << "ops" << std::endl;
+					std::cout << "Error. There are available edges." << std::endl;
 					exit(0);
 				}
 			}
