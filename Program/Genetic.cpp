@@ -7,9 +7,10 @@ void Genetic::run(int maxIterNonProd, int timeLimit)
 	for (nbIter = 0; nbIterNonProd <= maxIterNonProd && clock() / CLOCKS_PER_SEC < timeLimit; nbIter++)
 	{
 		/* SELECTION AND CROSSOVER */
-		// crossoverOX(offspring, population->getBinaryTournament(), population->getBinaryTournament());
-
-		crossoverEAX(offspring, population->getBinaryTournament(), population->getBinaryTournament());
+		if (params->crossoverType == 1)
+			crossoverOX(offspring, population->getBinaryTournament(), population->getBinaryTournament());
+		else if (params->crossoverType == 2)
+			crossoverEAX(offspring, population->getBinaryTournament(), population->getBinaryTournament());
 
 		/* LOCAL SEARCH */
 		localSearch->run(offspring, params->penaltyCapacity, params->penaltyDuration);

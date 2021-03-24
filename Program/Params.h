@@ -60,6 +60,7 @@ public:
 	int nbElite				= 4;		// Number of elite individuals (reduced in HGS-2020)
 	int nbClose				= 5;		// Number of closest solutions/individuals considered when calculating diversity contribution
 	double targetFeasible   = 0.2;		// Reference proportion for the number of feasible individuals, used for the adaptation of the penalty parameters
+	int crossoverType       = 1;
 	
 	/* ADAPTIVE PENALTY COEFFICIENTS */
 	double penaltyCapacity;				// Penalty for one unit of capacity excess (adapted through the search)
@@ -80,7 +81,7 @@ public:
 	std::vector < std::vector < int > > correlatedVertices;	// Neighborhood restrictions: For each client, list of nearby customers
 
 	// Initialization from a given data set
-	Params(std::string pathToInstance, int nbVeh, int seedRNG);
+	Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossoverType);
 };
 #endif
 

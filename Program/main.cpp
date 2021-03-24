@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 
 		// Reading the data file and initializing some data structures
 		std::cout << "----- READING DATA SET: " << commandline.pathInstance << std::endl;
-		Params params(commandline.pathInstance, commandline.nbVeh, commandline.seed);
+		Params params(commandline.pathInstance, commandline.nbVeh, commandline.seed, commandline.crossoverType);
 
 		// Creating the Split and local search structures
 		Split split(&params);
