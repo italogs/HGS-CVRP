@@ -260,43 +260,77 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 	//Two strategies in genering E_sets (or selectedAB_cycles[0])
 	//Single strategy - select one AB_cycle at random
 	//Block strategy - select one AB_cycle at random, then include all AB_cycles that contain at least one node in common with the first AB_cycle
-	// bool singleStrategy = false;
-	bool enableWorkingVersion = true;
+	bool singleStrategy = false;
+	bool enableOldVersion = false;
 
-	if (!enableWorkingVersion)
+	if (!enableOldVersion)
 	{
-		// std::vector<int> selectedAB_cycles = std::vector<int>(1, std::rand() % AB_cycles.size());
-		// //selectedAB_cycles in position 0 will be the center
+		//selectedAB_cycles[0] will be the center
+		std::vector<int> selectedAB_cycles = std::vector<int>(1, std::rand() % AB_cycles.size());
 
-		// std::vector<bool> vertices_E_set_center = std::vector<bool>(params->nbClients + 1, false);
-		// for (int i = 0; i < AB_cycles[selectedAB_cycles[0]].size(); i++)
-		// {
-		// 	std::cout << "(" << AB_cycles[selectedAB_cycles[0]][i].first << "," << AB_cycles[selectedAB_cycles[0]][i].second << ")" << std::endl;
-		// 	vertices_E_set_center[AB_cycles[selectedAB_cycles[0]][i].first] = true;
-		// 	vertices_E_set_center[AB_cycles[selectedAB_cycles[0]][i].second] = true;
-		// }
-		// if (!singleStrategy)
-		// {
-		// 	for (int i = 0; i < AB_cycles.size(); i++)
-		// 	{
-		// 		if (i == selectedAB_cycles[0])
-		// 			continue;
+		// Mark all vertices of the center as true (except depot)
+		std::vector<bool> vertices_E_set_center = std::vector<bool>(params->nbClients + 1, false);
+		for (int i = 0; i < AB_cycles[selectedAB_cycles[0]].size(); i++)
+		{
+			if (AB_cycles[selectedAB_cycles[0]][i].first != 0)
+				vertices_E_set_center[AB_cycles[selectedAB_cycles[0]][i].first] = true;
+			if (AB_cycles[selectedAB_cycles[0]][i].second != 0)
+				vertices_E_set_center[AB_cycles[selectedAB_cycles[0]][i].second] = true;
+		}
 
-		// 		for (int j = 0; j < AB_cycles[i].size(); j++)
-		// 		{
-		// 			if (vertices_E_set_center[AB_cycles[i][j].first] || vertices_E_set_center[AB_cycles[i][j].second])
-		// 			{
-		// 				selectedAB_cycles.push_back(i);
-		// 				break;
-		// 			}
-		// 		}
-		// 	}
-		// }
+		// If the condition is true, we'll pick all AB_Cycles that has, at least, one vertex in common w.r.t. the center
+		if (!singleStrategy)
+		{
+			for (int i = 0; i < AB_cycles.size(); i++)
+			{
+				if (i == selectedAB_cycles[0])
+					continue;
 
-		// std::cout << "AB_cycles.size(): " << AB_cycles.size() << std::endl;
-		// std::cout << "selectedAB_cycles.size(): " << selectedAB_cycles.size() << std::endl;
-		// std::cout << "AB_cycles[selectedAB_cycles[0]].size(): " << AB_cycles[selectedAB_cycles[0]].size() << std::endl;
-		// exit(0);
+				for (int j = 0; j < AB_cycles[i].size(); j++)
+				{
+					if ((vertices_E_set_center[AB_cycles[i][j].first]) || (vertices_E_set_center[AB_cycles[i][j].second]))
+					{
+						selectedAB_cycles.push_back(i);
+						break;
+					}
+				}
+			}
+		}
+
+		//Include All vertices in the big tour.
+		//We first include all vertices that are not in any selected AB_cycle
+		int lastPosChromT = 0;
+		for (size_t i = 0; i < parentA->chromR.size(); i++)
+		{
+			if (parentA->chromR[i].size() == 0)
+				continue;
+			for (size_t j = 0; j < parentA->chromR[i].size(); j++)
+			{
+				if (!vertices_E_set_center[parentA->chromR[i][j]])
+				{
+					result->chromT[lastPosChromT++] = parentA->chromR[i][j];
+				}
+			}
+		}
+
+
+
+		//We then include all vertices from the selected AB_cycles
+		//We avoid including a vertex twice (when there are subcycles)
+		std::vector<bool> usedVertices = std::vector<bool>(params->nbClients + 1, false);
+
+		for (int i = 0; i < selectedAB_cycles.size(); i++)
+		{
+			std::vector<std::pair<int, int>> E_set = AB_cycles[selectedAB_cycles[i]];
+			for (size_t i = 0; i < E_set.size(); i++)
+			{
+				if (E_set[i].second != 0 && vertices_E_set_center[E_set[i].second] && !usedVertices[E_set[i].second])
+				{
+					usedVertices[E_set[i].second] = true;
+					result->chromT[lastPosChromT++] = E_set[i].second;
+				}
+			}
+		}
 	}
 	else
 	{
