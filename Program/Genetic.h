@@ -36,8 +36,8 @@ private:
 	LocalSearch * localSearch;		// Local Search structure
 	Individual * offspring;			// First individual to be used as input for the crossover
 	
-	int **GAB_A = NULL;				// EAX: ParentA edges
-	int **GAB_B = NULL;				// EAX: ParentB edges
+	short int **GAB_A = NULL;				// EAX: ParentA edges
+	short int **GAB_B = NULL;				// EAX: ParentB edges
 
 	// OX Crossover
 	void crossoverOX(Individual * result, const Individual * parent1, const Individual * parent2);
@@ -48,7 +48,7 @@ private:
 public:
 
     // Running the genetic algorithm until maxIterNonProd consecutive iterations or a time limit
-    void run(int maxIterNonProd, int timeLimit) ;
+    void run(int maxIterNonProd, unsigned long timeLimit) ;
 
 	// Constructor
 	Genetic(Params * params, Split * split, Population * population, LocalSearch * localSearch);

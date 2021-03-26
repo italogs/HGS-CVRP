@@ -11,9 +11,10 @@ do
     for (( index=${#instances[@]}-1; index >= 0; index--));
     do
         timeLimit=${instances_time[$index]}
-        qsub -V -v ARGS="./genvrp-eax ../Instances/CVRP/${instances[$index]}.vrp Solutions/${instances[$index]}-eax-seed${seed}.sol -seed ${seed} -t $timeLimit",OUTPUT="Solutions/output_eax_${instances[$index]}_seed${seed}.txt" run_experiments.pbs
-        qsub -V -v ARGS="./genvrp-ox ../Instances/CVRP/${instances[$index]}.vrp Solutions/${instances[$index]}-ox-seed${seed}.sol -seed ${seed} -t $timeLimit",OUTPUT="Solutions/output_ox_${instances[$index]}_seed${seed}.txt" run_experiments.pbs
+        crossover=1
+        qsub -V -v ARGS="./genvrp ../Instances/CVRP/${instances[$index]}.vrp Solutions/${instances[$index]}-seed${seed}.sol -seed ${seed} -crossover ${crossover} -t $timeLimit",OUTPUT="Solutions/output_${instances[$index]}_crossover${crossover}_seed${seed}.txt" run_experiments.pbs
+        crossover=2
+        qsub -V -v ARGS="./genvrp ../Instances/CVRP/${instances[$index]}.vrp Solutions/${instances[$index]}-seed${seed}.sol -seed ${seed} -crossover ${crossover} -t $timeLimit",OUTPUT="Solutions/output_${instances[$index]}_crossover${crossover}_seed${seed}.txt" run_experiments.pbs
         external_index=$((external_index+1))
     done
-    
 done
