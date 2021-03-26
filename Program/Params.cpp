@@ -1,6 +1,6 @@
 #include "Params.h"
 
-Params::Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossoverType) : nbVehicles(nbVeh), crossoverType(crossoverType)
+Params::Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossoverType) : crossoverType(crossoverType), nbVehicles(nbVeh)
 {
 	std::string content, content2, content3;
 	double serviceTimeData = 0.;

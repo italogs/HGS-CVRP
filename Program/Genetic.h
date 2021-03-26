@@ -35,6 +35,9 @@ private:
 	Population * population;		// Population
 	LocalSearch * localSearch;		// Local Search structure
 	Individual * offspring;			// First individual to be used as input for the crossover
+	
+	int **GAB_A = NULL;				// EAX: ParentA edges
+	int **GAB_B = NULL;				// EAX: ParentB edges
 
 	// OX Crossover
 	void crossoverOX(Individual * result, const Individual * parent1, const Individual * parent2);
