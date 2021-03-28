@@ -257,9 +257,10 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 		AB_cycles.push_back(current_AB_cycle);
 	}
 
-	//Two strategies in genering E_sets (or selectedAB_cycles[0])
-	//Single strategy - select one AB_cycle
-	//Block strategy - select one AB_cycle, then include all AB_cycles that contain at least one node in common with the first AB_cycle
+	// 3rd phase - Select E_set
+	// Two strategies in genering E_sets (or selectedAB_cycles[0])
+	// Single strategy - select one AB_cycle
+	// Block strategy - select one AB_cycle, then include all AB_cycles that contain at least one node in common with the first AB_cycle
 	bool singleStrategy = true;
 
 	//selectedAB_cycles[0] will be the center
@@ -310,6 +311,7 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 		}
 	}
 
+	// 4th phase - Create offspring
 	// Copy all routes from parentA to result (offspring)
 	for (size_t i = 0; i < parentA->chromR.size(); i++)
 		result->chromR[i].assign(parentA->chromR[i].begin(), parentA->chromR[i].end());
