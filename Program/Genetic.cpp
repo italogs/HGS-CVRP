@@ -258,404 +258,176 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 	}
 
 	//Two strategies in genering E_sets (or selectedAB_cycles[0])
-	//Single strategy - select one AB_cycle at random
-	//Block strategy - select one AB_cycle at random, then include all AB_cycles that contain at least one node in common with the first AB_cycle
+	//Single strategy - select one AB_cycle
+	//Block strategy - select one AB_cycle, then include all AB_cycles that contain at least one node in common with the first AB_cycle
 	bool singleStrategy = true;
-	bool enableOldVersion = false;
 
-	if (!enableOldVersion)
+	//selectedAB_cycles[0] will be the center
+	std::vector<short> selectedAB_cycles;
+	int indexLargestCenter = 0;
+
+	//We select the largest AB_cycle instead of random
+	size_t largestCenterSize = 0;
+	for (size_t i = 0; i < AB_cycles.size(); i++)
 	{
-		//selectedAB_cycles[0] will be the center
-		std::vector<int> selectedAB_cycles;
-		int indexLargestCenter = 0;
-		size_t largestCenterSize = 0;
+		if (AB_cycles[i][0].first.first == 0 && AB_cycles[i].size() > largestCenterSize)
+		{
+			indexLargestCenter = i;
+			largestCenterSize = AB_cycles[i].size();
+		}
+	}
+	selectedAB_cycles.push_back(indexLargestCenter);
+
+	// Mark all vertices of the center as true (except depot)
+	std::vector<bool> vertices_E_set_center = std::vector<bool>(params->nbClients + 1, false);
+	for (size_t i = 0; i < AB_cycles[selectedAB_cycles[0]].size(); i++)
+	{
+		if (!AB_cycles[selectedAB_cycles[0]][i].second)
+		{
+			if (AB_cycles[selectedAB_cycles[0]][i].first.first != 0)
+				vertices_E_set_center[AB_cycles[selectedAB_cycles[0]][i].first.first] = true;
+			if (AB_cycles[selectedAB_cycles[0]][i].first.second != 0)
+				vertices_E_set_center[AB_cycles[selectedAB_cycles[0]][i].first.second] = true;
+		}
+	}
+
+	// If the condition is true, we'll pick all AB_Cycles that has, at least, one vertex in common with the center
+	if (!singleStrategy)
+	{
 		for (size_t i = 0; i < AB_cycles.size(); i++)
 		{
-			if (AB_cycles[i][0].first.first == 0 && AB_cycles[i].size() > largestCenterSize)
-			{
-				indexLargestCenter = i;
-				largestCenterSize = AB_cycles[i].size();
-			}
-		}
-
-		selectedAB_cycles.push_back(indexLargestCenter);
-
-		// Mark all vertices of the center as true (except depot)
-		std::vector<bool> vertices_E_set_center = std::vector<bool>(params->nbClients + 1, false);
-		for (int i = 0; i < AB_cycles[selectedAB_cycles[0]].size(); i++)
-		{
-			if (!AB_cycles[selectedAB_cycles[0]][i].second)
-			{
-				// std::cout << AB_cycles[selectedAB_cycles[0]][i].first.first << ", " << AB_cycles[selectedAB_cycles[0]][i].first.second << std::endl;
-				if (AB_cycles[selectedAB_cycles[0]][i].first.first != 0)
-					vertices_E_set_center[AB_cycles[selectedAB_cycles[0]][i].first.first] = true;
-				if (AB_cycles[selectedAB_cycles[0]][i].first.second != 0)
-					vertices_E_set_center[AB_cycles[selectedAB_cycles[0]][i].first.second] = true;
-			}
-		}
-
-		// If the condition is true, we'll pick all AB_Cycles that has, at least, one vertex in common w.r.t. the center
-		if (!singleStrategy)
-		{
-			for (int i = 0; i < AB_cycles.size(); i++)
-			{
-				if (i == selectedAB_cycles[0])
-					continue;
-
-				for (int j = 0; j < AB_cycles[i].size(); j++)
-				{
-					if (!AB_cycles[i][j].second && (vertices_E_set_center[AB_cycles[i][j].first.first] || vertices_E_set_center[AB_cycles[i][j].first.second]))
-					{
-						selectedAB_cycles.push_back(i);
-						break;
-					}
-				}
-			}
-		}
-
-		for (int i = 0; i < parentA->chromR.size(); i++)
-		{
-			// result->chromR[i].clear();
-			result->chromR[i].assign(parentA->chromR[i].begin(), parentA->chromR[i].end());
-			// std::copy(parentA->chromR[i].begin(), parentA->chromR[i].end(), std::back_inserter(result->chromR[i]));
-		}
-
-		//To quickly obtain a route from a vertex
-		std::vector<short> indexRoute = std::vector<short>(params->nbClients + 1);
-
-		for (size_t i = 0; i < selectedAB_cycles.size(); i++)
-		{
-			for (size_t j = 0; j < AB_cycles[selectedAB_cycles[i]].size(); j++)
-			{
-
-				// std::cout << "j" << j << std::endl;
-				// It's a parent B edge
-				if (!AB_cycles[selectedAB_cycles[i]][j].second &&
-					AB_cycles[selectedAB_cycles[i]][j].first.first != 0 && AB_cycles[selectedAB_cycles[i]][j].first.second != 0)
-				{
-
-					std::vector<short> indexRoute = std::vector<short>(params->nbClients + 1, -1);
-
-					for (int i = 0; i < result->chromR.size(); i++)
-					{
-						for (int j = 0; j < result->chromR[i].size(); j++)
-						{
-							indexRoute[result->chromR[i][j]] = i;
-						}
-					}
-
-					// Debug
-					// std::cout << "edge: ";
-					// std::cout << AB_cycles[selectedAB_cycles[i]][j].first.first << ", " << AB_cycles[selectedAB_cycles[i]][j].first.second << " - route ids: ";
-					// std::cout << indexRoute[AB_cycles[selectedAB_cycles[i]][j].first.first] << ":" << indexRoute[AB_cycles[selectedAB_cycles[i]][j].first.second] << std::endl;
-
-					// std::cout << "Current routes: " << std::endl;
-					// for (int i = 0; i < result->chromR.size(); i++)
-					// {
-					// 	if (result->chromR[i].size() == 0)
-					// 		continue;
-					// 	std::cout << "route_id: " << i << " result: ";
-					// 	for (int j = 0; j < result->chromR[i].size(); j++)
-					// 	{
-					// 		std::cout << result->chromR[i][j] << ", ";
-					// 	}
-					// 	std::cout << std::endl;
-					// }
-					// std::cout << std::endl;
-
-					//Both edge's endpoints are from the same route in parentA
-					if (indexRoute[AB_cycles[selectedAB_cycles[i]][j].first.first] == indexRoute[AB_cycles[selectedAB_cycles[i]][j].first.second])
-					{
-						int route_id = indexRoute[AB_cycles[selectedAB_cycles[i]][j].first.first];
-
-						//Debug
-						// std::cout << "(valid case) route_id: " << route_id << " => ";
-						// for (size_t k = 0; k < result->chromR[route_id].size(); k++)
-						// 	std::cout << result->chromR[route_id][k] << ", ";
-						// std::cout << std::endl;
-						std::vector<int> lookat_route(result->chromR[route_id].begin(), result->chromR[route_id].end());
-						// std::copy(result->chromR[route_id].begin(), result->chromR[route_id].end(), std::back_inserter(lookat_route));
-						result->chromR[route_id].clear();
-
-						//We then update the route
-						for (size_t k = 0; k < lookat_route.size(); k++)
-						{
-							if (AB_cycles[selectedAB_cycles[i]][j].first.first == lookat_route[k])
-							{
-								//If we found the predecessor, we direcly insert the successor
-								//Then, we'll consider only the successor onwards
-								int posSecond = -1;
-
-								std::vector<int> inBetween;
-								for (size_t p = k + 1; p < lookat_route.size(); p++)
-								{
-									if (AB_cycles[selectedAB_cycles[i]][j].first.second == lookat_route[p])
-									{
-										posSecond = p;
-										break;
-									}
-									inBetween.push_back(lookat_route[p]);
-								}
-								result->chromR[route_id].push_back(AB_cycles[selectedAB_cycles[i]][j].first.first);
-								result->chromR[route_id].push_back(AB_cycles[selectedAB_cycles[i]][j].first.second);
-
-								std::reverse(inBetween.begin(), inBetween.end());
-								result->chromR[route_id].insert(result->chromR[route_id].begin() + (result->chromR[route_id].size()), inBetween.begin(), inBetween.end());
-								for (size_t p = posSecond + 1; p < lookat_route.size(); p++)
-								{
-									// std::cout << lookat_route[p] << ", ";
-									result->chromR[route_id].push_back(lookat_route[p]);
-								}
-								// std::cout << std::endl;
-								break;
-							}
-							else if (AB_cycles[selectedAB_cycles[i]][j].first.second == lookat_route[k])
-							{
-								std::swap(AB_cycles[selectedAB_cycles[i]][j].first.second, AB_cycles[selectedAB_cycles[i]][j].first.first);
-								k--;
-							}
-							else
-							{
-								result->chromR[route_id].push_back(lookat_route[k]);
-							}
-						}
-					}
-					else if (indexRoute[AB_cycles[selectedAB_cycles[i]][j].first.first] >= 0 && indexRoute[AB_cycles[selectedAB_cycles[i]][j].first.second] >= 0)
-					{
-						int route_id_first = indexRoute[AB_cycles[selectedAB_cycles[i]][j].first.first];
-						std::vector<int> lookat_route_first(result->chromR[route_id_first].begin(), result->chromR[route_id_first].end());
-						// std::copy(, std::back_inserter(lookat_route_first));
-
-						int route_id_second = indexRoute[AB_cycles[selectedAB_cycles[i]][j].first.second];
-						std::vector<int> lookat_route_second(result->chromR[route_id_second].begin(), result->chromR[route_id_second].end());
-						// std::copy(result->chromR[route_id_second].begin(), result->chromR[route_id_second].end(), std::back_inserter(lookat_route_second));
-
-						// std::cout << "route_id_first: ";
-						// for (size_t k = 0; k < result->chromR[route_id_first].size(); k++)
-						// 	std::cout << result->chromR[route_id_first][k] << ", ";
-						// std::cout << std::endl;
-						// std::cout << "route_id_second: ";
-						// for (size_t k = 0; k < result->chromR[route_id_second].size(); k++)
-						// 	std::cout << result->chromR[route_id_second][k] << ", ";
-						// std::cout << std::endl;
-
-						auto it_first = std::find(lookat_route_first.begin(), lookat_route_first.end(), AB_cycles[selectedAB_cycles[i]][j].first.first);
-						auto it_second = std::find(lookat_route_second.begin(), lookat_route_second.end(), AB_cycles[selectedAB_cycles[i]][j].first.second);
-
-						if (it_first == lookat_route_first.end() && it_second == lookat_route_second.end())
-						{
-							std::cout << "epaaaaa" << std::endl;
-							exit(0);
-						}
-
-						result->chromR[route_id_first].clear();
-						result->chromR[route_id_second].clear();
-
-						result->chromR[route_id_first].insert(result->chromR[route_id_first].begin(), lookat_route_first.begin(), it_first + 1);
-						result->chromR[route_id_first].insert(result->chromR[route_id_first].begin() + result->chromR[route_id_first].size(), it_second, lookat_route_second.end());
-
-						result->chromR[route_id_second].insert(result->chromR[route_id_second].begin(), lookat_route_second.begin(), it_second);
-						result->chromR[route_id_second].insert(result->chromR[route_id_second].begin() + result->chromR[route_id_second].size(), it_first + 1, lookat_route_first.end());
-
-						for (size_t k = 0; k < result->chromR[route_id_first].size(); k++)
-							indexRoute[result->chromR[route_id_first][k]] = route_id_first;
-						for (size_t k = 0; k < result->chromR[route_id_second].size(); k++)
-							indexRoute[result->chromR[route_id_second][k]] = route_id_second;
-
-						// std::cout << "route_id_first: ";
-						// for (size_t k = 0; k < result->chromR[route_id_first].size(); k++)
-						// 	std::cout << result->chromR[route_id_first][k] << ", ";
-						// std::cout << std::endl;
-						// std::cout << "route_id_second: ";
-						// for (size_t k = 0; k < result->chromR[route_id_second].size(); k++)
-						// 	std::cout << result->chromR[route_id_second][k] << ", ";
-						// std::cout << std::endl;
-					}
-					else
-					{
-
-						//One element is out of any route
-
-						if (indexRoute[AB_cycles[selectedAB_cycles[i]][j].first.first] < 0)
-						{
-							int route_id_second = indexRoute[AB_cycles[selectedAB_cycles[i]][j].first.second];
-							auto it_second = std::find(result->chromR[route_id_second].begin(), result->chromR[route_id_second].end(), AB_cycles[selectedAB_cycles[i]][j].first.second);
-
-							result->chromR[route_id_second].insert(it_second + 1, AB_cycles[selectedAB_cycles[i]][j].first.second);
-							indexRoute[AB_cycles[selectedAB_cycles[i]][j].first.second] = route_id_second;
-						}
-						else if (indexRoute[AB_cycles[selectedAB_cycles[i]][j].first.second] < 0)
-						{
-							int route_id_first = indexRoute[AB_cycles[selectedAB_cycles[i]][j].first.first];
-							auto it_first = std::find(result->chromR[route_id_first].begin(), result->chromR[route_id_first].end(), AB_cycles[selectedAB_cycles[i]][j].first.first);
-
-							result->chromR[route_id_first].insert(it_first + 1, AB_cycles[selectedAB_cycles[i]][j].first.second);
-							indexRoute[AB_cycles[selectedAB_cycles[i]][j].first.second] = route_id_first;
-						}
-						else
-						{
-							std::cout << "Não deve entrar aqui." << std::endl;
-							exit(0);
-						}
-					}
-				}
-			}
-		}
-		result->chromT.clear();
-
-		for (int i = 0; i < result->chromR.size(); i++)
-		{
-			for (int j = 0; j < result->chromR[i].size(); j++)
-				result->chromT.push_back(result->chromR[i][j]);
-		}
-
-		std::vector<bool> safe_check = std::vector<bool>(params->nbClients + 1, false);
-		bool repeatedElements = false;
-		for (int i = 0; i < result->chromR.size(); i++)
-		{
-			if (result->chromR[i].size() == 0)
+			if (i == selectedAB_cycles[0])
 				continue;
-			for (int j = 0; j < result->chromR[i].size(); j++)
+
+			for (int j = 0; j < AB_cycles[i].size(); j++)
 			{
-				if (!safe_check[result->chromR[i][j]])
+				if (!AB_cycles[i][j].second && (vertices_E_set_center[AB_cycles[i][j].first.first] || vertices_E_set_center[AB_cycles[i][j].first.second]))
 				{
-					safe_check[result->chromR[i][j]] = true;
-				}
-				else
-				{
-					std::cout << "repeated elements j: " << result->chromR[i][j] << std::endl;
-					repeatedElements = true;
-					i = result->chromR.size() + 1;
+					selectedAB_cycles.push_back(i);
 					break;
 				}
 			}
 		}
-		if (repeatedElements)
-		{
-			// Debug
-			std::cout << "result:" << std::endl;
-			for (int i = 0; i < result->chromR.size(); i++)
-			{
-				if (result->chromR[i].size() == 0)
-					continue;
-				std::cout << "route_id: " << i << " result: ";
-				for (int j = 0; j < result->chromR[i].size(); j++)
-				{
-					std::cout << result->chromR[i][j] << ", ";
-				}
-				std::cout << std::endl;
-			}
-			std::cout << std::endl;
-			std::cout << "parentA:" << std::endl;
-			for (int i = 0; i < parentA->chromR.size(); i++)
-			{
-				if (parentA->chromR[i].size() == 0)
-					continue;
-				std::cout << "route_id: " << i << " parentA: ";
-				for (int j = 0; j < parentA->chromR[i].size(); j++)
-				{
-					std::cout << parentA->chromR[i][j] << ", ";
-				}
-				std::cout << std::endl;
-			}
-			std::cout << std::endl;
+	}
 
-			exit(0);
-		}
+	// Copy all routes from parentA to result (offspring)
+	for (size_t i = 0; i < parentA->chromR.size(); i++)
+		result->chromR[i].assign(parentA->chromR[i].begin(), parentA->chromR[i].end());
 
-		bool problemDetected = false;
-		for (int i = 0; i < safe_check.size(); i++)
-		{
-			if (!safe_check[i] && i != 0)
-			{
-				std::cout << "safe_check problem detected.. i: " << i << std::endl;
-				problemDetected = true;
-			}
-		}
-		if (problemDetected)
-		{
-			// Debug
-			std::cout << "result:" << std::endl;
-			for (int i = 0; i < result->chromR.size(); i++)
-			{
-				if (result->chromR[i].size() == 0)
-					continue;
-				std::cout << "route_id: " << i << " result: ";
-				for (int j = 0; j < result->chromR[i].size(); j++)
-				{
-					std::cout << result->chromR[i][j] << ", ";
-				}
-				std::cout << std::endl;
-			}
-			std::cout << std::endl;
-			std::cout << "parentA:" << std::endl;
-			for (int i = 0; i < parentA->chromR.size(); i++)
-			{
-				if (parentA->chromR[i].size() == 0)
-					continue;
-				std::cout << "route_id: " << i << " parentA: ";
-				for (int j = 0; j < parentA->chromR[i].size(); j++)
-				{
-					std::cout << parentA->chromR[i][j] << ", ";
-				}
-				std::cout << std::endl;
-			}
-			std::cout << std::endl;
+	//To quickly obtain a route id from a given vertex
+	std::vector<short> vertexRoute = std::vector<short>(params->nbClients + 1);
+	for (size_t i = 0; i < result->chromR.size(); i++)
+	{
+		for (size_t j = 0; j < result->chromR[i].size(); j++)
+			vertexRoute[result->chromR[i][j]] = i;
+	}
 
-			exit(0);
+	//We iterate over all edges of the selected AB_Cycles
+	for (size_t i = 0; i < selectedAB_cycles.size(); i++)
+	{
+		for (size_t j = 0; j < AB_cycles[selectedAB_cycles[i]].size(); j++)
+		{
+			// It's a parent B edge and its endpoints are not connected to depot
+			if (!AB_cycles[selectedAB_cycles[i]][j].second && AB_cycles[selectedAB_cycles[i]][j].first.first != 0 && AB_cycles[selectedAB_cycles[i]][j].first.second != 0)
+			{
+				//Both edge's endpoints are from the same route in parentA
+				if (vertexRoute[AB_cycles[selectedAB_cycles[i]][j].first.first] == vertexRoute[AB_cycles[selectedAB_cycles[i]][j].first.second])
+				{
+					int route_id = vertexRoute[AB_cycles[selectedAB_cycles[i]][j].first.first];
+					std::vector<int> lookat_route(result->chromR[route_id].begin(), result->chromR[route_id].end());
+					result->chromR[route_id].clear();
+
+					// We then update the route
+					// Let predecessor (p) and successor (s)
+					// Example: (1) - (p) - (2) - (s) - (3)
+					// Resulting: (1) - (p) - (s) - reverse(2) - (3)
+					for (size_t k = 0; k < lookat_route.size(); k++)
+					{
+						if (AB_cycles[selectedAB_cycles[i]][j].first.first == lookat_route[k])
+						{
+							// So far (1);
+							int posSecond = -1;
+							std::vector<int> verticesInBetween;
+							for (size_t p = k + 1; p < lookat_route.size(); p++)
+							{
+								if (AB_cycles[selectedAB_cycles[i]][j].first.second == lookat_route[p])
+								{
+									posSecond = p;
+									break;
+								}
+								verticesInBetween.push_back(lookat_route[p]);
+							}
+
+							result->chromR[route_id].push_back(AB_cycles[selectedAB_cycles[i]][j].first.first);
+							result->chromR[route_id].push_back(AB_cycles[selectedAB_cycles[i]][j].first.second);
+
+							std::reverse(verticesInBetween.begin(), verticesInBetween.end());
+							result->chromR[route_id].insert(result->chromR[route_id].begin() + (result->chromR[route_id].size()), verticesInBetween.begin(), verticesInBetween.end());
+
+							// So far (1) - (p) - (s) - reverse(2).
+							// We complete partial route (3) below and break the loop
+							for (size_t p = posSecond + 1; p < lookat_route.size(); p++)
+								result->chromR[route_id].push_back(lookat_route[p]);
+
+							break;
+						}
+						else if (AB_cycles[selectedAB_cycles[i]][j].first.second == lookat_route[k])
+						{
+							// we flip the edge ordering and repeat the iteration
+							std::swap(AB_cycles[selectedAB_cycles[i]][j].first.second, AB_cycles[selectedAB_cycles[i]][j].first.first);
+							k--;
+						}
+						else
+						{
+							result->chromR[route_id].push_back(lookat_route[k]);
+						}
+					}
+
+					// Update route id in all vertex
+					for (size_t k = 0; k < result->chromR[route_id].size(); k++)
+						vertexRoute[result->chromR[route_id][k]] = route_id;
+				}
+				else
+				{
+					// Dealing with endpoints from different routes
+
+					int route_id_first = vertexRoute[AB_cycles[selectedAB_cycles[i]][j].first.first];
+					std::vector<int> lookat_route_first(result->chromR[route_id_first].begin(), result->chromR[route_id_first].end());
+					auto it_first = std::find(lookat_route_first.begin(), lookat_route_first.end(), AB_cycles[selectedAB_cycles[i]][j].first.first);
+
+					int route_id_second = vertexRoute[AB_cycles[selectedAB_cycles[i]][j].first.second];
+					std::vector<int> lookat_route_second(result->chromR[route_id_second].begin(), result->chromR[route_id_second].end());
+					auto it_second = std::find(lookat_route_second.begin(), lookat_route_second.end(), AB_cycles[selectedAB_cycles[i]][j].first.second);
+
+					// Example: Consider v (route 1) and w (route 2)
+					// route_first:  (1) - v - (2); route_second:  (3) - w - (4)
+					// Resulting: route_first: (1) - v - w (4); route_second: (3) - (2)
+
+					result->chromR[route_id_first].assign(lookat_route_first.begin(), it_first + 1);
+					result->chromR[route_id_first].insert(result->chromR[route_id_first].begin() + result->chromR[route_id_first].size(), it_second, lookat_route_second.end());
+
+					result->chromR[route_id_second].assign(lookat_route_second.begin(), it_second);
+					result->chromR[route_id_second].insert(result->chromR[route_id_second].begin() + result->chromR[route_id_second].size(), it_first + 1, lookat_route_first.end());
+
+					// Update route id for all involved vertices
+					for (size_t k = 0; k < result->chromR[route_id_first].size(); k++)
+						vertexRoute[result->chromR[route_id_first][k]] = route_id_first;
+					for (size_t k = 0; k < result->chromR[route_id_second].size(); k++)
+						vertexRoute[result->chromR[route_id_second][k]] = route_id_second;
+				}
+			}
 		}
 	}
-	else
-	{
-		// We just include the largest AB_cycle as an independent route
-		std::vector<bool> E_set_center_vertices = std::vector<bool>(params->nbClients + 1, false);
-		int indexLargestCenter = 0;
-		size_t largestCenterSize = 0;
-		for (size_t i = 0; i < AB_cycles.size(); i++)
-		{
-			if (AB_cycles[i][0].first.first == 0 && AB_cycles[i].size() > largestCenterSize)
-			{
-				indexLargestCenter = i;
-				largestCenterSize = AB_cycles[i].size();
-			}
-		}
-		std::vector<std::pair<std::pair<int, int>, bool>> E_set = AB_cycles[indexLargestCenter];
-		for (size_t i = 0; i < E_set.size(); i++)
-		{
-			if (E_set[i].first.first != 0)
-				E_set_center_vertices[E_set[i].first.first] = true;
-			if (E_set[i].first.second != 0)
-				E_set_center_vertices[E_set[i].first.second] = true;
-		}
-		int lastPosChromT = 0;
-		for (size_t i = 0; i < parentA->chromR.size(); i++)
-		{
-			if (parentA->chromR[i].size() == 0)
-				continue;
-			for (size_t j = 0; j < parentA->chromR[i].size(); j++)
-			{
-				if (!E_set_center_vertices[parentA->chromR[i][j]])
-				{
-					result->chromT[lastPosChromT++] = parentA->chromR[i][j];
-				}
-			}
-		}
 
-		//To avoid including a vertex twice (when there are subcycles)
-		std::vector<bool> usedVertices = std::vector<bool>(params->nbClients + 1, false);
-		for (size_t i = 0; i < E_set.size(); i++)
-		{
-			if (E_set[i].second != 0 && E_set_center_vertices[E_set[i].second] && !usedVertices[E_set[i].second])
-			{
-				usedVertices[E_set[i].second] = true;
-				result->chromT[lastPosChromT++] = E_set[i].second;
-			}
-		}
+	// Copy all routes to big tour
+	int posChromT = 0;
+	for (size_t i = 0; i < result->chromR.size(); i++)
+	{
+		for (size_t j = 0; j < result->chromR[i].size(); j++)
+			result->chromT[posChromT++] = result->chromR[i][j];
 	}
 
 	split->generalSplit(result, parentA->myCostSol.nbRoutes);
-	// std::cout << "parentA: " << parentA->myCostSol.penalizedCost << " ";
-	// std::cout << "result: " << result->myCostSol.penalizedCost << std::endl;
 }
 
 void Genetic::crossoverOX(Individual *result, const Individual *parent1, const Individual *parent2)
