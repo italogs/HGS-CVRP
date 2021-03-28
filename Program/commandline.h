@@ -80,12 +80,13 @@ public:
 	{
 		std::cout << std::endl;
 		std::cout << "-------------------------------------------------- HGS-CVRP algorithm (2020) --------------------------------------------------" << std::endl;
-		std::cout << "Call with: ./genvrp instancePath solPath [-it nbIter] [-t myCPUtime] [-bks bksPath] [-seed mySeed] [-veh nbVehicles]           " << std::endl;
+		std::cout << "Call with: ./genvrp instancePath solPath [-it nbIter] [-t myCPUtime] [-bks bksPath] [-seed mySeed] [-veh nbVehicles] [-crossover type]" << std::endl;
 		std::cout << "[-it nbIterations] sets a maximum number of iterations without improvement. Defaults to 20,000                                 " << std::endl;
 		std::cout << "[-t myCPUtime] sets a time limit in seconds. If this parameter is set the code will be run iteratively until the time limit    " << std::endl;
 		std::cout << "[-bks bksPath] sets an optional path to a BKS. This file will be overwritten in case of improvement                            " << std::endl;
 		std::cout << "[-seed mySeed] sets a fixed seed. Defaults to 0                                                                                " << std::endl;
 		std::cout << "[-veh nbVehicles] sets a prescribed fleet size. Otherwise a reasonable UB on the the fleet size is calculated                  " << std::endl;
+		std::cout << "[-crossover type] sets the crossover type. 1 for OX; 2 for EAX                                                                 " << std::endl;
 		std::cout << "-------------------------------------------------------------------------------------------------------------------------------" << std::endl;
 		std::cout << std::endl;
 	};
