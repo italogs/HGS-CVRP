@@ -70,44 +70,37 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 	/* Accouting the number of edges from each parent */
 	for (int i = 1; i <= params->nbClients; i++)
 	{
-		int A_successor = parentA->successors[i];
-		int A_predecessor = parentA->predecessors[i];
-		int B_successor = parentB->successors[i];
-		int B_predecessor = parentB->predecessors[i];
-
-		//Using std::set for simplification to compare edges.
-		std::set<int> edge_Apred({A_predecessor, i});
-		std::set<int> edge_Asucc({i, A_successor});
-
-		std::set<int> edge_Bpred({B_predecessor, i});
-		std::set<int> edge_Bsucc({i, B_successor});
+		int A_successor = std::max(parentA->successors[i], parentA->predecessors[i]);
+		int A_predecessor = std::min(parentA->successors[i], parentA->predecessors[i]);
+		int B_successor = std::max(parentB->successors[i], parentB->predecessors[i]);
+		int B_predecessor = std::min(parentB->successors[i], parentB->predecessors[i]);
 
 		// One-client routes are not allowed
 		// Each if consists in verifying if the surrogate edge is present in the other parent.
-		if (edge_Apred != edge_Asucc)
+		if (A_predecessor != A_successor)
 		{
-			if (edge_Apred != edge_Bpred && edge_Apred != edge_Bsucc)
+			if (A_predecessor != B_predecessor && A_predecessor != B_successor)
 			{
 				// edge_Apred
 				GAB_A[A_predecessor][i] = 1;
 				GAB_A[i][A_predecessor] = 1;
 			}
-			if (edge_Asucc != edge_Bpred && edge_Asucc != edge_Bsucc)
+			if (A_successor != B_predecessor && A_successor != B_successor)
 			{
 				// edge_Asucc
 				GAB_A[i][A_successor] = 1;
 				GAB_A[A_successor][i] = 1;
 			}
 		}
-		if (edge_Bpred != edge_Bsucc)
+		if (B_predecessor != B_successor)
 		{
-			if (edge_Bpred != edge_Apred && edge_Bpred != edge_Asucc)
+			if (B_predecessor != A_predecessor && B_predecessor != A_successor)
 			{
 				// edge_Bpred
 				GAB_B[B_predecessor][i] = 1;
 				GAB_B[i][B_predecessor] = 1;
 			}
-			if (edge_Bsucc != edge_Apred && edge_Bsucc != edge_Asucc)
+			if (B_successor != A_predecessor && B_successor != A_successor)
 			{
 				// edge_Bsucc
 				GAB_B[i][B_successor] = 1;
@@ -165,17 +158,20 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 	// parent edge is a boolean to identify if this edge came from parentA(true) or parentB(false)
 	// old version (storing parent value)
 	std::vector<std::vector<std::pair<std::pair<int, int>, bool>>> AB_cycles;
-	// std::vector<std::vector<std::pair<int, int>>> AB_cycles;
-	bool hasEdges = true;
+	std::vector<std::pair<std::pair<int, int>, bool>> current_AB_cycle;
+	bool hasEdges = true, edgeParent;
+	int i, j, predecessor, successor;
+
+	double bestCostInsertion;
 	while (hasEdges)
 	{
 		hasEdges = false;
-		int predecessor = -1;
+		predecessor = -1;
 		//We find an initial node (predecessor) for an AB_cycle.
-		bool edgeParent = true;
-		for (int i = 0; i <= this->params->nbClients; i++)
+		edgeParent = true;
+		for (i = 0; i <= this->params->nbClients; i++)
 		{
-			for (int j = i + 1; j <= this->params->nbClients; j++)
+			for (j = i + 1; j <= this->params->nbClients; j++)
 			{
 				if (GAB_A[i][j] > 0)
 				{
@@ -200,17 +196,14 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 
 		//Store the cycle's arcs and its edge parent
 		//Arcs are saved as pair to maintain the its ordering
-		// old version (storing parent value)
-		std::vector<std::pair<std::pair<int, int>, bool>> current_AB_cycle;
-		// std::vector<std::pair<int, int>> current_AB_cycle;
-
+		current_AB_cycle.clear();
 		while (1)
 		{
 			//We select the successor node having the predecessor already set
 			//This selection is based on the best arc to be selected (full greedy here)
-			int successor = -1;
-			double bestCostInsertion = 1e24;
-			for (int i = 0; i <= params->nbClients; i++)
+			successor = -1;
+			bestCostInsertion = 1e24;
+			for (i = 0; i <= params->nbClients; i++)
 			{
 				if (predecessor == i)
 					continue;
@@ -231,7 +224,6 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 			//Include the successor node into the cycle and save the edge
 			// old version (storing parent value)
 			current_AB_cycle.push_back(std::make_pair(std::make_pair(predecessor, successor), edgeParent));
-			// current_AB_cycle.push_back(std::make_pair(predecessor, successor));
 
 			//Update edge usage
 			if (edgeParent)
