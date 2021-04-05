@@ -4,15 +4,20 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 {
 	int nbIterNonProd = 1;
 	int nbIter;
+	clock_t total_time_crossover = 0;
+	clock_t total_time_local_search = 0;
 	for (nbIter = 0; nbIterNonProd <= maxIterNonProd && clock() / CLOCKS_PER_SEC < timeLimit; nbIter++)
 	{
 		/* SELECTION AND CROSSOVER */
+		clock_t crossover_start = clock();
 		if (params->crossoverType == 1)
 			crossoverOX(offspring, population->getBinaryTournament(), population->getBinaryTournament());
 		else if (params->crossoverType == 2)
 			crossoverEAX(offspring, population->getBinaryTournament(), population->getBinaryTournament());
+		total_time_crossover += (clock() - crossover_start);
 
 		/* LOCAL SEARCH */
+		clock_t local_search_start = clock();
 		localSearch->run(offspring, params->penaltyCapacity, params->penaltyDuration);
 		bool isNewBest = population->addIndividual(offspring, true);
 		if (!offspring->isFeasible && std::rand() % 2 == 0) // Repair half of the solutions in case of infeasibility
@@ -21,6 +26,8 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 			if (offspring->isFeasible)
 				isNewBest = (population->addIndividual(offspring, false) || isNewBest);
 		}
+
+		total_time_local_search += (clock() - local_search_start);
 
 		/* TRACKING THE NUMBER OF ITERATIONS SINCE LAST SOLUTION IMPROVEMENT */
 		if (isNewBest)
@@ -44,6 +51,11 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 	}
 
 	std::cout << "nbIter: " << nbIter << std::endl;
+	std::cout << "total_time_crossover: " << (((double)total_time_crossover) / CLOCKS_PER_SEC) << std::endl;
+	std::cout << "avg per iteration total_time_crossover: " << ((((double)total_time_crossover) / CLOCKS_PER_SEC) / nbIter) << std::endl;
+
+	std::cout << "total_time_local_search: " << (((double)total_time_local_search) / CLOCKS_PER_SEC) << std::endl;
+	std::cout << "avg per iteration total_time_local_search: " << ((((double)total_time_local_search) / CLOCKS_PER_SEC) / nbIter) << std::endl;
 }
 
 void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const Individual *parentB)
@@ -55,17 +67,6 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 	//1st phase define edges from ParentA and B
 	/* We have an incidence matrix to store the edges from the following resulting set: (E_A \union E_B) \ (E_A \intersection E_B ) */
 	/* In other words, the edges that are not common in both parents.*/
-
-	/* Initializing matrices */
-	for (int i = 0; i <= this->params->nbClients; i++)
-	{
-		for (int j = i + 1; j <= this->params->nbClients; j++)
-		{
-			GAB_A[i][j] = GAB_A[j][i] = 0;
-			GAB_B[i][j] = GAB_B[j][i] = 0;
-		}
-	}
-
 	/* Accouting the number of edges from each parent */
 	for (int i = 1; i <= params->nbClients; i++)
 	{
@@ -261,23 +262,11 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 	// Two strategies in genering E_sets (or selectedAB_cycles[0])
 	// Single strategy - select one AB_cycle
 	// Block strategy - select one AB_cycle, then include all AB_cycles that contain at least one node in common with the first AB_cycle
-	bool singleStrategy = true;
+	bool singleStrategy = false;
 
 	//selectedAB_cycles[0] will be the center
 	std::vector<short> selectedAB_cycles;
-	int indexLargestCenter = 0;
-
-	//We select the largest AB_cycle instead of random
-	size_t largestCenterSize = 0;
-	for (size_t i = 0; i < AB_cycles.size(); i++)
-	{
-		if (AB_cycles[i][0].first.first == 0 && AB_cycles[i].size() > largestCenterSize)
-		{
-			indexLargestCenter = i;
-			largestCenterSize = AB_cycles[i].size();
-		}
-	}
-	selectedAB_cycles.push_back(indexLargestCenter);
+	selectedAB_cycles.push_back(std::rand() % AB_cycles.size());
 
 	// Mark all vertices of the center as true (except depot)
 	std::vector<bool> vertices_E_set_center = std::vector<bool>(params->nbClients + 1, false);
@@ -300,7 +289,7 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 			if (i == selectedAB_cycles[0])
 				continue;
 
-			for (int j = 0; j < AB_cycles[i].size(); j++)
+			for (size_t j = 0; j < AB_cycles[i].size(); j++)
 			{
 				if (!AB_cycles[i][j].second && (vertices_E_set_center[AB_cycles[i][j].first.first] || vertices_E_set_center[AB_cycles[i][j].first.second]))
 				{
@@ -314,7 +303,10 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 	// 4th phase - Create offspring
 	// Copy all routes from parentA to result (offspring)
 	for (size_t i = 0; i < parentA->chromR.size(); i++)
-		result->chromR[i].assign(parentA->chromR[i].begin(), parentA->chromR[i].end());
+	{
+		if (parentA->chromR.size() > 0)
+			result->chromR[i].assign(parentA->chromR[i].begin(), parentA->chromR[i].end());
+	}
 
 	//To quickly obtain a route id from a given vertex
 	std::vector<short> vertexRoute = std::vector<short>(params->nbClients + 1);
@@ -330,50 +322,60 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 		for (size_t j = 0; j < AB_cycles[selectedAB_cycles[i]].size(); j++)
 		{
 			// It's a parent B edge and its endpoints are not connected to depot
+			// if (!AB_cycles[selectedAB_cycles[i]][j].second)
 			if (!AB_cycles[selectedAB_cycles[i]][j].second && AB_cycles[selectedAB_cycles[i]][j].first.first != 0 && AB_cycles[selectedAB_cycles[i]][j].first.second != 0)
 			{
 				//Both edge's endpoints are from the same route in parentA
-				if (vertexRoute[AB_cycles[selectedAB_cycles[i]][j].first.first] == vertexRoute[AB_cycles[selectedAB_cycles[i]][j].first.second])
+				if (vertexRoute[AB_cycles[selectedAB_cycles[i]][j].first.first] == vertexRoute[AB_cycles[selectedAB_cycles[i]][j].first.second] || (AB_cycles[selectedAB_cycles[i]][j].first.first == 0 || AB_cycles[selectedAB_cycles[i]][j].first.second == 0))
 				{
-					int route_id = vertexRoute[AB_cycles[selectedAB_cycles[i]][j].first.first];
-					std::vector<int> lookat_route(result->chromR[route_id].begin(), result->chromR[route_id].end());
-					result->chromR[route_id].clear();
 
+					int route_id;
+					if (AB_cycles[selectedAB_cycles[i]][j].first.first == 0 || AB_cycles[selectedAB_cycles[i]][j].first.second == 0)
+					{
+						if (AB_cycles[selectedAB_cycles[i]][j].first.first == 0)
+							route_id = vertexRoute[AB_cycles[selectedAB_cycles[i]][j].first.second];
+						else
+						{
+							route_id = vertexRoute[AB_cycles[selectedAB_cycles[i]][j].first.first];
+							std::swap(AB_cycles[selectedAB_cycles[i]][j].first.second, AB_cycles[selectedAB_cycles[i]][j].first.first);
+						}
+					}
+					else
+						route_id = vertexRoute[AB_cycles[selectedAB_cycles[i]][j].first.first];
+
+					int posChromR = 0;
 					// We then update the route
 					// Let predecessor (p) and successor (s)
 					// Example: (1) - (p) - (2) - (s) - (3)
 					// Resulting: (1) - (p) - (s) - reverse(2) - (3)
-					for (size_t k = 0; k < lookat_route.size(); k++)
+					for (size_t k = 0; k < result->chromR[route_id].size(); k++)
 					{
-						if (AB_cycles[selectedAB_cycles[i]][j].first.first == lookat_route[k])
+						if (AB_cycles[selectedAB_cycles[i]][j].first.first == result->chromR[route_id][k] || AB_cycles[selectedAB_cycles[i]][j].first.first == 0)
 						{
 							// So far (1);
-							int posSecond = -1;
 							std::vector<int> verticesInBetween;
-							for (size_t p = k + 1; p < lookat_route.size(); p++)
+							if (AB_cycles[selectedAB_cycles[i]][j].first.first == 0)
+								k--;
+							for (size_t p = k + 1; p < result->chromR[route_id].size(); p++)
 							{
-								if (AB_cycles[selectedAB_cycles[i]][j].first.second == lookat_route[p])
-								{
-									posSecond = p;
+								if (AB_cycles[selectedAB_cycles[i]][j].first.second == result->chromR[route_id][p])
 									break;
-								}
-								verticesInBetween.push_back(lookat_route[p]);
+								verticesInBetween.push_back(result->chromR[route_id][p]);
 							}
-
-							result->chromR[route_id].push_back(AB_cycles[selectedAB_cycles[i]][j].first.first);
-							result->chromR[route_id].push_back(AB_cycles[selectedAB_cycles[i]][j].first.second);
+							// Then (p) - (s)
+							if (AB_cycles[selectedAB_cycles[i]][j].first.first != 0)
+								result->chromR[route_id][posChromR++] = AB_cycles[selectedAB_cycles[i]][j].first.first;
+							result->chromR[route_id][posChromR++] = AB_cycles[selectedAB_cycles[i]][j].first.second;
 
 							std::reverse(verticesInBetween.begin(), verticesInBetween.end());
-							result->chromR[route_id].insert(result->chromR[route_id].begin() + (result->chromR[route_id].size()), verticesInBetween.begin(), verticesInBetween.end());
+							// Then reverse(2)
+							for (size_t i = 0; i < verticesInBetween.size(); i++)
+								result->chromR[route_id][posChromR++] = verticesInBetween[i];
 
-							// So far (1) - (p) - (s) - reverse(2).
-							// We complete partial route (3) below and break the loop
-							for (size_t p = posSecond + 1; p < lookat_route.size(); p++)
-								result->chromR[route_id].push_back(lookat_route[p]);
-
+							//(3) is already there
 							break;
 						}
-						else if (AB_cycles[selectedAB_cycles[i]][j].first.second == lookat_route[k])
+						else if (AB_cycles[selectedAB_cycles[i]][j].first.second == result->chromR[route_id][k])
 						{
 							// we flip the edge ordering and repeat the iteration
 							std::swap(AB_cycles[selectedAB_cycles[i]][j].first.second, AB_cycles[selectedAB_cycles[i]][j].first.first);
@@ -381,35 +383,55 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 						}
 						else
 						{
-							result->chromR[route_id].push_back(lookat_route[k]);
+							posChromR++;
 						}
 					}
-
-					// Update route id in all vertex
-					for (size_t k = 0; k < result->chromR[route_id].size(); k++)
-						vertexRoute[result->chromR[route_id][k]] = route_id;
 				}
 				else
 				{
 					// Dealing with endpoints from different routes
 
-					int route_id_first = vertexRoute[AB_cycles[selectedAB_cycles[i]][j].first.first];
-					std::vector<int> lookat_route_first(result->chromR[route_id_first].begin(), result->chromR[route_id_first].end());
-					auto it_first = std::find(lookat_route_first.begin(), lookat_route_first.end(), AB_cycles[selectedAB_cycles[i]][j].first.first);
-
-					int route_id_second = vertexRoute[AB_cycles[selectedAB_cycles[i]][j].first.second];
-					std::vector<int> lookat_route_second(result->chromR[route_id_second].begin(), result->chromR[route_id_second].end());
-					auto it_second = std::find(lookat_route_second.begin(), lookat_route_second.end(), AB_cycles[selectedAB_cycles[i]][j].first.second);
-
 					// Example: Consider v (route 1) and w (route 2)
 					// route_first:  (1) - v - (2); route_second:  (3) - w - (4)
-					// Resulting: route_first: (1) - v - w (4); route_second: (3) - (2)
+					// Resulting: route_first: (1) - v - w - (4); route_second: (3) - (2)
 
-					result->chromR[route_id_first].assign(lookat_route_first.begin(), it_first + 1);
-					result->chromR[route_id_first].insert(result->chromR[route_id_first].begin() + result->chromR[route_id_first].size(), it_second, lookat_route_second.end());
+					int route_id_first = vertexRoute[AB_cycles[selectedAB_cycles[i]][j].first.first];
+					int pos_id_first = 0;
+					for (pos_id_first = 0; pos_id_first < result->chromR[route_id_first].size(); pos_id_first++)
+					{
+						if (result->chromR[route_id_first][pos_id_first] == AB_cycles[selectedAB_cycles[i]][j].first.first)
+							break;
+					}
 
-					result->chromR[route_id_second].assign(lookat_route_second.begin(), it_second);
-					result->chromR[route_id_second].insert(result->chromR[route_id_second].begin() + result->chromR[route_id_second].size(), it_first + 1, lookat_route_first.end());
+					// We store (2) for later usage
+					std::vector<int> chunk2_route_first = std::vector<int>(result->chromR[route_id_first].size() - pos_id_first - 1);
+					for (size_t k = pos_id_first + 1, pos = 0; k < result->chromR[route_id_first].size(); k++, pos++)
+						chunk2_route_first[pos] = result->chromR[route_id_first][k];
+
+					int route_id_second = vertexRoute[AB_cycles[selectedAB_cycles[i]][j].first.second];
+					int pos_id_second = 0;
+					for (pos_id_second = 0; pos_id_second < result->chromR[route_id_second].size(); pos_id_second++)
+					{
+						if (result->chromR[route_id_second][pos_id_second] == AB_cycles[selectedAB_cycles[i]][j].first.second)
+							break;
+					}
+					size_t initial_size_route_first = result->chromR[route_id_first].size();
+					size_t initial_size_route_second = result->chromR[route_id_second].size();
+
+					// Applying the new size for route_first
+					int newSize_route_first = pos_id_first + 1 + 1 + result->chromR[route_id_second].size() - pos_id_second - 1;
+					result->chromR[route_id_first].resize(newSize_route_first);
+
+					//Appending w and (4)
+					for (size_t k = pos_id_second, iterator = 1; k < result->chromR[route_id_second].size(); k++, iterator++)
+						result->chromR[route_id_first][iterator + pos_id_first] = result->chromR[route_id_second][k];
+
+					// Applying the new size for route_second
+					result->chromR[route_id_second].resize(initial_size_route_first + initial_size_route_second - result->chromR[route_id_first].size());
+
+					// Including chunk (2) at (3)
+					for (size_t k = 0; k < chunk2_route_first.size(); k++)
+						result->chromR[route_id_second][pos_id_second + k] = chunk2_route_first[k];
 
 					// Update route id for all involved vertices
 					for (size_t k = 0; k < result->chromR[route_id_first].size(); k++)
@@ -421,15 +443,21 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 		}
 	}
 
-	// Copy all routes to big tour
-	int posChromT = 0;
-	for (size_t i = 0; i < result->chromR.size(); i++)
+	bool useSplit = true;
+	if (useSplit)
 	{
-		for (size_t j = 0; j < result->chromR[i].size(); j++)
-			result->chromT[posChromT++] = result->chromR[i][j];
-	}
+		// Copy all routes to big tour
+		int posChromT = 0;
+		for (size_t i = 0; i < result->chromR.size(); i++)
+		{
+			for (size_t j = 0; j < result->chromR[i].size(); j++)
+				result->chromT[posChromT++] = result->chromR[i][j];
+		}
 
-	split->generalSplit(result, parentA->myCostSol.nbRoutes);
+		split->generalSplit(result, parentA->myCostSol.nbRoutes);
+	}
+	else
+		result->evaluateCompleteCost();
 }
 
 void Genetic::crossoverOX(Individual *result, const Individual *parent1, const Individual *parent2)
@@ -477,6 +505,16 @@ Genetic::Genetic(Params *params, Split *split, Population *population, LocalSear
 	{
 		GAB_A[i] = new short int[this->params->nbClients + 1];
 		GAB_B[i] = new short int[this->params->nbClients + 1];
+	}
+
+	/* Initializing matrices */
+	for (int i = 0; i <= this->params->nbClients; i++)
+	{
+		for (int j = i + 1; j <= this->params->nbClients; j++)
+		{
+			GAB_A[i][j] = GAB_A[j][i] = 0;
+			GAB_B[i][j] = GAB_B[j][i] = 0;
+		}
 	}
 }
 

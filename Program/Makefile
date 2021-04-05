@@ -48,5 +48,6 @@ clean:
     $(TARGETDIR)/LocalSearch.o \
     $(TARGETDIR)/Params.o \
     $(TARGETDIR)/Population.o \
-    $(TARGETDIR)/Split.o
+    $(TARGETDIR)/Split.o \
+    $(TARGETDIR)/genvrp
      
