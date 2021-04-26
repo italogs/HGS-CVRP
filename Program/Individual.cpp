@@ -23,6 +23,14 @@ void Individual::evaluateCompleteCost()
 			distance += params->timeCost[chromR[r][chromR[r].size()-1]][0];
 			myCostSol.distance += distance;
 			myCostSol.nbRoutes++;
+
+			costChromR[r] = distance;
+			if (load > params->vehicleCapacity) costChromR[r] += ((load - params->vehicleCapacity)*params->penaltyCapacity);
+			if (distance + service > params->durationLimit) costChromR[r] +=  (distance + service - params->durationLimit)*params->penaltyDuration;
+			 
+			if(costChromR[r] < 0.0)
+				costChromR[r] = 0.0;
+				
 			if (load > params->vehicleCapacity) myCostSol.capacityExcess += load - params->vehicleCapacity;
 			if (distance + service > params->durationLimit) myCostSol.durationExcess += distance + service - params->durationLimit;
 		}
@@ -120,6 +128,7 @@ Individual::Individual(Params * params) : params(params)
 	successors = std::vector <int>(params->nbClients + 1);
 	predecessors = std::vector <int>(params->nbClients + 1);
 	chromR = std::vector < std::vector <int> >(params->nbVehicles);
+	costChromR = std::vector < double >(params->nbVehicles);
 	chromT = std::vector <int>(params->nbClients);
 	for (int i = 0; i < params->nbClients; i++) chromT[i] = i + 1;
 	std::random_shuffle(chromT.begin(), chromT.end());
