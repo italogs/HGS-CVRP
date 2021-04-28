@@ -12,29 +12,28 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 		/* SELECTION AND CROSSOVER */
 		clock_t crossover_start = clock();
 		if (params->crossoverType == 1)
+		{
 			crossoverOX(offspring, population->getBinaryTournament(), population->getBinaryTournament());
+		}
 		else if (params->crossoverType == 2)
-			crossover_heuristicOX(offspring, population->getBinaryTournament(), population->getBinaryTournament());
+		{
+			crossoverEAX(offspring, population->getBinaryTournament(), population->getBinaryTournament());
+		}
 		else if (params->crossoverType == 3)
 		{
-			// if (std::rand() % 100 < 75)
 			crossover_newOX(offspring, population->getBinaryTournament(), population->getBinaryTournament());
-			// else
-			// 	crossoverOX(offspring, population->getBinaryTournament(), population->getBinaryTournament());
 		}
 		else if (params->crossoverType == 4)
 		{
-			petalAlgorithm(offspring, population);
+			if (nbIter % 5001 == 5000)
+				petalAlgorithm(offspring, population);
+			else
+				crossoverOX(offspring, population->getBinaryTournament(), population->getBinaryTournament());
 		}
 		else if (params->crossoverType == 5)
 		{
 			crossoverOX_fixRoute(offspring, population->getBinaryTournament(), population->getBinaryTournament());
 		}
-		else if (params->crossoverType == 6)
-		{
-			crossoverEAX(offspring, population->getBinaryTournament(), population->getBinaryTournament());
-		}
-
 		total_time_crossover += (clock() - crossover_start);
 
 		/* LOCAL SEARCH */
@@ -56,38 +55,9 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 		else
 			nbIterNonProd++;
 
-		// std::cout << "LS cost: " << offspring->myCostSol.penalizedCost << std::endl;
-
-		if (params->crossoverType == 4)
+		if (params->crossoverType == 3)
 		{
-			if (RoutePool.size() > params->nbVehicles * 3)
-			{
-				std::random_shuffle(RoutePool.begin(), RoutePool.end());
-				RoutePool.erase(RoutePool.begin(), RoutePool.begin() + (params->nbVehicles * 2));
-			}
-
-			for (int i = 0; i < offspring->chromR.size(); i++)
-			{
-				if (!offspring->chromR[i].empty())
-				{
-					bool repeatedRoute = false;
-					for (int j = 0; j < RoutePool.size(); j++)
-					{
-						if (RoutePool[i].first == offspring->chromR[i])
-						{
-							repeatedRoute = true;
-							break;
-						}
-					}
-					if (!repeatedRoute)
-						RoutePool.push_back(std::make_pair(offspring->chromR[i], offspring->costChromR[i]));
-				}
-			}
-		}
-
-		if ((params->crossoverType == 2 || params->crossoverType == 3))
-		{
-
+			// Erase the memory if 1k iterations were not productive
 			if (nbIterNonProd % 1001 == 1000)
 				heat_map_stl.clear();
 
@@ -97,15 +67,73 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 					continue;
 				for (int j = 0; j < offspring->chromR[i].size() - 1; j++)
 				{
+					//We ignore the edge orientation
 					int lowest = std::min(offspring->chromR[i][j], offspring->chromR[i][j + 1]);
 					int highest = std::max(offspring->chromR[i][j], offspring->chromR[i][j + 1]);
 					heat_map_stl[std::make_pair(lowest, highest)]++;
 				}
 			}
 		}
-
-		if (params->crossoverType == 5)
+		else if (params->crossoverType == 4)
 		{
+			//If the maximum size exceeds a thresholds, we randomize the pool and exclude some
+			if (RoutePool.size() > 5000)
+			{
+				double factorToRemoveRoutes = 0.2;
+				int nbRoutesToRemove = RoutePool.size() * factorToRemoveRoutes;
+				RoutePool.erase(RoutePool.begin(), RoutePool.begin() + (nbRoutesToRemove));
+			}
+			if (RoutePoolTemp.size() > 300)
+			{
+				double factorToRemoveRoutes = 0.2;
+				int nbRoutesToRemove = RoutePoolTemp.size() * factorToRemoveRoutes;
+				RoutePoolTemp.erase(RoutePoolTemp.begin(), RoutePoolTemp.begin() + (nbRoutesToRemove));
+			}
+
+			if (isNewBest)
+			{
+				for (int i = 0; i < offspring->chromR.size(); i++)
+				{
+					if (!offspring->chromR[i].empty())
+					{
+						bool repeatedRoute = false;
+						for (int j = 0; j < RoutePool.size(); j++)
+						{
+							if (RoutePool[i].first == offspring->chromR[i])
+							{
+								repeatedRoute = true;
+								break;
+							}
+						}
+						if (!repeatedRoute)
+							RoutePool.push_back(std::make_pair(offspring->chromR[i], offspring->costChromR[i]));
+					}
+				}
+			}
+			else
+			{
+				for (int i = 0; i < offspring->chromR.size(); i++)
+				{
+					if (!offspring->chromR[i].empty())
+					{
+						bool repeatedRoute = false;
+						for (int j = 0; j < RoutePoolTemp.size(); j++)
+						{
+							if (RoutePoolTemp[i].first == offspring->chromR[i])
+							{
+								repeatedRoute = true;
+								break;
+							}
+						}
+						if (!repeatedRoute)
+							RoutePoolTemp.push_back(std::make_pair(offspring->chromR[i], offspring->costChromR[i]));
+					}
+				}
+			}
+		}
+		else if (params->crossoverType == 5)
+		{
+			// Erase the memory if 1k iterations were not productive
 			if (nbIterNonProd % 1001 == 1000)
 				routePoolFrequency.clear();
 
@@ -133,6 +161,9 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 		{
 			population->restart();
 			nbIterNonProd = 1;
+
+			RoutePool.clear();
+			RoutePoolTemp.clear();
 		}
 	}
 
@@ -240,27 +271,23 @@ void Genetic::crossoverOX_fixRoute(Individual *result, const Individual *parent1
 	split->generalSplit(result, parent1->myCostSol.nbRoutes);
 }
 
-bool compareHeap(const std::pair<std::pair<int, int>, double> elem1, const std::pair<std::pair<int, int>, double> elem2)
+bool minHeapComparisonFn(const std::pair<std::pair<int, int>, double> &elem1, const std::pair<std::pair<int, int>, double> &elem2)
 {
 	return (elem1.second > elem2.second);
 }
 
 void Genetic::crossover_newOX(Individual *result, const Individual *parent1, const Individual *parent2)
 {
-
-	static int equalParents = 0;
-
+	//We avoid equal parents. At least we verify their cost
 	if (parent1->myCostSol.penalizedCost == parent2->myCostSol.penalizedCost)
 	{
-		int attempts = 0;
 		while (parent1->myCostSol.penalizedCost == parent2->myCostSol.penalizedCost)
 			parent2 = population->getBinaryTournament();
 	}
+
 	int bestI = -1, bestJ = -1;
 	double bestHeatIJ = 0.0;
-
 	std::vector<std::pair<std::pair<int, int>, double>> bestHeats;
-	// std::cout << "new OX" << std::endl;
 	for (auto elem : heat_map_stl)
 	{
 		bestHeatIJ = elem.second;
@@ -272,29 +299,30 @@ void Genetic::crossover_newOX(Individual *result, const Individual *parent1, con
 
 		//We ignore edges that are present in
 		if (parent1->predecessors[bestI] == bestJ || parent1->successors[bestI] == bestJ)
-		{
 			continue;
-		}
 		else if (parent2->predecessors[bestI] == bestJ || parent2->successors[bestI] == bestJ)
-		{
 			continue;
-		}
 
-		if (bestHeats.size() < params->nbClients * 0.05)
+		//Once the heap is not full, we keep inserting in it
+		if (bestHeats.size() < (int)(params->nbClients * 0.05))
 		{
 			bestHeats.push_back(std::make_pair(std::make_pair(bestI, bestJ), bestHeatIJ));
-			if (bestHeats.size() == params->nbClients * 0.05)
-				std::make_heap(bestHeats.begin(), bestHeats.end(), compareHeap);
+			//if the full size is reached, we construct the min-heap
+			if (bestHeats.size() == (int)(params->nbClients * 0.05))
+				std::make_heap(bestHeats.begin(), bestHeats.end(), minHeapComparisonFn);
 		}
 		else
 		{
+			//if the current element is more frequent than the less frequent element of the heap, which is the root
 			if (bestHeatIJ > (bestHeats.front()).second)
 			{
-				std::pop_heap(bestHeats.begin(), bestHeats.end(), compareHeap);
+				//We remove the root (minimum element)
+				std::pop_heap(bestHeats.begin(), bestHeats.end(), minHeapComparisonFn);
 				bestHeats.pop_back();
 
+				//We insert the current element appropriately into the heap (i.e., heapify) only using push_heap
 				bestHeats.push_back(std::make_pair(std::make_pair(bestI, bestJ), bestHeatIJ));
-				std::push_heap(bestHeats.begin(), bestHeats.end(), compareHeap);
+				std::push_heap(bestHeats.begin(), bestHeats.end(), minHeapComparisonFn);
 			}
 		}
 	}
@@ -305,11 +333,13 @@ void Genetic::crossover_newOX(Individual *result, const Individual *parent1, con
 		return;
 	}
 
+	// Get a random frequent edge
 	int randomPos = std::rand() % bestHeats.size();
 	bestI = bestHeats[randomPos].first.first;
 	bestJ = bestHeats[randomPos].first.second;
 	int start;
 
+	// Copy the first part of parent1 into offspring, including bestI (or bestJ)
 	std::vector<bool> freqClient = std::vector<bool>(params->nbClients + 1, false);
 	for (start = 0; start < parent1->chromT.size(); start++)
 	{
@@ -322,6 +352,7 @@ void Genetic::crossover_newOX(Individual *result, const Individual *parent1, con
 	if (parent1->chromT[start] == bestJ)
 		std::swap(bestI, bestJ);
 
+	//Then include bestJ (or bestI). For simplification, bestJ will always be the second element of the selected edge
 	result->chromT[start + 1] = bestJ;
 	freqClient[bestJ] = true;
 	int end;
@@ -330,6 +361,7 @@ void Genetic::crossover_newOX(Individual *result, const Individual *parent1, con
 		if (parent2->chromT[end] == bestJ)
 			break;
 	}
+
 	int j = start + 2;
 	// Fill the remaining elements in the order given by the second parent
 	for (int i = 1; i <= params->nbClients; i++)
@@ -357,13 +389,17 @@ void Genetic::petalAlgorithm(Individual *result, Population *pop)
 	CPXsetintparam(env, CPXPARAM_Read_DataCheck, CPX_DATACHECK_WARN); // Print warnings
 	CPXsetintparam(env, CPX_PARAM_MIPINTERVAL, 10000);				  // shows the log after every 10000 nodes
 	CPXsetintparam(env, CPX_PARAM_THREADS, 1);						  // number of threads
-	CPXsetdblparam(env, CPX_PARAM_TILIM, 0.2);
+	CPXsetdblparam(env, CPX_PARAM_TILIM, 60);
 	CPXsetintparam(env, CPX_PARAM_PRELINEAR, 0);
 	std::string str_problem_name = "setpartitioning_petal";
 	lp = CPXcreateprob(env, &status, str_problem_name.c_str()); // Create LP problem as a container
 	bool isAbort = false;
 
 	std::vector<std::vector<int>> incidenceVertex = std::vector<std::vector<int>>(params->nbClients + 1);
+
+	std::cout << "RoutePool.size(): " << RoutePool.size() << std::endl;
+	std::cout << "RoutePoolTemp.size(): " << RoutePoolTemp.size() << std::endl;
+
 	for (int i = 0; i < RoutePool.size(); i++)
 	{
 		for (int j = 0; j < RoutePool[i].first.size(); j++)
@@ -395,6 +431,23 @@ void Genetic::petalAlgorithm(Individual *result, Population *pop)
 		if (RoutePool[i].first.size() > longestIncidence)
 			longestIncidence = RoutePool[i].first.size();
 	}
+	for (int i = 0; i < RoutePoolTemp.size(); i++)
+	{
+		if (RoutePoolTemp[i].first.empty())
+		{
+			std::cout << "epaa" << std::endl;
+			exit(0);
+		}
+		xctypeX[0] = 'B';
+		sprintf(namesX[0], "_X(%d)", i);
+		costX[0] = RoutePoolTemp[i].second;
+		ubX[0] = 1.0;
+		lbX[0] = 0.0;
+		status = CPXnewcols(env, lp, 1, costX, lbX, ubX, xctypeX, namesX);
+
+		if (RoutePoolTemp[i].first.size() > longestIncidence)
+			longestIncidence = RoutePoolTemp[i].first.size();
+	}
 
 	double rhs[] = {1.0};
 	char sense[] = {'E'};
@@ -425,20 +478,28 @@ void Genetic::petalAlgorithm(Individual *result, Population *pop)
 	if (!isAbort)
 	{
 		status = CPXmipopt(env, lp); // Solving the model
+		std::cout << "CPXmipopt status: " << status << std::endl;
 		if (status)
 			std::cout << "Primal-SVM. Failed to solve problem. Status code: " << status << std::endl;
 
-		double *solution_set = new double[(int)(RoutePool.size())];
+		double *solution_set = new double[(int)(RoutePool.size() + RoutePoolTemp.size())];
 		double solValue = 0.0;
 		int solStatus = 0;
 		int returnStatus = CPXsolution(env, lp, &solStatus, &solValue, solution_set, NULL, NULL, NULL);
+		std::cout << "solStatus: " << solStatus << std::endl;
+		std::cout << "returnStatus: " << returnStatus << std::endl;
 		if (returnStatus)
 		{
 			isAbort = true;
 		}
-		if (solStatus == 103)
+		else if (solStatus == 103)
 		{
 			std::cout << "infeasible 103" << std::endl;
+			isAbort = true;
+		}
+		else if (solStatus == 107)
+		{
+			std::cout << "infeasible 107" << std::endl;
 			isAbort = true;
 		}
 		else if (solStatus == 108)
@@ -450,9 +511,10 @@ void Genetic::petalAlgorithm(Individual *result, Population *pop)
 		{
 			int posChromT = 0;
 			std::vector<bool> freqClient = std::vector<bool>(params->nbClients + 1, false);
-			for (int i = 0; i < RoutePool.size(); i++)
+			int solutionPos = 0;
+			for (int i = 0; i < RoutePool.size(); i++, solutionPos++)
 			{
-				if (solution_set[i] < 0.0001)
+				if (solution_set[solutionPos] < 0.0001)
 				{
 					continue;
 				}
@@ -462,6 +524,22 @@ void Genetic::petalAlgorithm(Individual *result, Population *pop)
 					{
 						result->chromT[posChromT++] = (RoutePool[i].first)[j];
 						freqClient[(RoutePool[i].first)[j]] = true;
+					}
+				}
+				nbRoutes++;
+			}
+			for (int i = 0; i < RoutePoolTemp.size(); i++, solutionPos++)
+			{
+				if (solution_set[solutionPos] < 0.0001)
+				{
+					continue;
+				}
+				for (int j = 0; j < RoutePoolTemp[i].first.size(); j++)
+				{
+					if (!freqClient[(RoutePoolTemp[i].first)[j]])
+					{
+						result->chromT[posChromT++] = (RoutePoolTemp[i].first)[j];
+						freqClient[(RoutePoolTemp[i].first)[j]] = true;
 					}
 				}
 				nbRoutes++;
@@ -480,7 +558,14 @@ void Genetic::petalAlgorithm(Individual *result, Population *pop)
 	}
 	if (!isAbort)
 	{
-		split->generalSplit(result, nbRoutes);
+		do
+		{
+			split->generalSplit(result, nbRoutes);
+			nbRoutes++;
+			if (nbRoutes > params->nbVehicles)
+				break;
+		} while (!result->isFeasible);
+		std::cout << "result cost: " << result->myCostSol.penalizedCost << "; isFeasible: " << result->isFeasible << std::endl;
 	}
 	else
 	{
@@ -883,137 +968,6 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 	}
 	else
 		result->evaluateCompleteCost();
-}
-
-void Genetic::crossover_heuristicOX(Individual *result, const Individual *parent1, const Individual *parent2)
-{
-	// Frequency table to track the customers which have been already inserted
-	std::vector<bool> freqClient = std::vector<bool>(params->nbClients + 1, false);
-
-	// Picking the beginning and end of the crossover zone
-	int start = std::rand() % params->nbClients;
-	int end = std::rand() % params->nbClients;
-	while (end == start)
-		end = std::rand() % params->nbClients;
-
-	// Copy in place the elements from start to end (possibly "wrapping around" the end of the array)
-	int j = start;
-	while (j % params->nbClients != (end + 1) % params->nbClients)
-	{
-		result->chromT[j % params->nbClients] = parent1->chromT[j % params->nbClients];
-		freqClient[result->chromT[j % params->nbClients]] = true;
-		j++;
-	}
-
-	// Fill the remaining elements in the order given by the second parent
-	for (int i = 1; i <= params->nbClients; i++)
-	{
-		int temp = parent2->chromT[(end + i) % params->nbClients];
-		if (freqClient[temp] == false)
-		{
-			result->chromT[j % params->nbClients] = temp;
-			j++;
-		}
-	}
-	static int toActivate = 0;
-	if (toActivate % 2001 == 2000)
-	{
-		std::cout << "heat_map activated;" << std::endl;
-		int bestI = -1, bestJ = -1;
-		double bestHeatIJ = 0.0;
-		std::vector<std::pair<std::pair<int, int>, double>> bestHeats;
-
-		int nbEdges = 0;
-		double cumSum = 0.0;
-		for (int i = 1; i <= params->nbClients; i++)
-		{
-			for (int j = i + 1; j <= params->nbClients; j++)
-			{
-				cumSum += heat_map[i][j];
-				nbEdges++;
-			}
-		}
-
-		cumSum = cumSum / nbEdges;
-
-		for (int i = 1; i <= params->nbClients; i++)
-		{
-			for (int j = i + 1; j <= params->nbClients; j++)
-			{
-				if (heat_map[i][j] >= cumSum)
-				{
-					bestHeatIJ = heat_map[i][j];
-					bestI = i;
-					bestJ = j;
-					bestHeats.push_back(std::make_pair(std::make_pair(bestI, bestJ), bestHeatIJ));
-				}
-			}
-		}
-
-		if (bestI != -1)
-		{
-			std::vector<int> randomIndexes = std::vector<int>(bestHeats.size());
-
-			for (int p = 0; p < randomIndexes.size(); p++)
-				randomIndexes[p] = p;
-
-			std::random_shuffle(randomIndexes.begin(), randomIndexes.end());
-			for (int p = 0; p < 1; p++)
-			{
-				bestI = bestHeats[randomIndexes[p]].first.first;
-				bestJ = bestHeats[randomIndexes[p]].first.second;
-
-				for (start = 0; start < result->chromT.size(); start++)
-				{
-					if (result->chromT[start] == bestI || result->chromT[start] == bestJ)
-						break;
-				}
-
-				if (bestI == result->chromT[start])
-				{
-					if (bestJ != result->chromT[start + 1])
-					{
-						for (int i = result->chromT.size() - 1; i > start + 1; i--)
-						{
-
-							if (result->chromT[i] == bestJ)
-							{
-								for (int j = i; j > start; j--)
-								{
-									result->chromT[j] = result->chromT[j - 1];
-								}
-								break;
-							}
-						}
-						result->chromT[start + 1] = bestJ;
-					}
-				}
-				else
-				{
-					if (bestI != result->chromT[start + 1])
-					{
-
-						for (int i = result->chromT.size() - 1; i > start + 1; i--)
-						{
-
-							if (result->chromT[i] == bestI)
-							{
-								for (int j = i; j > start; j--)
-								{
-									result->chromT[j] = result->chromT[j - 1];
-								}
-								break;
-							}
-						}
-						result->chromT[start + 1] = bestI;
-					}
-				}
-			}
-		}
-	}
-	toActivate++;
-	// Completing the individual with the Split algorithm
-	split->generalSplit(result, parent1->myCostSol.nbRoutes);
 }
 
 void Genetic::crossoverOX(Individual *result, const Individual *parent1, const Individual *parent2)

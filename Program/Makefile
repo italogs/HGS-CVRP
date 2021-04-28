@@ -2,12 +2,13 @@ SYSTEM     = x86-64_linux
 LIBFORMAT  = static_pic
 CCC = g++
 BASEFOLDER =  /opt/ibm/ILOG
-CPLEXVERSION = CPLEX_Studio201
+CPLEXVERSION = CPLEX_Studio129
 ifeq ($(myOS), MacOSX)
 	SYSTEM     = x86-64_osx
 	LIBFORMAT  = static_pic
 	CCC = clang++
 	BASEFOLDER = /Applications
+        CPLEXVERSION = CPLEX_Studio201
 endif
 
 CPLEXDIR       = $(BASEFOLDER)/$(CPLEXVERSION)/cplex

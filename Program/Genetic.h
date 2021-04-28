@@ -47,6 +47,7 @@ private:
 
 	std::map<std::pair<int,int>,int> heat_map_stl;
 	std::vector<std::pair<std::vector<int>,double>> RoutePool;
+	std::vector<std::pair<std::vector<int>,double>> RoutePoolTemp;
 	std::map<std::vector<int>,int> routePoolFrequency;
 
 	// OX Crossover
