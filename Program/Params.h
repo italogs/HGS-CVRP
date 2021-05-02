@@ -81,6 +81,9 @@ public:
 	std::vector < std::vector < double > > timeCost ;		// Distance matrix
 	std::vector < std::vector < int > > correlatedVertices;	// Neighborhood restrictions: For each client, list of nearby customers
 
+	std::vector<std::pair<std::vector<int>,double>> RoutePool;
+	std::vector<std::pair<std::vector<int>,double>> tempRoutePool;
+
 	// Initialization from a given data set
 	Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossoverType);
 };
