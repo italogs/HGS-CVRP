@@ -68,6 +68,8 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 					int lowest = std::min(offspring->chromR[i][j], offspring->chromR[i][j + 1]);
 					int highest = std::max(offspring->chromR[i][j], offspring->chromR[i][j + 1]);
 					heat_map_stl[std::make_pair(lowest, highest)]++;
+					if (isNewBest)
+						heat_map_stl[std::make_pair(lowest, highest)]++;
 				}
 			}
 
@@ -549,17 +551,17 @@ void Genetic::petalAlgorithm(Individual *result, Population *pop)
 		}
 		else if (solStatus == 103)
 		{
-			std::cout << "infeasible 103" << std::endl;
+			std::cout << "infeasible 103 CPXMIP_INFEASIBLE" << std::endl;
 			isAbort = true;
 		}
 		else if (solStatus == 107)
 		{
-			std::cout << "infeasible 107" << std::endl;
+			std::cout << "infeasible 107 CPXMIP_TIME_LIM_FEAS" << std::endl;
 			isAbort = true;
 		}
 		else if (solStatus == 108)
 		{
-			std::cout << "infeasible 108" << std::endl;
+			std::cout << "infeasible 108 CPXMIP_TIME_LIM_INFEAS" << std::endl;
 			isAbort = true;
 		}
 		else
