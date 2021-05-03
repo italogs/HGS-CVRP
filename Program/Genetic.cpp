@@ -310,32 +310,120 @@ void Genetic::crossover_newOX(Individual *result, const Individual *parent1, con
 	int randomPos = std::rand() % bestHeats.size();
 	bestI = bestHeats[randomPos].first.first;
 	bestJ = bestHeats[randomPos].first.second;
-	int start;
 
+	std::vector<int> segment = std::vector<int>(3);
+	bool completeSegment = false;
+	for (int i = 0; i < bestHeats.size(); i++)
+	{
+		if (i != randomPos)
+		{
+			if (bestHeats[i].first.first == bestI)
+			{
+				completeSegment = true;
+				segment[0] = bestHeats[i].first.second;
+				segment[1] = bestI;
+				segment[2] = bestJ;
+				break;
+			}
+			else if (bestHeats[i].first.second == bestI)
+			{
+				completeSegment = true;
+				segment[0] = bestHeats[i].first.first;
+				segment[1] = bestI;
+				segment[2] = bestJ;
+				break;
+			}
+			else if (bestHeats[i].first.first == bestJ)
+			{
+				completeSegment = true;
+				segment[0] = bestHeats[i].first.second;
+				segment[1] = bestJ;
+				segment[2] = bestI;
+				break;
+			}
+			else if (bestHeats[i].first.second == bestJ)
+			{
+				completeSegment = true;
+				segment[0] = bestHeats[i].first.first;
+				segment[1] = bestJ;
+				segment[2] = bestI;
+				break;
+			}
+		}
+	}
+
+	int start;
+	int j;
+	int end;
 	// Copy the first part of parent1 into offspring, including bestI (or bestJ)
 	std::vector<bool> freqClient = std::vector<bool>(params->nbClients + 1, false);
-	for (start = 0; start < parent1->chromT.size(); start++)
+	if (completeSegment)
 	{
-		result->chromT[start] = parent1->chromT[start];
-		freqClient[parent1->chromT[start]] = true;
-		if (parent1->chromT[start] == bestI || parent1->chromT[start] == bestJ)
-			break;
+		for (start = 0; start < parent1->chromT.size(); start++)
+		{
+			result->chromT[start] = parent1->chromT[start];
+			freqClient[parent1->chromT[start]] = true;
+
+			if (result->chromT[start] == segment[0])
+			{
+				result->chromT[++start] = segment[1];
+				freqClient[result->chromT[start]] = true;
+				result->chromT[++start] = segment[2];
+				freqClient[result->chromT[start]] = true;
+				break;
+			}
+			else if (result->chromT[start] == segment[1])
+			{
+				freqClient[result->chromT[start]] = false;
+				result->chromT[start] = segment[0];
+				freqClient[result->chromT[start]] = true;
+				result->chromT[++start] = segment[1];
+				freqClient[result->chromT[start]] = true;
+				result->chromT[++start] = segment[2];
+				freqClient[result->chromT[start]] = true;
+				break;
+			}
+			else if (result->chromT[start] == segment[2])
+			{
+				result->chromT[++start] = segment[1];
+				freqClient[result->chromT[start]] = true;
+				result->chromT[++start] = segment[0];
+				freqClient[result->chromT[start]] = true;
+				std::swap(segment[0], segment[2]);
+				break;
+			}
+		}
+		j = start + 1;
+		for (end = 0; end < parent1->chromT.size(); end++)
+		{
+			if (parent2->chromT[end] == segment[2])
+				break;
+		}
+	}
+	else
+	{
+		for (start = 0; start < parent1->chromT.size(); start++)
+		{
+			result->chromT[start] = parent1->chromT[start];
+			freqClient[parent1->chromT[start]] = true;
+			if (parent1->chromT[start] == bestI || parent1->chromT[start] == bestJ)
+				break;
+		}
+
+		if (parent1->chromT[start] == bestJ)
+			std::swap(bestI, bestJ);
+
+		//Then include bestJ (or bestI). For simplification, bestJ will always be the second element of the selected edge
+		result->chromT[start + 1] = bestJ;
+		freqClient[bestJ] = true;
+		j = start + 2;
+		for (end = 0; end < parent1->chromT.size(); end++)
+		{
+			if (parent2->chromT[end] == bestJ)
+				break;
+		}
 	}
 
-	if (parent1->chromT[start] == bestJ)
-		std::swap(bestI, bestJ);
-
-	//Then include bestJ (or bestI). For simplification, bestJ will always be the second element of the selected edge
-	result->chromT[start + 1] = bestJ;
-	freqClient[bestJ] = true;
-	int end;
-	for (end = 0; end < parent1->chromT.size(); end++)
-	{
-		if (parent2->chromT[end] == bestJ)
-			break;
-	}
-
-	int j = start + 2;
 	// Fill the remaining elements in the order given by the second parent
 	for (int i = 1; i <= params->nbClients; i++)
 	{
