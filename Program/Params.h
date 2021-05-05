@@ -35,7 +35,6 @@ SOFTWARE.*/
 #include <time.h>
 #include <climits>
 #include <algorithm>
-#include <unordered_set>
 #include <map>
 #define MY_EPSILON 0.00001 // Precision parameter, used to avoid numerical instabilities
 #define PI 3.14159265359
@@ -81,7 +80,7 @@ public:
 	std::vector < std::vector < double > > timeCost ;		// Distance matrix
 	std::vector < std::vector < int > > correlatedVertices;	// Neighborhood restrictions: For each client, list of nearby customers
 
-	std::vector<std::pair<std::vector<int>,double>> RoutePool;
+	std::vector<std::pair<std::vector<int>,int>> RoutePool;
 	std::vector<std::pair<std::vector<int>,double>> tempRoutePool;
 
 	// Initialization from a given data set
