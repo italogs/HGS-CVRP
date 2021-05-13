@@ -38,6 +38,7 @@ private:
 	Split * split;					// Split algorithm
 	Population * population;		// Population
 	LocalSearch * localSearch;		// Local Search structure
+	Mining * mining;				// Mining structure
 	Individual * offspring;			// First individual to be used as input for the crossover
 	
 	short int **GAB_A = NULL;				// EAX: ParentA edges
@@ -53,7 +54,7 @@ private:
 	void crossover_heuristicOX(Individual * result, const Individual * parent1, const Individual * parent2);
 	void crossover_newOX(Individual * result, const Individual * parent1, const Individual * parent2);
 	void crossoverOX_fixRoute(Individual *result, const Individual *parent1, const Individual *parent2);
-
+	void crossover_PILS(Individual *result, const Individual *parent1, const Individual *parent2);
 
 
 	// EAX Crossover
@@ -77,7 +78,7 @@ public:
     void run(int maxIterNonProd, unsigned long timeLimit) ;
 
 	// Constructor
-	Genetic(Params * params, Split * split, Population * population, LocalSearch * localSearch);
+	Genetic(Params * params, Split * split, Population * population, LocalSearch * localSearch, Mining * mining);
 
 	// Destructor
 	~Genetic(void);

@@ -13,6 +13,11 @@ void Population::generatePopulation()
 			localSearch->run(randomIndiv, params->penaltyCapacity*10., params->penaltyDuration*10.);
 			if (randomIndiv->isFeasible) addIndividual(randomIndiv, false);
 		}
+
+		// MINING SEQUENCE INFORMATION ON A PERCENTAGE OF THE LOCAL MINIMA
+		if (params->crossoverType == 7 && std::rand() % params->samplingRatioMining == 0)
+			mining->collect(randomIndiv);
+
 		delete randomIndiv;
 	}
 }
@@ -251,7 +256,7 @@ void Population::exportSearchProgress(std::string fileName, std::string instance
 		myfile << instanceName << ";" << seedRNG << ";" << state.second << ";" << (double)state.first / (double)CLOCKS_PER_SEC << std::endl;
 }
 
-Population::Population(Params * params, Split * split, LocalSearch * localSearch) : params(params), split(split), localSearch(localSearch)
+Population::Population(Params * params, Split * split, LocalSearch * localSearch, Mining *mining) : params(params), split(split), localSearch(localSearch), mining(mining)
 {
 	listFeasibilityLoad = std::list<bool>(100, true);
 	listFeasibilityDuration = std::list<bool>(100, true);

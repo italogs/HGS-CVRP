@@ -61,7 +61,20 @@ public:
 	int nbClose				= 5;		// Number of closest solutions/individuals considered when calculating diversity contribution
 	double targetFeasible   = 0.2;		// Reference proportion for the number of feasible individuals, used for the adaptation of the penalty parameters
 	int crossoverType       = 1;
-	
+
+
+	/* PARAMETERS OF THE PILS */
+	int minSeqMining;			    // Minimum size of the sequences used in the mining mechanism	
+	int maxSeqMining;			    // Maximum size of the sequences used in the mining mechanism
+	int samplingRatioMining;		// Fraction of (locally minimum) solutions mined will be 1/samplingRatioMining, to avoid overhead due to pattern extraction
+	double factorPatternMining;	// The number of "most frequent" sequences which will be tracked
+	double factorPatternTesting;	// The number of patterns which will be tested in each LS (eandomy selected in the set of factorPatternMining)
+	int settingPILS;				// PILS setting: OFF=0, BEFORE=1, AFTER=2, BEFORE&AFTER=3
+
+	/* STATISTICS COLLECTED ON THE RUN */
+	double totalExtractionTimePILS = 0.;
+	int totalExtractions = 0;
+
 	/* ADAPTIVE PENALTY COEFFICIENTS */
 	double penaltyCapacity;				// Penalty for one unit of capacity excess (adapted through the search)
 	double penaltyDuration;				// Penalty for one unit of duration excess (adapted through the search)

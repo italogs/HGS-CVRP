@@ -30,6 +30,10 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 		{
 			crossoverOX_fixRoute(offspring, population->getBinaryTournament(), population->getBinaryTournament());
 		}
+		else if (params->crossoverType == 7)
+		{
+			crossover_PILS(offspring, population->getBinaryTournament(), population->getBinaryTournament());
+		}
 		total_time_crossover += (clock() - crossover_start);
 
 		/* LOCAL SEARCH */
@@ -43,6 +47,11 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 				isNewBest = (population->addIndividual(offspring, false) || isNewBest);
 		}
 
+		// MINING SEQUENCE INFORMATION ON A PERCENTAGE OF THE LOCAL MINIMA
+		if (params->crossoverType == 7 && std::rand() % params->samplingRatioMining == 0)
+		{
+			mining->collect(offspring);
+		}
 		total_time_local_search += (clock() - local_search_start);
 
 		/* TRACKING THE NUMBER OF ITERATIONS SINCE LAST SOLUTION IMPROVEMENT */
@@ -960,6 +969,49 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 		result->evaluateCompleteCost();
 }
 
+void Genetic::crossover_PILS(Individual *result, const Individual *parent1, const Individual *parent2)
+{
+	// Frequency table to track the customers which have been already inserted
+	std::vector<bool> freqClient = std::vector<bool>(params->nbClients + 1, false);
+
+	int patternSize = std::rand() % (params->maxSeqMining - params->minSeqMining) + params->minSeqMining;
+	int patternIndex = std::rand() % ((int)(params->factorPatternTesting * (double)params->nbClients));
+	const std::vector<int> &sequence = mining->frequentSequence(patternSize, patternIndex); // Pattern which we want to inject
+
+	int start;
+	for (start = 0; start < params->nbClients; start++)
+	{
+		result->chromT[start] = parent1->chromT[start];
+		freqClient[parent1->chromT[start]] = true;
+		if (std::find(sequence.begin(), sequence.end(), parent1->chromT[start]) != sequence.end())
+			break;
+	}
+
+	// std::cout << "sequence.size(): " << sequence.size() << std::endl;
+	for (int i = 0; i < sequence.size(); i++)
+	{
+		// std::cout << sequence[i] << std::endl;
+		result->chromT[start] = sequence[i];
+		freqClient[sequence[i]] = true;
+		start++;
+	}
+	int j = start;
+	int end = start;
+	// Fill the remaining elements in the order given by the second parent
+	for (int i = 1; i <= params->nbClients; i++)
+	{
+		int temp = parent2->chromT[(end + i) % params->nbClients];
+		if (freqClient[temp] == false)
+		{
+			result->chromT[j % params->nbClients] = temp;
+			j++;
+		}
+	}
+
+	// Completing the individual with the Split algorithm
+	split->generalSplit(result, parent1->myCostSol.nbRoutes);
+}
+
 void Genetic::crossoverOX(Individual *result, const Individual *parent1, const Individual *parent2)
 {
 	// Frequency table to track the customers which have been already inserted
@@ -1091,7 +1143,7 @@ void Genetic::crossoverOX_fixRoute(Individual *result, const Individual *parent1
 	split->generalSplit(result, parent1->myCostSol.nbRoutes);
 }
 
-Genetic::Genetic(Params *params, Split *split, Population *population, LocalSearch *localSearch) : params(params), split(split), population(population), localSearch(localSearch)
+Genetic::Genetic(Params *params, Split *split, Population *population, LocalSearch *localSearch, Mining *mining) : params(params), split(split), population(population), localSearch(localSearch), mining(mining)
 {
 	namesX[0] = new char[100];
 
