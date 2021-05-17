@@ -68,8 +68,6 @@ public:
 	int maxSeqMining;			    // Maximum size of the sequences used in the mining mechanism
 	int samplingRatioMining;		// Fraction of (locally minimum) solutions mined will be 1/samplingRatioMining, to avoid overhead due to pattern extraction
 	double factorPatternMining;	// The number of "most frequent" sequences which will be tracked
-	double factorPatternTesting;	// The number of patterns which will be tested in each LS (eandomy selected in the set of factorPatternMining)
-	int settingPILS;				// PILS setting: OFF=0, BEFORE=1, AFTER=2, BEFORE&AFTER=3
 
 	/* STATISTICS COLLECTED ON THE RUN */
 	double totalExtractionTimePILS = 0.;
@@ -92,9 +90,6 @@ public:
 	std::vector < Client > cli ;							// Vector containing information on each client
 	std::vector < std::vector < double > > timeCost ;		// Distance matrix
 	std::vector < std::vector < int > > correlatedVertices;	// Neighborhood restrictions: For each client, list of nearby customers
-
-	std::vector<std::pair<std::vector<int>,int>> RoutePool;
-	std::vector<std::pair<std::vector<int>,double>> tempRoutePool;
 
 	// Initialization from a given data set
 	Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossoverType);

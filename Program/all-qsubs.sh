@@ -6,9 +6,9 @@ instances=(X-n101-k25 X-n106-k14 X-n110-k13 X-n115-k10 X-n120-k6 X-n125-k30 X-n1
 
 
 external_index=1
-for (( seed=1; seed <= 5; seed++));
+for (( index=${#instances[@]}-1; index >= 0; index--));
 do
-    for (( index=${#instances[@]}-1; index >= 0; index--));
+    for (( seed=1; seed <= 5; seed++));
     do
         timeLimit=${instances_time[$index]}
         crossover=3

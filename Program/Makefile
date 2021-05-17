@@ -1,38 +1,14 @@
-SYSTEM     = x86-64_linux
-LIBFORMAT  = static_pic
-CCC = g++
-BASEFOLDER =  /opt/ibm/ILOG
-CPLEXVERSION = CPLEX_Studio129
-ifeq ($(myOS), MacOSX)
-	SYSTEM     = x86-64_osx
-	LIBFORMAT  = static_pic
-	CCC = clang++
-	BASEFOLDER = /Applications
-        CPLEXVERSION = CPLEX_Studio201
-endif
-
-CPLEXDIR       = $(BASEFOLDER)/$(CPLEXVERSION)/cplex
-CONCERTDIR     = $(BASEFOLDER)/$(CPLEXVERSION)/concert
-
-CCOPT = -m64 -O3 -w -fPIC -fno-strict-aliasing -fexceptions -DNDEBUG -DIL_STD -std=c++11
-
-CPLEXLIBDIR   = $(CPLEXDIR)/lib/$(SYSTEM)/$(LIBFORMAT)
-CONCERTLIBDIR = $(CONCERTDIR)/lib/$(SYSTEM)/$(LIBFORMAT)
-CPLEXINCDIR   = $(CPLEXDIR)/include
-CONCERTINCDIR = $(CONCERTDIR)/include
-CCFLAGS = $(CCOPT) -I$(CONCERTINCDIR) -I$(CPLEXINCDIR) 
-CCLNDIRS  = -L$(CPLEXLIBDIR) -L$(CONCERTLIBDIR)
-CCLNFLAGS = -lconcert -lilocplex -lcplex -lm -pthread -ldl
-TARGETDIR = .
-
-
-
-
 all : genvrp
 
-# CCC = clang++
-# CCFLAGS = -O3 -Wall -std=c++11 
-# TARGETDIR=.
+CCC = g++
+ifeq ($(myOS), MacOSX)
+	CCC = clang++
+endif
+
+
+CCFLAGS = -O3 -Wall -std=c++11
+TARGETDIR=.
+CCLNDIRS=
 
 OBJS2 = \
         $(TARGETDIR)/main.o \

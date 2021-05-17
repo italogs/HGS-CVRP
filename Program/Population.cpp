@@ -15,7 +15,7 @@ void Population::generatePopulation()
 		}
 
 		// MINING SEQUENCE INFORMATION ON A PERCENTAGE OF THE LOCAL MINIMA
-		if (params->crossoverType == 7 && std::rand() % params->samplingRatioMining == 0)
+		if (params->crossoverType == 5 && std::rand() % params->samplingRatioMining == 0)
 			mining->collect(randomIndiv);
 
 		delete randomIndiv;

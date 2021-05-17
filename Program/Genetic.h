@@ -26,10 +26,6 @@ SOFTWARE.*/
 #include "Population.h"
 #include "Individual.h"
 
-#define ILOSTLBEGIN
-#include <ilcplex/ilocplex.h>
-
-
 class Genetic
 {
 private:
@@ -43,30 +39,17 @@ private:
 	
 	short int **GAB_A = NULL;				// EAX: ParentA edges
 	short int **GAB_B = NULL;				// EAX: ParentB edges
-	double **heat_map = NULL;				
-	bool usedHeatMap;
 
 	std::map<std::pair<int,int>,int> heat_map_stl;
-	std::map<std::vector<int>,int> routePoolFrequency;
 
 	// OX Crossover
 	void crossoverOX(Individual * result, const Individual * parent1, const Individual * parent2);
-	void crossover_heuristicOX(Individual * result, const Individual * parent1, const Individual * parent2);
-	void crossover_newOX(Individual * result, const Individual * parent1, const Individual * parent2);
-	void crossoverOX_fixRoute(Individual *result, const Individual *parent1, const Individual *parent2);
-	void crossover_PILS(Individual *result, const Individual *parent1, const Individual *parent2);
-
-
-	// EAX Crossover
 	void crossoverEAX(Individual *result, const Individual *parentA, const Individual *parentB);
-
-
-	void petalAlgorithm(Individual *result, Population *pop);
-
+	void crossover_newOX(Individual * result, const Individual * parent1, const Individual * parent2);
+	void crossover_PILS(Individual *result, const Individual *parent1, const Individual *parent2);
 
 public:
 
-	
 	double *costX = new double[1];
 	char *xctypeX = new char[1];
 	char **namesX = new char *[1];
