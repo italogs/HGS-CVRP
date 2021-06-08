@@ -90,6 +90,9 @@ public:
 	std::vector < Client > cli ;							// Vector containing information on each client
 	std::vector < std::vector < double > > timeCost ;		// Distance matrix
 	std::vector < std::vector < int > > correlatedVertices;	// Neighborhood restrictions: For each client, list of nearby customers
+	std::vector < std::vector < int > > closestVertices;	// lists of nearby costumers
+	std::vector < std::vector < int > > edgeFrequencyForCorrelatedVertices; // Tracks the frequency of edge (i,j)
+
 
 	// Initialization from a given data set
 	Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossoverType);

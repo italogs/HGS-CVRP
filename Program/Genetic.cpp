@@ -20,14 +20,17 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 		}
 		// type 3: two most-occurring adjacent edges are used
 		// type 4: it's a type 3 of three edges
-		else if (params->crossoverType == 3 || params->crossoverType == 4)
+		else if (params->crossoverType == 3 || params->crossoverType == 4 || params->crossoverType == 7 || params->crossoverType == 8)
 		{
 			crossover_newOX(offspring, population->getBinaryTournament(), population->getBinaryTournament());
 		}
-		// type 5: PILS for crossover 
-		else if (params->crossoverType == 5)
+		// type 5 and 6: PILS-like crossover
+		else if (params->crossoverType == 5 || params->crossoverType == 6)
 		{
-			crossover_PILS(offspring, population->getBinaryTournament(), population->getBinaryTournament());
+			if (params->crossoverType == 5 || (std::rand() % 2 == 0))
+				crossover_PILS(offspring, population->getBinaryTournament(), population->getBinaryTournament());
+			else
+				crossoverOX(offspring, population->getBinaryTournament(), population->getBinaryTournament());
 		}
 		total_time_crossover += (clock() - crossover_start);
 
@@ -51,19 +54,26 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 		else
 			nbIterNonProd++;
 
-		if (params->crossoverType == 3 || params->crossoverType == 4)
+		if (params->crossoverType == 3 || params->crossoverType == 4 || params->crossoverType == 7 || params->crossoverType == 8)
 		{
 			// Erase the memory each 1k iterations that were not productive
 			if (nbIterNonProd % 1001 == 1000)
 				heat_map_stl.clear();
 
-			for (int i = 0; i < offspring->chromR.size(); i++)
+			for (int i = 0; i < (int)offspring->chromR.size(); i++)
 			{
 				for (int j = 0; j < (int)offspring->chromR[i].size() - 1; j++)
+				{
 					heat_map_stl[std::make_pair(std::min(offspring->chromR[i][j], offspring->chromR[i][j + 1]), std::max(offspring->chromR[i][j], offspring->chromR[i][j + 1]))]++;
+					if (params->crossoverType == 7 || params->crossoverType == 8)
+					{
+						params->edgeFrequencyForCorrelatedVertices[offspring->chromR[i][j]][offspring->chromR[i][j + 1]]++;
+						params->edgeFrequencyForCorrelatedVertices[offspring->chromR[i][j + 1]][offspring->chromR[i][j]]++;
+					}
+				}
 			}
 		}
-		else if (params->crossoverType == 5 && std::rand() % params->samplingRatioMining == 0)
+		else if ((params->crossoverType == 5 || params->crossoverType == 6) && std::rand() % params->samplingRatioMining == 0)
 		{
 			mining->collect(offspring);
 		}
@@ -71,6 +81,43 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 		/* DIVERSIFICATION, PENALTY MANAGEMENT AND TRACES */
 		if (nbIter % 100 == 0)
 			population->managePenalties();
+
+		if (nbIter % 101 == 100 && (params->crossoverType == 7 || params->crossoverType == 8))
+		{
+			std::vector<std::pair<double, int>> mostFrequentVertices;
+			std::vector<bool> insertedVertices;
+			for (int i = 1; i <= params->nbClients; i++)
+			{
+				// For client i, we sort in descreasing order all clients on their appearing frequency in relation to i
+				mostFrequentVertices.clear();
+				for (int j = 1; j <= params->nbClients; j++)
+				{
+					if (params->edgeFrequencyForCorrelatedVertices[i][j] > 0 && i != j)
+						mostFrequentVertices.push_back(std::pair<int, int>(-params->edgeFrequencyForCorrelatedVertices[i][j], j));
+				}
+				std::sort(mostFrequentVertices.begin(), mostFrequentVertices.end());
+
+				// We reset the list of correlated vertices to insert the nbGranular most frequent vertices.
+				params->correlatedVertices[i].clear();
+				insertedVertices = std::vector<bool>(params->nbClients + 1, false);
+				for (int j = 0; j < mostFrequentVertices.size() && j < params->nbGranular; j++)
+				{
+					params->correlatedVertices[i].push_back(mostFrequentVertices[j].second);
+					insertedVertices[mostFrequentVertices[j].second] = true;
+				}
+				// In case where the size of this list is lower than nbGranular, we select complete it by increasing the most closest vertices
+				// We use vector to quickly check if a closestincidence in O(1)
+				if (params->crossoverType == 7 && params->correlatedVertices[i].size() < params->nbGranular)
+				{
+					for (int j = 0; j < params->closestVertices[i].size() && params->correlatedVertices[i].size() < params->nbGranular; j++)
+					{
+						if (!insertedVertices[params->closestVertices[i][j]])
+							params->correlatedVertices[i].push_back(params->closestVertices[i][j]);
+					}
+				}
+				params->edgeFrequencyForCorrelatedVertices[i] = std::vector<int>(params->nbClients + 1, 0);
+			}
+		}
 
 		if (nbIter % 500 == 0)
 			population->printState(nbIter, nbIterNonProd);
@@ -122,11 +169,11 @@ void Genetic::crossover_newOX(Individual *result, const Individual *parent1, con
 			continue;
 
 		//Once the heap is not full, we keep inserting in it
-		if (bestHeats.size() < maximumHeapSize)
+		if ((int)bestHeats.size() < maximumHeapSize)
 		{
 			bestHeats.push_back(elem);
 			//if the full size is reached, we construct the min-heap
-			if (bestHeats.size() == maximumHeapSize)
+			if ((int)bestHeats.size() == maximumHeapSize)
 				std::make_heap(bestHeats.begin(), bestHeats.end(), minHeapComparisonFn);
 		}
 		else
@@ -162,7 +209,7 @@ void Genetic::crossover_newOX(Individual *result, const Individual *parent1, con
 	std::vector<int> segment = std::vector<int>(3);
 	bool completeSegment = false;
 	int adjacentEdge = 0;
-	for (adjacentEdge = 0; adjacentEdge < bestHeats.size(); adjacentEdge++)
+	for (adjacentEdge = 0; adjacentEdge < (int)bestHeats.size(); adjacentEdge++)
 	{
 		if (adjacentEdge != centerEdge)
 		{
@@ -201,10 +248,10 @@ void Genetic::crossover_newOX(Individual *result, const Individual *parent1, con
 		}
 	}
 
-	// If type 4, we add another adjacent edge to segment
-	if (params->crossoverType == 4)
+	// If type 4, 7, and 8, we add another adjacent edge to segment
+	if (params->crossoverType == 4 || params->crossoverType == 7 || params->crossoverType == 8)
 	{
-		for (int adjacentEdge2 = 0; adjacentEdge2 < bestHeats.size(); adjacentEdge2++)
+		for (int adjacentEdge2 = 0; adjacentEdge2 < (int)bestHeats.size(); adjacentEdge2++)
 		{
 			if (adjacentEdge2 != centerEdge && adjacentEdge2 != adjacentEdge)
 			{
@@ -667,7 +714,7 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 
 					int route_id_first = vertexRoute[AB_cycles[selectedAB_cycles[i]][j].first.first];
 					int pos_id_first = 0;
-					for (pos_id_first = 0; pos_id_first < result->chromR[route_id_first].size(); pos_id_first++)
+					for (pos_id_first = 0; pos_id_first < (int)result->chromR[route_id_first].size(); pos_id_first++)
 					{
 						if (result->chromR[route_id_first][pos_id_first] == AB_cycles[selectedAB_cycles[i]][j].first.first)
 							break;
@@ -680,7 +727,7 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 
 					int route_id_second = vertexRoute[AB_cycles[selectedAB_cycles[i]][j].first.second];
 					int pos_id_second = 0;
-					for (pos_id_second = 0; pos_id_second < result->chromR[route_id_second].size(); pos_id_second++)
+					for (pos_id_second = 0; pos_id_second < (int)result->chromR[route_id_second].size(); pos_id_second++)
 					{
 						if (result->chromR[route_id_second][pos_id_second] == AB_cycles[selectedAB_cycles[i]][j].first.second)
 							break;
@@ -750,7 +797,7 @@ void Genetic::crossover_PILS(Individual *result, const Individual *parent1, cons
 	}
 
 	// std::cout << "sequence.size(): " << sequence.size() << std::endl;
-	for (int i = 0; i < sequence.size(); i++)
+	for (int i = 0; i < (int)sequence.size(); i++)
 	{
 		result->chromT[start] = sequence[i];
 		freqClient[sequence[i]] = true;

@@ -92,14 +92,24 @@ Params::Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossover
 
 	// Calculation of the correlated vertices for each customer (for the granular restriction)
 	correlatedVertices = std::vector < std::vector < int > >(nbClients + 1);
+	closestVertices = std::vector < std::vector < int > >(nbClients + 1);
+
 	std::vector < std::set < int > > setCorrelatedVertices = std::vector < std::set <int> >(nbClients + 1);
 	std::vector < std::pair <double, int> > orderProximity;
+	
+	edgeFrequencyForCorrelatedVertices = std::vector < std::vector <int> >(nbClients + 1);
+	for(int i = 0 ; i <= nbClients;i++)
+		edgeFrequencyForCorrelatedVertices[i] = std::vector<int> (nbClients, 0);
+
 	for (int i = 1; i <= nbClients; i++)
 	{
 		orderProximity.clear();
 		for (int j = 1; j <= nbClients; j++)
 			if (i != j) orderProximity.push_back(std::pair <double, int>(timeCost[i][j], j));
 		std::sort(orderProximity.begin(), orderProximity.end());
+
+		for (int j = 0; j < nbClients; j++)
+			closestVertices[i].push_back(orderProximity[j].second);
 
 		for (int j = 0; j < std::min<int>(nbGranular, nbClients - 1); j++)
 		{

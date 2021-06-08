@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 		Population population(&params, &split, &localSearch, &mining);
 
 		// Genetic algorithm
-		std::cout << "----- STARTING GENETIC ALGORITHM" << std::endl;
+		std::cout << "----- STARTING GENETIC ALGORITHM - CROSSOVER TYPE: " << params.crossoverType << std::endl;
 		Genetic solver(&params, &split, &population, &localSearch, &mining);
 		solver.run(commandline.nbIter, commandline.timeLimit);
 		std::cout << "----- GENETIC ALGORITHM FINISHED, TIME SPENT: " << (double)clock()/(double)CLOCKS_PER_SEC << std::endl;

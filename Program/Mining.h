@@ -126,7 +126,7 @@ public:
 			for (int r = 0; r < params->nbVehicles; r++) // Iterating on the routes of the current solution
 			{
 				std::vector<int> &myRoute = indiv->chromR[r];
-				for (int indexEnd = sequenceSize; indexEnd <= myRoute.size(); indexEnd++)
+				for (int indexEnd = sequenceSize; indexEnd <= (int)myRoute.size(); indexEnd++)
 				{
 					std::vector<int> mySequence(myRoute.begin() + indexEnd - sequenceSize, myRoute.begin() + indexEnd);
 					if (mySequence[0] > mySequence[sequenceSize - 1]) //Avoids that two symmetric patterns are inserted

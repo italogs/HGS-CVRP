@@ -1,3 +1,4 @@
 Program/*.o
 Program/genvrp
 Program/Solutions/*
+.vscode/settings.json

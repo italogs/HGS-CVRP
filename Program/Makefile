@@ -1,10 +1,6 @@
 all : genvrp
 
 CCC = g++
-ifeq ($(myOS), MacOSX)
-	CCC = clang++
-endif
-
 
 CCFLAGS = -O3 -Wall -std=c++11
 TARGETDIR=.
