@@ -99,7 +99,7 @@ Params::Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossover
 	
 	edgeFrequencyForCorrelatedVertices = std::vector < std::vector <int> >(nbClients + 1);
 	for(int i = 0 ; i <= nbClients;i++)
-		edgeFrequencyForCorrelatedVertices[i] = std::vector<int> (nbClients, 0);
+		edgeFrequencyForCorrelatedVertices[i] = std::vector<int> (nbClients + 1, 0);
 
 	for (int i = 1; i <= nbClients; i++)
 	{

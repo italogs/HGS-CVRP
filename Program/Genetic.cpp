@@ -82,10 +82,10 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 		if (nbIter % 100 == 0)
 			population->managePenalties();
 
-		if (nbIter % 101 == 100 && (params->crossoverType == 7 || params->crossoverType == 8))
+		if (nbIter % 501 == 500 && (params->crossoverType == 7 || params->crossoverType == 8))
 		{
 			std::vector<std::pair<double, int>> mostFrequentVertices;
-			std::vector<bool> insertedVertices;
+			std::vector<bool> insertedVertices = std::vector<bool>(params->nbClients + 1, false);
 			for (int i = 1; i <= params->nbClients; i++)
 			{
 				// For client i, we sort in descreasing order all clients on their appearing frequency in relation to i
@@ -94,28 +94,32 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 				{
 					if (params->edgeFrequencyForCorrelatedVertices[i][j] > 0 && i != j)
 						mostFrequentVertices.push_back(std::pair<int, int>(-params->edgeFrequencyForCorrelatedVertices[i][j], j));
+					insertedVertices[j] = false;
 				}
+				insertedVertices[0] = false;
 				std::sort(mostFrequentVertices.begin(), mostFrequentVertices.end());
 
 				// We reset the list of correlated vertices to insert the nbGranular most frequent vertices.
 				params->correlatedVertices[i].clear();
-				insertedVertices = std::vector<bool>(params->nbClients + 1, false);
-				for (int j = 0; j < mostFrequentVertices.size() && j < params->nbGranular; j++)
+				for (int j = 0; j < (int)mostFrequentVertices.size() && j < params->nbGranular; j++)
 				{
 					params->correlatedVertices[i].push_back(mostFrequentVertices[j].second);
 					insertedVertices[mostFrequentVertices[j].second] = true;
 				}
-				// In case where the size of this list is lower than nbGranular, we select complete it by increasing the most closest vertices
-				// We use vector to quickly check if a closestincidence in O(1)
-				if (params->crossoverType == 7 && params->correlatedVertices[i].size() < params->nbGranular)
+
+				// In case where the size of this list is lower than nbGranular, we complete it by increasing the most closest vertices
+				// We use vector to quickly check if its incidence in O(1)
+				if (params->crossoverType == 7 && (int)params->correlatedVertices[i].size() < params->nbGranular)
 				{
-					for (int j = 0; j < params->closestVertices[i].size() && params->correlatedVertices[i].size() < params->nbGranular; j++)
+					for (int j = 0; j < (int)params->closestVertices[i].size() && (int)params->correlatedVertices[i].size() < params->nbGranular; j++)
 					{
 						if (!insertedVertices[params->closestVertices[i][j]])
 							params->correlatedVertices[i].push_back(params->closestVertices[i][j]);
 					}
 				}
-				params->edgeFrequencyForCorrelatedVertices[i] = std::vector<int>(params->nbClients + 1, 0);
+
+				for (int j = 0; j <= params->nbClients; j++)
+					params->edgeFrequencyForCorrelatedVertices[i][j] = 0;
 			}
 		}
 
@@ -603,7 +607,7 @@ void Genetic::crossoverEAX(Individual *result, const Individual *parentA, const 
 	{
 		for (size_t i = 0; i < AB_cycles.size(); i++)
 		{
-			if (i == selectedAB_cycles[0])
+			if ((short)i == selectedAB_cycles[0])
 				continue;
 
 			for (size_t j = 0; j < AB_cycles[i].size(); j++)
