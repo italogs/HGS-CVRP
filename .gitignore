@@ -2,3 +2,12 @@ Program/*.o
 Program/genvrp
 Program/Solutions/*
 .vscode/settings.json
+
+Program/heatmap/logs/
+Program/heatmap/models/__pycache__/
+Program/heatmap/problems/vrp/lkh/
+Program/heatmap/problems/*/__pycache__/
+Program/heatmap/__pycache__/
+Program/heatmap/data/vrp/
+Program/heatmap/results/*
+Program/heatmap/utils/__pycache__/
