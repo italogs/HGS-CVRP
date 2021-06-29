@@ -43,6 +43,18 @@ config.val_filepath_solution = config.val_filepath_solution.replace("placeholder
 
 config.test_filepath = config.test_filepath.replace("placeholder",args.placeholder)
 config.test_filepath_solution = config.test_filepath_solution.replace("placeholder",args.placeholder)
+
+with open(("../../Instances/CVRP/"+args.placeholder), 'r') as f:
+        
+        for line in f:
+            # print(line)
+            if line.startswith("DIMENSION"):
+                dimension = int(line.split(" ")[-1])
+                config.num_nodes = dimension - 1
+                
+
+# config.num_nodes = dimension
+print(config)
 # print("Loaded {}:\n{}".format(config_path, config))
 
 

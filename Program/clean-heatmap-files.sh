@@ -3,7 +3,7 @@
 rm -rf heatmap/results/vrp/*
 rm -rf heatmap/data/vrp/*
 rm -rf heatmap/logs/*
-rm -rf heatmap/problems/vrp/lkh/
+# rm -rf heatmap/problems/vrp/lkh/
 rm -rf heatmap/problems/vrp/__pycache__/
 rm -rf heatmap/problems/tsp/__pycache__/
 

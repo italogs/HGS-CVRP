@@ -4,7 +4,7 @@ import argparse
 import torch
 from torch.autograd import Variable
 from torch import nn
-
+import numpy
 # Remove warning
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
