@@ -38,6 +38,7 @@ public:
 	std::string pathInstance;		// Instance path
 	std::string pathSolution;		// Solution path
 	std::string pathBKS = "";		// BKS path
+	int processDpdp = 0;		    // Process DPDP approach
 	int crossoverType = 1;			// Crossover type (OX=1;EAX=2)
 
 	// Reads the line of command and extracts possible options
@@ -66,6 +67,8 @@ public:
 					nbVeh = atoi(argv[i+1]);
 				else if (std::string(argv[i]) == "-crossover")
 					crossoverType = atoi(argv[i+1]);
+				else if (std::string(argv[i]) == "-processDpdp")
+					processDpdp = std::atoi(argv[i+1]);
 				else
 				{
 					std::cout << "----- ARGUMENT NOT RECOGNIZED: " << std::string(argv[i]) << std::endl;

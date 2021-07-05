@@ -24,6 +24,7 @@ SOFTWARE.*/
 #define PARAMS_H
 
 #include "CircleSector.h"
+#include "HeatmapWrapper.h"
 #include <string>
 #include <vector>
 #include <list>
@@ -62,6 +63,7 @@ public:
 	double targetFeasible   = 0.2;		// Reference proportion for the number of feasible individuals, used for the adaptation of the penalty parameters
 	int crossoverType       = 1;
 
+	HeatmapWrapper *heatmap = NULL;
 
 	/* PARAMETERS OF THE PILS */
 	int minSeqMining;			    // Minimum size of the sequences used in the mining mechanism	
@@ -95,7 +97,9 @@ public:
 
 
 	// Initialization from a given data set
-	Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossoverType);
+	Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossoverType, int processDpdp);
+
+	~Params(){delete heatmap;}
 };
 #endif
 

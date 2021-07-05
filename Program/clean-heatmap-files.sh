@@ -7,7 +7,7 @@ rm -rf heatmap/logs/*
 rm -rf heatmap/problems/vrp/__pycache__/
 rm -rf heatmap/problems/tsp/__pycache__/
 
-
+rm heatmap/*_bigtour.txt
 rm -rf heatmap/__pycache__/
 rm -rf heatmap/models/__pycache__/
 rm -rf heatmap/utils/__pycache__/

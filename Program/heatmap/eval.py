@@ -191,6 +191,12 @@ def print_statistics(results, opts):
     print("Costs (showing max 10): ", costs[:10])
     if len(tours) == 1:
         print("Tour", tours[0])
+
+    print("outfile " , opts.instance_name + "_bigtour.txt")
+    with open(opts.instance_name + "_bigtour.txt",'w') as f:
+        for x in tours[0]:
+            if str(x) != '0':
+                f.write(str(x) + " ")
     print("Average cost: {:.3f} +- {:.3f}".format(np.mean(costs), 2 * np.std(costs) / np.sqrt(len(costs))))
 
     avg_serial_duration, avg_parallel_duration, total_duration_parallel, total_duration_single_device, effective_batch_size = get_durations(
@@ -290,6 +296,11 @@ if __name__ == "__main__":
     assert opts.heatmap is None or len(opts.datasets) == 1, "With heatmap can only run one (corresponding) dataset"
     beam_sizes = opts.beam_size if opts.beam_size is not None else [0]
 
+    baseline = (opts.datasets[0].split("/")[-1])
+    index_vrp = baseline.find(".vrp")
+    opts.instance_name = baseline[:index_vrp+4]
+
+    # opts.datasets
     for beam_size in beam_sizes:
         for dataset_path in opts.datasets:
             eval_dataset(dataset_path, beam_size, opts)

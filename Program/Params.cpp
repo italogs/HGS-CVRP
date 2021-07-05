@@ -1,6 +1,6 @@
 #include "Params.h"
 
-Params::Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossoverType) : crossoverType(crossoverType), nbVehicles(nbVeh)
+Params::Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossoverType, int processDpdp) : crossoverType(crossoverType), nbVehicles(nbVeh)
 {
 	std::string content, content2, content3;
 	double serviceTimeData = 0.;
@@ -131,4 +131,8 @@ Params::Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossover
 	// A reasonable scale for the initial values of the penalties
 	penaltyDuration = 1;
 	penaltyCapacity = std::max<double>(0.1, std::min<double>(1000., maxDist / maxDemand));
+
+	heatmap = new HeatmapWrapper(pathToInstance);
+	if(processDpdp > 0)
+		heatmap->processBigTourDPDP();
 }

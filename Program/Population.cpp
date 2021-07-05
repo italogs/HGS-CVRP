@@ -5,6 +5,13 @@ void Population::generatePopulation()
 	for (int i = 0; i < 4*params->mu; i++)
 	{
 		Individual * randomIndiv = new Individual(params);
+
+		if(i == 0 && params->heatmap->validHeatmap)
+		{
+			for(int j = 0; j < randomIndiv->chromT.size(); j++)
+				randomIndiv->chromT[j] = params->heatmap->bigTourDPDP[j];
+		}
+
 		split->generalSplit(randomIndiv, params->nbVehicles);
 		localSearch->run(randomIndiv, params->penaltyCapacity, params->penaltyDuration);
 		addIndividual(randomIndiv, true);

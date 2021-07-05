@@ -3,6 +3,8 @@
 #include "LocalSearch.h"
 #include "Split.h"
 #include "Mining.h"
+#include "HeatmapWrapper.h"
+
 using namespace std;
 
 int main(int argc, char *argv[])
@@ -14,7 +16,7 @@ int main(int argc, char *argv[])
 
 		// Reading the data file and initializing some data structures
 		std::cout << "----- READING DATA SET: " << commandline.pathInstance << std::endl;
-		Params params(commandline.pathInstance, commandline.nbVeh, commandline.seed, commandline.crossoverType);
+		Params params(commandline.pathInstance, commandline.nbVeh, commandline.seed, commandline.crossoverType, commandline.processDpdp);
 
 		// Creating the Split and local search structures
 		Split split(&params);
