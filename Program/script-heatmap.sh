@@ -1,44 +1,22 @@
 #!/bin/bash
 
-
-time=400
-
 bash clean-heatmap-files.sh
-# make clean && make
+make clean && make
 
-seed=1
-instances=('X-n200-k36')
+mkdir Solutions
+
+instances_time=(240 252 262 274 286 298 307 319 331 341 353 365 374 386 398 410 420 432 444 454 466 478 487 499 511 523 533 545 557 566 578 590 600 612 624 636 646 658 670 679 691 703 713 725 737 749 758 770 782 792 804 823 840 859 878 900 919 941 960 984 1006 1027 1051 1075 1099 1123 1150 1176)
+instances=(X-n101-k25 X-n106-k14 X-n110-k13 X-n115-k10 X-n120-k6 X-n125-k30 X-n129-k18 X-n134-k13 X-n139-k10 X-n143-k7 X-n148-k46 X-n153-k22 X-n157-k13 X-n162-k11 X-n167-k10 X-n172-k51 X-n176-k26 X-n181-k23 X-n186-k15 X-n190-k8 X-n195-k51 X-n200-k36 X-n204-k19 X-n209-k16 X-n214-k11 X-n219-k73 X-n223-k34 X-n228-k23 X-n233-k16 X-n237-k14 X-n242-k48 X-n247-k50 X-n251-k28 X-n256-k16 X-n261-k13 X-n266-k58 X-n270-k35 X-n275-k28 X-n280-k17 X-n284-k15 X-n289-k60 X-n294-k50 X-n298-k31 X-n303-k21 X-n308-k13 X-n313-k71 X-n317-k53 X-n322-k28 X-n327-k20 X-n331-k15 X-n336-k84 X-n344-k43 X-n351-k40 X-n359-k29 X-n367-k17 X-n376-k94 X-n384-k52 X-n393-k38 X-n401-k29 X-n411-k19 X-n420-k130 X-n429-k61 X-n439-k37 X-n449-k29 X-n459-k26 X-n469-k138 X-n480-k70 X-n491-k59)
+
+
+external_index=1
 for (( index=${#instances[@]}-1; index >= 0; index--));
 do
-    cd heatmap 
-
-    # Generate training instance (read VRP uchoa isntance and put it into PKL)
-    python generate_data.py --name train --instance ../../Instances/CVRP/${instances[$index]}.vrp --seed 1 -f
-
-    # Generate example solutions for model
-    python -m problems.vrp.vrp_baseline lkh data/vrp/${instances[$index]}.vrp_train_seed1.pkl --no_cuda --disable_cache --lkh_seed 1 -f 
-    python -m problems.vrp.vrp_baseline lkh data/vrp/${instances[$index]}.vrp_train_seed1.pkl --no_cuda --disable_cache --lkh_seed 2 -f 
-    python -m problems.vrp.vrp_baseline lkh data/vrp/${instances[$index]}.vrp_train_seed1.pkl --no_cuda --disable_cache --lkh_seed 3 -f
-
-    # Train model
-    CUDA_VISIBLE_DEVICES=0,0 python main_vrp.py --config configs/vrp_configs.json --placeholder ${instances[$index]}.vrp
-
-    # Export heatmap
-    CUDA_VISIBLE_DEVICES=0,0 python export_heatmap.py --problem vrp --checkpoint logs/vrp_${instances[$index]}.vrp/best_val_loss_checkpoint.tar --instances data/vrp/${instances[$index]}.vrp_train_seed1.pkl -f --batch_size 1
-
-
-    CUDA_VISIBLE_DEVICES=0,0 python eval.py data/vrp/${instances[$index]}.vrp_train_seed1.pkl --problem cvrp --decode_strategy dpdp --score_function heatmap_potential --beam_size 10000 --heatmap_threshold 1e-5 --heatmap results/vrp/${instances[$index]}.vrp_train_seed1/heatmaps/heatmaps_vrp_${instances[$index]}.vrp.pkl -f
-    cd ..
-
-
-    # for ((seed=1; seed <= 1; seed++));
-    # do
-    #     crossover=1
-
-
-        
-    #     ./genvrp ../Instances/CVRP/${instances[$index]}.vrp testes/${instances[$index]}_crossover${crossover}_heap_optimized_seed${seed}_time${time}.sol -crossover ${crossover} -seed $seed -t ${time} #> testes/output_${instances[$index]}_crossover${crossover}_heap_optimized_seed${seed}_time${time}.txt &
-        
-    # done;
-    # wait
-done;
+    for (( seed=1; seed <= 5; seed++));
+    do
+        timeLimit=${instances_time[$index]}
+        crossover=1
+        qsub -V -v ARGS="./genvrp ../Instances/CVRP/${instances[$index]}.vrp Solutions/${instances[$index]}_crossover${crossover}_seed${seed}.sol -seed ${seed} -crossover ${crossover} -t $timeLimit -processDpdp 1",OUTPUT="Solutions/output_${instances[$index]}_crossover${crossover}_seed${seed}_processDpdp_1.txt" run_experiments.pbs
+        external_index=$((external_index+1))
+    done
+done

@@ -52,11 +52,8 @@ class HeatmapWrapper
             std::cout << "Step #4 - export heatmap." << res << std::endl; 
 
 
-            command = "cd heatmap/ && CUDA_VISIBLE_DEVICES=0,0 python eval.py data/vrp/" + instanceName + "_train_seed1.pkl --problem cvrp --decode_strategy dpdp --score_function heatmap_potential --beam_size 1000 --heatmap_threshold 1e-5 --heatmap results/vrp/" + instanceName + "_train_seed1/heatmaps/heatmaps_vrp_" + instanceName + ".pkl -f";
-            command = "cd heatmap/ && CUDA_VISIBLE_DEVICES=0,0 python eval.py data/vrp/" + instanceName + "_train_seed1.pkl --problem cvrp --decode_strategy dpdp --score_function heatmap_potential --beam_size 10 --heatmap_threshold 0 --heatmap results/vrp/" + instanceName + "_train_seed1/heatmaps/heatmaps_vrp_" + instanceName + ".pkl -f";
-
+            command = "cd heatmap/ && CUDA_VISIBLE_DEVICES=0,0 python eval.py data/vrp/" + instanceName + "_train_seed1.pkl --problem cvrp --decode_strategy dpdp --score_function heatmap_potential --beam_size 10000 --heatmap_threshold 1e-5 --heatmap results/vrp/" + instanceName + "_train_seed1/heatmaps/heatmaps_vrp_" + instanceName + ".pkl -f";
             res = system(command.c_str());
-            std::cout << command << std:: endl;
 
             std::cout << "Step #5 - execute DPDP." << res << std::endl; 
 
@@ -74,6 +71,7 @@ class HeatmapWrapper
                 std::cout << "Big Tour  ";
                 for(int i =0 ; i < this->bigTourDPDP.size() ; i++)
                     std::cout << this->bigTourDPDP[i] <<" ";
+                std::cout << std::endl;
             }
         }
 };
