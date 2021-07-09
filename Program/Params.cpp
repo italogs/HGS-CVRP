@@ -1,6 +1,6 @@
 #include "Params.h"
 
-Params::Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossoverType, int processDpdp) : crossoverType(crossoverType), nbVehicles(nbVeh)
+Params::Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossoverType, int processDpdp) : pathToInstance(pathToInstance), crossoverType(crossoverType), nbVehicles(nbVeh)
 {
 	std::string content, content2, content3;
 	double serviceTimeData = 0.;
@@ -65,6 +65,8 @@ Params::Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossover
 		if (content != "DEPOT_SECTION") throw std::string("Unexpected data in input file: " + content);
 		if (content2 != "1") throw std::string("Expected depot index 1 instead of " + content2);
 		if (content3 != "EOF") throw std::string("Unexpected data in input file: " + content3);
+
+		inputFile.close();
 	}
 	else
 		throw std::invalid_argument("Impossible to open instance file: " + pathToInstance);		
@@ -132,7 +134,4 @@ Params::Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossover
 	penaltyDuration = 1;
 	penaltyCapacity = std::max<double>(0.1, std::min<double>(1000., maxDist / maxDemand));
 
-	heatmap = new HeatmapWrapper(pathToInstance);
-	if(processDpdp > 0)
-		heatmap->processBigTourDPDP();
 }

@@ -24,16 +24,18 @@ int main(int argc, char *argv[])
 		// Creating the structure to mine frequent sequences
 		Mining mining(&params);
 
+		HeatmapWrapper heatmap(&params);
+
 		LocalSearch localSearch(&params);
 
 		// Initial population
 		std::cout << "----- INSTANCE LOADED WITH " << params.nbClients << " CLIENTS AND " << params.nbVehicles << " VEHICLES" << std::endl;
 		std::cout << "----- BUILDING INITIAL POPULATION" << std::endl;
-		Population population(&params, &split, &localSearch, &mining);
+		Population population(&params, &split, &localSearch, &mining, &heatmap);
 
 		// Genetic algorithm
 		std::cout << "----- STARTING GENETIC ALGORITHM - CROSSOVER TYPE: " << params.crossoverType << std::endl;
-		Genetic solver(&params, &split, &population, &localSearch, &mining);
+		Genetic solver(&params, &split, &population, &localSearch, &mining, &heatmap);
 		solver.run(commandline.nbIter, commandline.timeLimit);
 		std::cout << "----- GENETIC ALGORITHM FINISHED, TIME SPENT: " << (double)clock()/(double)CLOCKS_PER_SEC << std::endl;
 

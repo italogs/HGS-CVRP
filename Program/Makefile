@@ -13,7 +13,9 @@ OBJS2 = \
         $(TARGETDIR)/LocalSearch.o \
         $(TARGETDIR)/Params.o \
         $(TARGETDIR)/Population.o \
-        $(TARGETDIR)/Split.o
+        $(TARGETDIR)/Split.o \
+        $(TARGETDIR)/HeatmapWrapper.o
+        
 
 $(TARGETDIR)/genvrp: $(OBJS2)
 	$(CCC) $(CCFLAGS) $(CCLNDIRS) -o $(TARGETDIR)/genvrp $(OBJS2) $(CCLNFLAGS)
@@ -39,6 +41,9 @@ $(TARGETDIR)/Population.o: Population.h Population.cpp
 $(TARGETDIR)/Split.o: Split.h Split.cpp
 	$(CCC) $(CCFLAGS) -c Split.cpp -o $(TARGETDIR)/Split.o
 
+$(TARGETDIR)/HeatmapWrapper.o: HeatmapWrapper.h HeatmapWrapper.cpp
+	$(CCC) $(CCFLAGS) -c HeatmapWrapper.cpp -o $(TARGETDIR)/HeatmapWrapper.o
+
 test: genvrp
 	./genvrp ../Instances/CVRP/X-n101-k25.vrp mySolution.sol -seed 1 
 
@@ -51,5 +56,6 @@ clean:
     $(TARGETDIR)/Params.o \
     $(TARGETDIR)/Population.o \
     $(TARGETDIR)/Split.o \
+    $(TARGETDIR)/HeatmapWrapper.o \
     $(TARGETDIR)/genvrp
      

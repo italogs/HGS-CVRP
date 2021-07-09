@@ -6,12 +6,6 @@ void Population::generatePopulation()
 	{
 		Individual * randomIndiv = new Individual(params);
 
-		if(i == 0 && params->heatmap->validHeatmap)
-		{
-			for(int j = 0; j < randomIndiv->chromT.size(); j++)
-				randomIndiv->chromT[j] = params->heatmap->bigTourDPDP[j];
-		}
-
 		split->generalSplit(randomIndiv, params->nbVehicles);
 		localSearch->run(randomIndiv, params->penaltyCapacity, params->penaltyDuration);
 		addIndividual(randomIndiv, true);
@@ -263,7 +257,7 @@ void Population::exportSearchProgress(std::string fileName, std::string instance
 		myfile << instanceName << ";" << seedRNG << ";" << state.second << ";" << (double)state.first / (double)CLOCKS_PER_SEC << std::endl;
 }
 
-Population::Population(Params * params, Split * split, LocalSearch * localSearch, Mining *mining) : params(params), split(split), localSearch(localSearch), mining(mining)
+Population::Population(Params * params, Split * split, LocalSearch * localSearch, Mining *mining, HeatmapWrapper *heatmap) : params(params), split(split), localSearch(localSearch), mining(mining), heatmap(heatmap)
 {
 	listFeasibilityLoad = std::list<bool>(100, true);
 	listFeasibilityDuration = std::list<bool>(100, true);

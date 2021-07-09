@@ -155,7 +155,6 @@ def solve_lkh_log(executable, directory, name, depot, loc, demand, capacity,
             save_dataset((tour, duration), output_filename)
         else:
             raise Exception("No cached solution found")
-
         return calc_vrp_cost(depot, loc, tour), tour, duration
 
     except Exception as e:
@@ -289,7 +288,7 @@ def write_vrp_edges(filename, mask, num_depots=None):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("method", help="Name of the method to evaluate, 'lkh', 'dpdp' or 'dpbs'")
+    parser.add_argument("method", help="Name of the method to evaluate, 'hgs', 'lkh', 'dpdp' or 'dpbs'")
     parser.add_argument("datasets", nargs='+', help="Filename of the dataset(s) to evaluate")
     parser.add_argument("-f", action='store_true', help="Set true to overwrite")
     parser.add_argument("-o", default=None, help="Name of the results file to write")
@@ -325,11 +324,15 @@ if __name__ == "__main__":
     assert opts.heatmap is None or not opts.f or opts.o is not None, \
         "Must specify output filename when using heatmap with overwrite to prevent accidental overwrite"
 
+
+    lkh_seed_counter = 0
     for dataset_path in opts.datasets:
-        # print(dataset_path)
-        assert os.path.isfile(check_extension(dataset_path)), "File does not exist!"
+        print(dataset_path)
+       
+            # assert os.path.isfile(check_extension(dataset_path)), "File does not exist!"
 
         dataset_basename, ext = os.path.splitext(os.path.split(dataset_path)[-1])
+        print(" aqui")
 
         if opts.o is None:
             results_dir = os.path.join(opts.results_dir, "vrp", dataset_basename+"-lkh_seed" + opts.lkh_seed)
@@ -343,120 +346,134 @@ if __name__ == "__main__":
             ))
         else:
             out_file = opts.o
+        print(" aqui: ", out_file)
+
+
 
         assert opts.f or not os.path.isfile(
             out_file), "File already exists! Try running with -f option to overwrite."
+        if opts.method != 'hgs':
+            match = re.match(r'^([a-z_]+)(\d*)$', opts.method)
+            assert match
+            method = match[1]
+            runs = 1 if match[2] == '' else int(match[2])
+            if opts.o is None:
+                target_dir = os.path.join(results_dir, "{}-{}".format(
+                    dataset_basename,
+                    opts.method
+                ))
+            else:
+                target_dir, _ = os.path.splitext(opts.o)
+            assert opts.f or not os.path.isdir(target_dir), \
+                "Target dir already exists! Try running with -f option to overwrite."
 
-        match = re.match(r'^([a-z_]+)(\d*)$', opts.method)
-        assert match
-        method = match[1]
-        runs = 1 if match[2] == '' else int(match[2])
-        if opts.o is None:
-            target_dir = os.path.join(results_dir, "{}-{}".format(
-                dataset_basename,
-                opts.method
-            ))
-        else:
-            target_dir, _ = os.path.splitext(opts.o)
-        assert opts.f or not os.path.isdir(target_dir), \
-            "Target dir already exists! Try running with -f option to overwrite."
+            if not os.path.isdir(target_dir):
+                os.makedirs(target_dir)
 
-        if not os.path.isdir(target_dir):
-            os.makedirs(target_dir)
+            raw_dataset = load_dataset(dataset_path)
 
-        raw_dataset = load_dataset(dataset_path)
+            if opts.heatmap is not None:
+                heatmaps = load_heatmaps(opts.heatmap, symmetric=True)
+                if method == "lkh" or method == "lkhu":
+                    # Note heatmaps / sparse graphs with LKH do not work well
+                    # Only take each edge once (upper triangular part)
+                    rng_node = np.arange(heatmaps.shape[-1])
+                    triu_mask = (rng_node[None, None, :] > rng_node[None, :, None])
+                    heatmaps = heatmaps * triu_mask
 
-        if opts.heatmap is not None:
-            heatmaps = load_heatmaps(opts.heatmap, symmetric=True)
+                dataset = [(instance, hm) for instance, hm in zip(raw_dataset, heatmaps)]
+            else:
+                dataset = [(instance, None) for instance in raw_dataset]
+
             if method == "lkh" or method == "lkhu":
-                # Note heatmaps / sparse graphs with LKH do not work well
-                # Only take each edge once (upper triangular part)
-                rng_node = np.arange(heatmaps.shape[-1])
-                triu_mask = (rng_node[None, None, :] > rng_node[None, :, None])
-                heatmaps = heatmaps * triu_mask
+                executable = get_lkh_executable()
 
-            dataset = [(instance, hm) for instance, hm in zip(raw_dataset, heatmaps)]
-        else:
-            dataset = [(instance, None) for instance in raw_dataset]
+                use_multiprocessing = False
+                unlimited_routes = method == "lkhu"
+                lkh_seed_counter = lkh_seed_counter + 1
+                def run_func(args):
+                    directory, name, *args = args
+                    args, heatmap = args
+                    depot, loc, demand, capacity, *args = args
+                    grid_size = 1
+                    if len(args) > 0:
+                        depot_types, customer_types, grid_size = args
+                    
+                    return solve_lkh_log(
+                        executable,
+                        directory, name,
+                        depot, loc, demand, capacity, grid_size,
+                        mask=heatmap > opts.heatmap_threshold if heatmap is not None else None,
+                        runs=runs, unlimited_routes=unlimited_routes,
+                        disable_cache=opts.disable_cache,
+                        only_cache=opts.only_cache,
+                        lkh_seed=opts.lkh_seed
+                    )
+                    
 
-        if method == "lkh" or method == "lkhu":
-            executable = get_lkh_executable()
-
-            use_multiprocessing = False
-            unlimited_routes = method == "lkhu"
-
-            def run_func(args):
-                directory, name, *args = args
-                args, heatmap = args
-                depot, loc, demand, capacity, *args = args
-                grid_size = 1
-                if len(args) > 0:
-                    depot_types, customer_types, grid_size = args
-
-                return solve_lkh_log(
-                    executable,
-                    directory, name,
-                    depot, loc, demand, capacity, grid_size,
-                    mask=heatmap > opts.heatmap_threshold if heatmap is not None else None,
-                    runs=runs, unlimited_routes=unlimited_routes,
-                    disable_cache=opts.disable_cache,
-                    only_cache=opts.only_cache,
-                    lkh_seed=opts.lkh_seed
+                # Note: only processing n items is handled by run_all_in_pool
+                results, parallelism = run_all_in_pool(
+                    run_func,
+                    target_dir, dataset, opts, use_multiprocessing=use_multiprocessing,
                 )
+            elif method in ('dpdp', 'dpbs'):
+                import torch
+                use_cuda = torch.cuda.is_available() and not opts.no_cuda
+                device_count = torch.cuda.device_count() if use_cuda else 0
+                num_cpus = os.cpu_count() if opts.cpus is None else opts.cpus
+                assert device_count == 0 or num_cpus % device_count == 0, "Num cpus must be multiple of CUDA device count"
 
-            # Note: only processing n items is handled by run_all_in_pool
-            results, parallelism = run_all_in_pool(
-                run_func,
-                target_dir, dataset, opts, use_multiprocessing=use_multiprocessing,
-            )
-        elif method in ('dpdp', 'dpbs'):
-            import torch
-            use_cuda = torch.cuda.is_available() and not opts.no_cuda
-            device_count = torch.cuda.device_count() if use_cuda else 0
-            num_cpus = os.cpu_count() if opts.cpus is None else opts.cpus
-            assert device_count == 0 or num_cpus % device_count == 0, "Num cpus must be multiple of CUDA device count"
+                def run_func(args):
+                    device = torch.device('cuda:0' if use_cuda else 'cpu')
+                    if device_count > 1:
+                        from multiprocessing import current_process
+                        # identity is from 1 to num_cpus
+                        p = current_process()
+                        # Define device id from worker id
+                        device_id = (p._identity[0] - 1) % device_count
+                        device = torch.device(f'cuda:{device_id}')
 
-            def run_func(args):
-                device = torch.device('cuda:0' if use_cuda else 'cpu')
-                if device_count > 1:
-                    from multiprocessing import current_process
-                    # identity is from 1 to num_cpus
-                    p = current_process()
-                    # Define device id from worker id
-                    device_id = (p._identity[0] - 1) % device_count
-                    device = torch.device(f'cuda:{device_id}')
+                    # device, *args = args
+                    directory, name, *args = args
+                    args, heatmap = args
+                    depot, loc, demand, capacity, *args = args
+                    grid_size = 1
+                    if len(args) > 0:
+                        depot_types, customer_types, grid_size = args
+                    collapse = method == 'dpdp'
+                    evaluate_dp(depot, loc, demand, capacity, heatmap, opts.beam_size, collapse, opts.score_function,
+                                opts.heatmap_threshold, opts.knn, opts.verbose, device=device)
 
-                # device, *args = args
-                directory, name, *args = args
-                args, heatmap = args
-                depot, loc, demand, capacity, *args = args
-                grid_size = 1
-                if len(args) > 0:
-                    depot_types, customer_types, grid_size = args
-                collapse = method == 'dpdp'
-                evaluate_dp(depot, loc, demand, capacity, heatmap, opts.beam_size, collapse, opts.score_function,
-                            opts.heatmap_threshold, opts.knn, opts.verbose, device=device)
+                results, parallelism = run_all_in_pool(
+                    run_func,
+                    target_dir, dataset, opts, use_multiprocessing=num_cpus > 1,
+                )
+            else:
+                assert False, "Unknown method: {}".format(opts.method)
 
-            results, parallelism = run_all_in_pool(
-                run_func,
-                target_dir, dataset, opts, use_multiprocessing=num_cpus > 1,
-            )
-        else:
-            assert False, "Unknown method: {}".format(opts.method)
+            results_stat = results
+            if opts.allow_failure:
+                results_stat = [res for res in results if res is not None]
+                print("Failed {} of {} instances, only showing statistics for {} solved instances".format(len(results) - len(results_stat), len(results), len(results_stat)))
 
-        results_stat = results
-        if opts.allow_failure:
-            results_stat = [res for res in results if res is not None]
-            print("Failed {} of {} instances, only showing statistics for {} solved instances".format(len(results) - len(results_stat), len(results), len(results_stat)))
-
-        if len(results_stat) > 0:
-            costs, tours, durations = zip(*results_stat)  # Not really costs since they should be negative
-            print("Average cost: {} +- {}".format(np.mean(costs), 2 * np.std(costs) / np.sqrt(len(costs))))
-            print("Average serial duration: {} +- {}".format(
-                np.mean(durations), 2 * np.std(durations) / np.sqrt(len(durations))))
-            print("Average parallel duration: {}".format(np.mean(durations) / parallelism))
-            print("Calculated total duration: {}".format(timedelta(seconds=int(np.sum(durations) / parallelism))))
-        else:
-            print("Not printing statistics since no instances were solved")
+            if len(results_stat) > 0:
+                costs, tours, durations = zip(*results_stat)  # Not really costs since they should be negative
+                print("Average cost: {} +- {}".format(np.mean(costs), 2 * np.std(costs) / np.sqrt(len(costs))))
+                print("Average serial duration: {} +- {}".format(
+                    np.mean(durations), 2 * np.std(durations) / np.sqrt(len(durations))))
+                print("Average parallel duration: {}".format(np.mean(durations) / parallelism))
+                print("Calculated total duration: {}".format(timedelta(seconds=int(np.sum(durations) / parallelism))))
+            else:
+                print("Not printing statistics since no instances were solved")
+        elif opts.method in ('hgs'):
+            results = []
+            with open(dataset_path, 'r') as f:
+                lines = f.readlines()
+                for line in lines:
+                    temp = line.split()
+                    results.append((float(temp[0]), [int(x) for x in temp[1:]], 0.1))
+            parallelism = os.cpu_count() if opts.cpus is None else opts.cpus
+            # exit(0)
         # Save all results!
+        print("Results: ", (results, parallelism))
         save_dataset((results, parallelism), out_file)

@@ -1,16 +1,16 @@
 {
   "expt_name": "vrp_placeholder",
   
-  "train_filepath": "data/vrp/placeholder_train_seed1.pkl",
-  "train_filepath_solution": "results/vrp/placeholder_train_seed1-lkh_seed1/placeholder_train_seed1-lkh.pkl",
+  "train_filepath": "data/vrp/vrp100_train_seed1.pkl",
+  "train_filepath_solution": "results/vrp/vrp100_train_seed1-lkh_seed1/vrp100_train_seed1-lkh.pkl",
 
-  "val_filepath": "data/vrp/placeholder_train_seed1.pkl",
-  "val_filepath_solution": "results/vrp/placeholder_train_seed1-lkh_seed2/placeholder_train_seed1-lkh.pkl",
+  "val_filepath": "data/vrp/vrp100_validation_seed2.pkl",
+  "val_filepath_solution": "results/vrp/vrp100_validation_seed2-lkh_seed2/vrp100_validation_seed2-lkh.pkl",
   
-  "test_filepath": "data/vrp/placeholder_train_seed1.pkl",
-  "test_filepath_solution": "results/vrp/placeholder_train_seed1-lkh_seed3/placeholder_train_seed1-lkh.pkl",
+  "test_filepath": "data/vrp/X-n101-k25.vrp_test_seed3.pkl",
+  "test_filepath_solution": "results/vrp/X-n101-k25.vrp_test-lkh_seed3/X-n101-k25.vrp_test-hgs.txt.pkl",
 
-  "num_nodes": 105,
+  "num_nodes": 100,
   "num_neighbors": -1,
     
   "node_dim": 3,

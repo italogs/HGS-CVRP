@@ -132,6 +132,16 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 			population->restart();
 			nbIterNonProd = 1;
 		}
+
+
+		if(nbIter == 500)
+		{
+
+			heatmap->processBigTourDPDP(population);
+			exit(0);
+		}
+
+
 	}
 
 	std::cout << "nbIter: " << nbIter << std::endl;
@@ -859,7 +869,7 @@ void Genetic::crossoverOX(Individual *result, const Individual *parent1, const I
 	split->generalSplit(result, parent1->myCostSol.nbRoutes);
 }
 
-Genetic::Genetic(Params *params, Split *split, Population *population, LocalSearch *localSearch, Mining *mining) : params(params), split(split), population(population), localSearch(localSearch), mining(mining)
+Genetic::Genetic(Params *params, Split *split, Population *population, LocalSearch *localSearch, Mining *mining, HeatmapWrapper *heatmap) : params(params), split(split), population(population), localSearch(localSearch), mining(mining), heatmap(heatmap)
 {
 	namesX[0] = new char[100];
 

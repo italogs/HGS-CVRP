@@ -120,6 +120,7 @@ bool Individual::readCVRPLibFormat(std::string fileName, std::vector<std::vector
 		else std::cout << "----- UNEXPECTED WORD IN SOLUTION FORMAT: " << inputString << std::endl;
 	}
 	else std::cout << "----- IMPOSSIBLE TO OPEN: " << fileName << std::endl;
+	inputFile.close();
 	return false;
 }
 
