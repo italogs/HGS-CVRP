@@ -24,9 +24,10 @@ int main(int argc, char *argv[])
 		// Creating the structure to mine frequent sequences
 		Mining mining(&params);
 
-		HeatmapWrapper heatmap(&params);
 
 		LocalSearch localSearch(&params);
+
+		HeatmapWrapper heatmap(&params,&split, &localSearch, &mining);
 
 		// Initial population
 		std::cout << "----- INSTANCE LOADED WITH " << params.nbClients << " CLIENTS AND " << params.nbVehicles << " VEHICLES" << std::endl;

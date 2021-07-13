@@ -164,7 +164,7 @@ def eval_dataset(dataset_path, beam_size, opts):
     assert opts.f or not os.path.isfile(
         out_file), "File already exists! Try running with -f option to overwrite."
 
-    print(out_file)
+    # print(out_file)
     # Save the options so we can recall everything
     save_dataset((results, opts), out_file)
 

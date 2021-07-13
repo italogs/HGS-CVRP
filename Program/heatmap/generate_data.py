@@ -162,13 +162,13 @@ if __name__ == "__main__":
                     else:
                         assert False, "Unknown problem: {}".format(problem)
 
-                    print(dataset)
+                    # print(dataset)
 
                     save_dataset(dataset, filename)
         else:
             opts.instance_basename = opts.instance.split('/')[-1]
-            print(opts.instance)
-            print(opts.instance_basename)
+            # print(opts.instance)
+            # print(opts.instance_basename)
             datadir = os.path.join(opts.data_dir, problem)
             os.makedirs(datadir, exist_ok=True)
     
@@ -182,7 +182,7 @@ if __name__ == "__main__":
             dataset = []
             for i in range(0,opts.dataset_size):
                 dataset.append(read_uchoa_vrp_data(opts.instance)[0])
-            print(dataset)
+            # print(dataset)
             save_dataset(dataset, filename)
 
 

@@ -1,14 +1,14 @@
 {
   "expt_name": "vrp_placeholder",
   
-  "train_filepath": "data/vrp/vrp100_train_seed1.pkl",
-  "train_filepath_solution": "results/vrp/vrp100_train_seed1-lkh_seed1/vrp100_train_seed1-lkh.pkl",
+  "train_filepath": "data/vrp/X-n106-k14.vrp_train_seed1.pkl",
+  "train_filepath_solution": "results/vrp/X-n106-k14.vrp_train-lkh_seed1/X-n106-k14.vrp_train-hgs.txt.pkl",
 
-  "val_filepath": "data/vrp/vrp100_validation_seed2.pkl",
-  "val_filepath_solution": "results/vrp/vrp100_validation_seed2-lkh_seed2/vrp100_validation_seed2-lkh.pkl",
-  
-  "test_filepath": "data/vrp/X-n101-k25.vrp_test_seed3.pkl",
-  "test_filepath_solution": "results/vrp/X-n101-k25.vrp_test-lkh_seed3/X-n101-k25.vrp_test-hgs.txt.pkl",
+  "val_filepath": "data/vrp/X-n106-k14.vrp_validation_seed2.pkl",
+  "val_filepath_solution": "results/vrp/X-n106-k14.vrp_validation-lkh_seed2/X-n106-k14.vrp_validation-hgs.txt.pkl",
+
+  "test_filepath": "data/vrp/X-n106-k14.vrp_test_seed3.pkl",
+  "test_filepath_solution": "results/vrp/X-n106-k14.vrp_test-lkh_seed3/X-n106-k14.vrp_test-hgs.txt.pkl",
 
   "num_nodes": 100,
   "num_neighbors": -1,
@@ -21,13 +21,13 @@
 
   "beam_size": 1,
 
-  "hidden_dim": 300,
+  "hidden_dim": 100,
   "num_layers": 30,
   "mlp_layers": 3,
   "aggregation": "mean",
 
-  "max_epochs": 5,
-  "val_every": 5,
+  "max_epochs": 10,
+  "val_every": 3,
   "test_every": 5,
 
   "batch_size": 1,

@@ -134,11 +134,11 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 		}
 
 
-		if(nbIter == 500)
+		if(nbIter % 10001 == 10000)
 		{
 
-			heatmap->processBigTourDPDP(population);
-			exit(0);
+			// heatmap->processBigTourDPDP(population);
+			// exit(0);
 		}
 
 

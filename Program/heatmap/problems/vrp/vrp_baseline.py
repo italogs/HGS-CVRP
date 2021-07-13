@@ -327,12 +327,11 @@ if __name__ == "__main__":
 
     lkh_seed_counter = 0
     for dataset_path in opts.datasets:
-        print(dataset_path)
+        # print(dataset_path)
        
             # assert os.path.isfile(check_extension(dataset_path)), "File does not exist!"
 
         dataset_basename, ext = os.path.splitext(os.path.split(dataset_path)[-1])
-        print(" aqui")
 
         if opts.o is None:
             results_dir = os.path.join(opts.results_dir, "vrp", dataset_basename+"-lkh_seed" + opts.lkh_seed)
@@ -346,9 +345,6 @@ if __name__ == "__main__":
             ))
         else:
             out_file = opts.o
-        print(" aqui: ", out_file)
-
-
 
         assert opts.f or not os.path.isfile(
             out_file), "File already exists! Try running with -f option to overwrite."
@@ -475,5 +471,5 @@ if __name__ == "__main__":
             parallelism = os.cpu_count() if opts.cpus is None else opts.cpus
             # exit(0)
         # Save all results!
-        print("Results: ", (results, parallelism))
+        # print("Results:", (results, parallelism))
         save_dataset((results, parallelism), out_file)

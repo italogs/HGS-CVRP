@@ -1,13 +1,17 @@
 #!/bin/bash
 
 
-time=10
+time=200
 bash clean-heatmap-files.sh
+
+
 make clean && make
 
 seed=1
 instances=(X-n106-k14 X-n153-k22 X-n670-k130 X-n766-k71 X-n819-k171 X-n856-k95 X-n936-k151 X-n1001-k43)
-instances=(X-n101-k25)
+instances=(X-n101-k25 )
+instances=(X-n106-k14)
+
 for (( index=${#instances[@]}-1; index >= 0; index--));
 do
     for ((seed=1; seed <= 1; seed++));

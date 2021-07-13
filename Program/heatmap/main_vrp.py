@@ -54,7 +54,7 @@ with open(("../../Instances/CVRP/"+args.placeholder), 'r') as f:
                 
 
 # config.num_nodes = dimension
-print(config)
+# print(config)
 # print("Loaded {}:\n{}".format(config_path, config))
 
 
