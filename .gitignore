@@ -14,4 +14,8 @@ Program/heatmap/data/vrp/
 Program/heatmap/results/*
 Program/heatmap/utils/__pycache__/
 Program/heatmap/*_bigtour.txt
+Program/heatmap/output_*.txt
 Program/heatmap/dp/__pycache__/
+Program/heatmap/problems/__init__.pyc
+Program/heatmap/problems/*/*.pyc
+Program/heatmap/utils/*.pyc

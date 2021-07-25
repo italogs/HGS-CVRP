@@ -133,15 +133,12 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 			nbIterNonProd = 1;
 		}
 
-
-		if(nbIter % 10001 == 10000)
+		if (nbIter % 20001 == 20000)
 		{
-
+			heatmap->processDPDP_Val_Test(population);
 			// heatmap->processBigTourDPDP(population);
-			// exit(0);
+			// heatmap->inputSolutionFromDPDP(population);
 		}
-
-
 	}
 
 	std::cout << "nbIter: " << nbIter << std::endl;

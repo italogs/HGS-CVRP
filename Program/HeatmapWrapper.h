@@ -10,25 +10,32 @@
 #include "Params.h"
 #include "Population.h"
 #include "Individual.h"
-class Population; 
+class Population;
 class Individual;
 class HeatmapWrapper
-{    
-    private:
-        Params *params;
-        Split * split;								// Split algorithm
-        LocalSearch * localSearch;					// Local search structure
-        Mining * mining;								// Mining structure
-    public:
-        std::vector<int> bigTourDPDP;
-        std::string instanceName;
- 
-        HeatmapWrapper(Params *params, Split *split, LocalSearch *localSearch, Mining *mining) : params(params), split(split), localSearch(localSearch), mining(mining) 
-        {
-            instanceName = params->pathToInstance.substr(params->pathToInstance.find_last_of("/\\") + 1);
-        }
+{
+private:
+    Params *params;
+    Split *split;             // Split algorithm
+    LocalSearch *localSearch; // Local search structure
+    Mining *mining;           // Mining structure
+public:
+    std::vector<int> bigTourDPDP;
+    std::string instanceName;
+    bool trainedModel;
 
-        void processBigTourDPDP(Population *&pop);
+    HeatmapWrapper(Params *params, Split *split, LocalSearch *localSearch, Mining *mining) : params(params), split(split), localSearch(localSearch), mining(mining)
+    {
+        instanceName = params->pathToInstance.substr(params->pathToInstance.find_last_of("/\\") + 1);
+        this->trainedModel = false;
+    }
 
+    void processBigTourDPDP(Population *&pop);
+
+    void inputSolutionFromDPDP(Population *&pop);
+
+    void processDPDP_Val_Test(Population *&pop);
+
+    void trainModel();
 };
 #endif

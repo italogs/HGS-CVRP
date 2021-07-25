@@ -1,16 +1,16 @@
 {
   "expt_name": "vrp_placeholder",
   
-  "train_filepath": "data/vrp/X-n106-k14.vrp_train_seed1.pkl",
-  "train_filepath_solution": "results/vrp/X-n106-k14.vrp_train-lkh_seed1/X-n106-k14.vrp_train-hgs.txt.pkl",
+  "train_filepath": "data/vrp/placeholder_train_seed1.pkl",
+  "train_filepath_solution": "results/vrp/placeholder_train-lkh_seed1/placeholder_train-hgs.txt.pkl",
 
-  "val_filepath": "data/vrp/X-n106-k14.vrp_validation_seed2.pkl",
-  "val_filepath_solution": "results/vrp/X-n106-k14.vrp_validation-lkh_seed2/X-n106-k14.vrp_validation-hgs.txt.pkl",
+  "val_filepath": "data/vrp/placeholder_validation_seed2.pkl",
+  "val_filepath_solution": "results/vrp/placeholder_validation-lkh_seed2/placeholder_validation-hgs.txt.pkl",
 
-  "test_filepath": "data/vrp/X-n106-k14.vrp_test_seed3.pkl",
-  "test_filepath_solution": "results/vrp/X-n106-k14.vrp_test-lkh_seed3/X-n106-k14.vrp_test-hgs.txt.pkl",
+  "test_filepath": "data/vrp/placeholder_test_seed3.pkl",
+  "test_filepath_solution": "results/vrp/placeholder_test-lkh_seed3/placeholder_test-hgs.txt.pkl",
 
-  "num_nodes": 100,
+  "num_nodes": 105,
   "num_neighbors": -1,
     
   "node_dim": 3,
@@ -21,7 +21,7 @@
 
   "beam_size": 1,
 
-  "hidden_dim": 100,
+  "hidden_dim": 300,
   "num_layers": 30,
   "mlp_layers": 3,
   "aggregation": "mean",

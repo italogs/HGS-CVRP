@@ -28,33 +28,34 @@ from models.gcn_model_vrp import ResidualGatedGCNModelVRP
 
 parser = argparse.ArgumentParser(description='gcn_tsp_parser')
 parser.add_argument('-c','--config', type=str, default="configs/default.json")
-parser.add_argument('--placeholder', help='Placeholder for config json')
+parser.add_argument('--placeholder', default=None, help='Placeholder for config json')
 
 args = parser.parse_args()
 config_path = args.config
 
 config = get_config(config_path)
-config.expt_name = config.expt_name.replace("placeholder",args.placeholder)
-config.train_filepath = config.train_filepath.replace("placeholder",args.placeholder)
-config.train_filepath_solution = config.train_filepath_solution.replace("placeholder",args.placeholder)
+if args.placeholder is not(None):
+    config.expt_name = config.expt_name.replace("placeholder",args.placeholder)
+    config.train_filepath = config.train_filepath.replace("placeholder",args.placeholder)
+    config.train_filepath_solution = config.train_filepath_solution.replace("placeholder",args.placeholder)
 
-config.val_filepath = config.val_filepath.replace("placeholder",args.placeholder)
-config.val_filepath_solution = config.val_filepath_solution.replace("placeholder",args.placeholder)
+    config.val_filepath = config.val_filepath.replace("placeholder",args.placeholder)
+    config.val_filepath_solution = config.val_filepath_solution.replace("placeholder",args.placeholder)
 
-config.test_filepath = config.test_filepath.replace("placeholder",args.placeholder)
-config.test_filepath_solution = config.test_filepath_solution.replace("placeholder",args.placeholder)
+    config.test_filepath = config.test_filepath.replace("placeholder",args.placeholder)
+    config.test_filepath_solution = config.test_filepath_solution.replace("placeholder",args.placeholder)
 
-with open(("../../Instances/CVRP/"+args.placeholder), 'r') as f:
-        
-        for line in f:
-            # print(line)
-            if line.startswith("DIMENSION"):
-                dimension = int(line.split(" ")[-1])
-                config.num_nodes = dimension - 1
+    with open(("../../Instances/CVRP/"+args.placeholder), 'r') as f:
+            
+            for line in f:
+                # print(line)
+                if line.startswith("DIMENSION"):
+                    dimension = int(line.split(" ")[-1])
+                    config.num_nodes = dimension - 1
                 
 
 # config.num_nodes = dimension
-# print(config)
+print(config)
 # print("Loaded {}:\n{}".format(config_path, config))
 
 
