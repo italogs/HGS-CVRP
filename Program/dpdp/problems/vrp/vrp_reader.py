@@ -100,8 +100,6 @@ class VRPReader(object):
             depot = np.array(depot, dtype=float) / grid_size
 
             num_nodes = len(loc)
-            print(num_nodes)
-            print(self.num_nodes)
             assert num_nodes == self.num_nodes
 
             # loc = torch.tensor(loc, dtype=torch.float) / grid_size

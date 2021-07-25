@@ -4,7 +4,7 @@ import argparse
 import torch
 from torch.autograd import Variable
 from torch import nn
-import numpy
+
 # Remove warning
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -160,8 +160,5 @@ device_count = torch.cuda.device_count() if torch.cuda.is_available() else 0
 print("Took", timedelta(seconds=int(duration)), "s on ", device_count, "GPUs")
 heatmaps = torch.cat(all_prob_preds, 0)
 os.makedirs(heatmap_dir, exist_ok=True)
-
-np_heatmaps = heatmaps.numpy()
-
 save_dataset((heatmaps.numpy(), {'duration': duration, 'device_count': device_count, 'args': args}), heatmap_filename)
-print("Saved", len(heatmaps), "heatmaps for", len(heatmaps[0]), "nodes to", heatmap_filename)
+print("Saved", len(heatmaps), "heatmaps to", heatmap_filename)

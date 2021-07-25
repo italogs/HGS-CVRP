@@ -28,35 +28,11 @@ from models.gcn_model_vrp import ResidualGatedGCNModelVRP
 
 parser = argparse.ArgumentParser(description='gcn_tsp_parser')
 parser.add_argument('-c','--config', type=str, default="configs/default.json")
-parser.add_argument('--placeholder', default=None, help='Placeholder for config json')
-
 args = parser.parse_args()
 config_path = args.config
 
 config = get_config(config_path)
-if args.placeholder is not(None):
-    config.expt_name = config.expt_name.replace("placeholder",args.placeholder)
-    config.train_filepath = config.train_filepath.replace("placeholder",args.placeholder)
-    config.train_filepath_solution = config.train_filepath_solution.replace("placeholder",args.placeholder)
-
-    config.val_filepath = config.val_filepath.replace("placeholder",args.placeholder)
-    config.val_filepath_solution = config.val_filepath_solution.replace("placeholder",args.placeholder)
-
-    config.test_filepath = config.test_filepath.replace("placeholder",args.placeholder)
-    config.test_filepath_solution = config.test_filepath_solution.replace("placeholder",args.placeholder)
-
-    with open(("../../Instances/CVRP/"+args.placeholder), 'r') as f:
-            
-            for line in f:
-                # print(line)
-                if line.startswith("DIMENSION"):
-                    dimension = int(line.split(" ")[-1])
-                    config.num_nodes = dimension - 1
-                
-
-# config.num_nodes = dimension
-print(config)
-# print("Loaded {}:\n{}".format(config_path, config))
+print("Loaded {}:\n{}".format(config_path, config))
 
 
 if torch.cuda.is_available():
@@ -326,13 +302,13 @@ def main(config):
     net = nn.DataParallel(ResidualGatedGCNModelVRP(config, dtypeFloat, dtypeLong))
     if torch.cuda.is_available():
         net.cuda()
-    # print(net)
+    print(net)
 
     # Compute number of network parameters
     nb_param = 0
     for param in net.parameters():
         nb_param += np.prod(list(param.data.size()))
-    # print('Number of parameters:', nb_param)
+    print('Number of parameters:', nb_param)
  
     # Create log directory
     log_dir = f"./logs/{config.expt_name}/"
@@ -357,7 +333,7 @@ def main(config):
 
     # Define optimizer
     optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
-    # print(optimizer)
+    print(optimizer)
     dataset = VRPReader(
         config.num_nodes, config.num_neighbors, config.batch_size,
         config.train_filepath, config.train_filepath_solution
