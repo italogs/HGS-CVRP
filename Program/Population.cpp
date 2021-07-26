@@ -257,7 +257,7 @@ void Population::exportSearchProgress(std::string fileName, std::string instance
 		myfile << instanceName << ";" << seedRNG << ";" << state.second << ";" << (double)state.first / (double)CLOCKS_PER_SEC << std::endl;
 }
 
-Population::Population(Params * params, Split * split, LocalSearch * localSearch, Mining *mining, HeatmapWrapper *heatmap) : params(params), split(split), localSearch(localSearch), mining(mining), heatmap(heatmap)
+Population::Population(Params * params, Split * split, LocalSearch * localSearch, Mining *mining, DPDPWrapper *dpdp) : params(params), split(split), localSearch(localSearch), mining(mining), dpdp(dpdp)
 {
 	listFeasibilityLoad = std::list<bool>(100, true);
 	listFeasibilityDuration = std::list<bool>(100, true);

@@ -61,7 +61,7 @@ public:
 	int nbClose				= 5;		// Number of closest solutions/individuals considered when calculating diversity contribution
 	double targetFeasible   = 0.2;		// Reference proportion for the number of feasible individuals, used for the adaptation of the penalty parameters
 	int crossoverType       = 1;
-
+	int useDPDP 			= 0;
 	/* PARAMETERS OF THE PILS */
 	int minSeqMining;			    // Minimum size of the sequences used in the mining mechanism	
 	int maxSeqMining;			    // Maximum size of the sequences used in the mining mechanism
@@ -97,7 +97,7 @@ public:
 	std::string pathToInstance;
 
 	// Initialization from a given data set
-	Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossoverType, int processDpdp);
+	Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossoverType, int useDPDP);
 
 };
 #endif

@@ -2,7 +2,6 @@
 
 
 time=200
-bash clean-heatmap-files.sh
 
 
 make clean && make
@@ -17,7 +16,7 @@ do
     for ((seed=1; seed <= 1; seed++));
     do
         crossover=1
-        ./genvrp ../Instances/CVRP/${instances[$index]}.vrp testes/${instances[$index]}_crossover${crossover}_seed${seed}_time${time}.sol -crossover ${crossover} -seed $seed -t ${time} -processDpdp 1 #> testes/output_${instances[$index]}_crossover${crossover}_heap_optimized_seed${seed}_time${time}.txt &
+        ./genvrp ../Instances/CVRP/${instances[$index]}.vrp testes/${instances[$index]}_crossover${crossover}_seed${seed}_time${time}.sol -crossover ${crossover} -seed $seed -t ${time} -useDPDP 1 #> testes/output_${instances[$index]}_crossover${crossover}_heap_optimized_seed${seed}_time${time}.txt &
         
     done;
     wait

@@ -1,6 +1,5 @@
 #!/bin/bash
 
-bash clean-heatmap-files.sh
 make clean && make
 
 mkdir Solutions
@@ -16,7 +15,7 @@ do
     do
         timeLimit=${instances_time[$index]}
         crossover=1
-        qsub -V -v ARGS="./genvrp ../Instances/CVRP/${instances[$index]}.vrp Solutions/${instances[$index]}_crossover${crossover}_seed${seed}.sol -seed ${seed} -crossover ${crossover} -t $timeLimit -processDpdp 1",OUTPUT="Solutions/output_${instances[$index]}_crossover${crossover}_seed${seed}_processDpdp_1.txt" run_experiments.pbs
+        qsub -V -v ARGS="./genvrp ../Instances/CVRP/${instances[$index]}.vrp Solutions/${instances[$index]}_crossover${crossover}_seed${seed}.sol -seed ${seed} -crossover ${crossover} -t $timeLimit -useDPDP 1",OUTPUT="Solutions/output_${instances[$index]}_crossover${crossover}_seed${seed}_useDPDP_1.txt" run_experiments.pbs
         external_index=$((external_index+1))
     done
 done

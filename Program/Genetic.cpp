@@ -133,11 +133,8 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 			nbIterNonProd = 1;
 		}
 
-		if (nbIter % 20001 == 20000)
+		if (params->useDPDP)
 		{
-			heatmap->processDPDP_Val_Test(population);
-			// heatmap->processBigTourDPDP(population);
-			// heatmap->inputSolutionFromDPDP(population);
 		}
 	}
 
@@ -866,7 +863,7 @@ void Genetic::crossoverOX(Individual *result, const Individual *parent1, const I
 	split->generalSplit(result, parent1->myCostSol.nbRoutes);
 }
 
-Genetic::Genetic(Params *params, Split *split, Population *population, LocalSearch *localSearch, Mining *mining, HeatmapWrapper *heatmap) : params(params), split(split), population(population), localSearch(localSearch), mining(mining), heatmap(heatmap)
+Genetic::Genetic(Params *params, Split *split, Population *population, LocalSearch *localSearch, Mining *mining, DPDPWrapper *dpdp) : params(params), split(split), population(population), localSearch(localSearch), mining(mining), dpdp(dpdp)
 {
 	namesX[0] = new char[100];
 

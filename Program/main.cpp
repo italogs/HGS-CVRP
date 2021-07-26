@@ -3,7 +3,7 @@
 #include "LocalSearch.h"
 #include "Split.h"
 #include "Mining.h"
-#include "HeatmapWrapper.h"
+#include "DPDPWrapper.h"
 
 using namespace std;
 
@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 
 		// Reading the data file and initializing some data structures
 		std::cout << "----- READING DATA SET: " << commandline.pathInstance << std::endl;
-		Params params(commandline.pathInstance, commandline.nbVeh, commandline.seed, commandline.crossoverType, commandline.processDpdp);
+		Params params(commandline.pathInstance, commandline.nbVeh, commandline.seed, commandline.crossoverType, commandline.useDPDP);
 
 		// Creating the Split and local search structures
 		Split split(&params);
@@ -27,16 +27,16 @@ int main(int argc, char *argv[])
 
 		LocalSearch localSearch(&params);
 
-		HeatmapWrapper heatmap(&params,&split, &localSearch, &mining);
+		DPDPWrapper dpdp(&params);
 
 		// Initial population
 		std::cout << "----- INSTANCE LOADED WITH " << params.nbClients << " CLIENTS AND " << params.nbVehicles << " VEHICLES" << std::endl;
 		std::cout << "----- BUILDING INITIAL POPULATION" << std::endl;
-		Population population(&params, &split, &localSearch, &mining, &heatmap);
+		Population population(&params, &split, &localSearch, &mining, &dpdp);
 
 		// Genetic algorithm
 		std::cout << "----- STARTING GENETIC ALGORITHM - CROSSOVER TYPE: " << params.crossoverType << std::endl;
-		Genetic solver(&params, &split, &population, &localSearch, &mining, &heatmap);
+		Genetic solver(&params, &split, &population, &localSearch, &mining, &dpdp);
 		solver.run(commandline.nbIter, commandline.timeLimit);
 		std::cout << "----- GENETIC ALGORITHM FINISHED, TIME SPENT: " << (double)clock()/(double)CLOCKS_PER_SEC << std::endl;
 
