@@ -26,5 +26,11 @@ public:
         instanceName = params->pathToInstance.substr(params->pathToInstance.find_last_of("/\\") + 1);
         this->trainedModel = false;
     }
+
+    void doNothing()
+    {
+        int i = params->useDPDP;
+        params->useDPDP = i;
+    }
 };
 #endif

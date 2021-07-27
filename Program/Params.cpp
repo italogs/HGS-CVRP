@@ -1,6 +1,6 @@
 #include "Params.h"
 
-Params::Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossoverType, int useDPDP) : pathToInstance(pathToInstance), crossoverType(crossoverType), nbVehicles(nbVeh), useDPDP(useDPDP)
+Params::Params(std::string pathToInstance, int seedRNG, int crossoverType, int useDPDP, int nbVeh) : pathToInstance(pathToInstance), crossoverType(crossoverType), useDPDP(useDPDP), nbVehicles(nbVeh)
 {
 	std::string content, content2, content3;
 	double serviceTimeData = 0.;
@@ -25,9 +25,6 @@ Params::Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossover
 	std::ifstream inputFile(pathToInstance);
 	if (inputFile.is_open())
 	{
-		getline(inputFile, content);
-		getline(inputFile, content);
-		getline(inputFile, content);
 		for (inputFile >> content ; content != "NODE_COORD_SECTION" ; inputFile >> content)
 		{
 			if (content == "DIMENSION") { inputFile >> content2 >> nbClients; nbClients--; } // Need to substract the depot from the number of nodes
@@ -35,6 +32,9 @@ Params::Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossover
 			else if (content == "CAPACITY")	inputFile >> content2 >> vehicleCapacity;
 			else if (content == "DISTANCE") { inputFile >> content2 >> durationLimit; isDurationConstraint = true; }
 			else if (content == "SERVICE_TIME")	inputFile >> content2 >> serviceTimeData;
+			else if (content == "NAME")	getline(inputFile, content2);
+			else if (content == "COMMENT")	getline(inputFile, content2);
+			else if (content == "TYPE")	getline(inputFile, content2);
 			else throw std::string("Unexpected data in input file: " + content);
 		}
 		if (nbClients <= 0) throw std::string("Number of nodes is undefined");

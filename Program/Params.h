@@ -53,6 +53,10 @@ class Params
 {
 public:
 
+	/* Path to input instance */
+	std::string pathToInstance;
+
+
 	/* PARAMETERS OF THE GENETIC ALGORITHM */
 	int nbGranular			= 20;		// Granular search parameter, limits the number of moves in the RI local search
 	int mu					= 25;		// Minimum population size
@@ -62,6 +66,7 @@ public:
 	double targetFeasible   = 0.2;		// Reference proportion for the number of feasible individuals, used for the adaptation of the penalty parameters
 	int crossoverType       = 1;
 	int useDPDP 			= 0;
+	
 	/* PARAMETERS OF THE PILS */
 	int minSeqMining;			    // Minimum size of the sequences used in the mining mechanism	
 	int maxSeqMining;			    // Maximum size of the sequences used in the mining mechanism
@@ -91,10 +96,6 @@ public:
 	std::vector < std::vector < int > > correlatedVertices;	// Neighborhood restrictions: For each client, list of nearby customers
 	std::vector < std::vector < int > > closestVertices;	// lists of nearby costumers
 	std::vector < std::vector < int > > edgeFrequencyForCorrelatedVertices; // Tracks the frequency of edge (i,j)
-
-
-	/* Path to input instance */
-	std::string pathToInstance;
 
 	// Initialization from a given data set
 	Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossoverType, int useDPDP);

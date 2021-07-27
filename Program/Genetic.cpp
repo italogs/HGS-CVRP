@@ -1,11 +1,65 @@
 #include "Genetic.h"
 
+bool orderPairSecond(const std::pair<int, double> &a, const std::pair<int, double> &b)
+{
+	return a.second < b.second;
+}
+
 void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 {
 	int nbIterNonProd = 1;
 	int nbIter;
 	clock_t total_time_crossover = 0;
 	clock_t total_time_local_search = 0;
+
+	if (params->useDPDP > 0)
+	{
+		std::string instanceBaseName = params->pathToInstance.substr(params->pathToInstance.find_last_of("/\\") + 1);
+		std::string heatmapName = instanceBaseName.substr(0, instanceBaseName.find_last_of("."));
+		std::string heatmapFullPath = "../Heatmaps/" + heatmapName + ".hm";
+		std::ifstream heatmapFile(heatmapFullPath);
+		std::string content;
+
+		//Avoiding baseline to enter
+		if (heatmapFile.is_open() && params->useDPDP != 1 && params->useDPDP == 2)
+		{
+			for (int i = 0; i < (int)params->correlatedVertices.size(); i++)
+			{
+				//We ignore depot edge probabilities
+				if (i == 0)
+				{
+					getline(heatmapFile, content);
+					continue;
+				}
+
+				double edge_heat = 0.0;
+				std::vector<std::pair<int, double>> heatList;
+				for (int customer_id = 0; customer_id <= params->nbClients; customer_id++)
+				{
+					heatmapFile >> edge_heat;
+					//we ignore: * customer - depot heats; * edge heats below 1e-5; * edge heats that points to itself
+					if (customer_id > 0 && edge_heat >= 1e-5 && customer_id != i)
+					{
+						heatList.push_back(std::make_pair(customer_id, -edge_heat));
+					}
+				}
+				std::sort(heatList.begin(), heatList.end(), orderPairSecond);
+
+				//Options 3 and 4 are ordered with removal
+				if (params->useDPDP == 3 || params->useDPDP == 4)
+					params->correlatedVertices[i].clear();
+
+				for (int j = 0; j < heatList.size() && j < params->nbGranular; j++)
+				{
+					if (std::find(params->correlatedVertices[i].begin(), params->correlatedVertices[i].end(), heatList[j].first) == params->correlatedVertices[i].end())
+					{
+						params->correlatedVertices[i].push_back(heatList[j].first);
+					}
+				}
+			}
+		}
+	}
+
 	for (nbIter = 0; nbIterNonProd <= maxIterNonProd && clock() / CLOCKS_PER_SEC < timeLimit; nbIter++)
 	{
 		/* SELECTION AND CROSSOVER */
@@ -47,6 +101,15 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 
 		// MINING SEQUENCE INFORMATION ON A PERCENTAGE OF THE LOCAL MINIMA
 		total_time_local_search += (clock() - local_search_start);
+
+		if (params->useDPDP == 1 || params->useDPDP == 3 || params->useDPDP == 5)
+		{
+			std::string instanceBaseName = params->pathToInstance.substr(params->pathToInstance.find_last_of("/\\") + 1);
+			std::ofstream allSolutionsFile("all_solutions_useDPDP" + std::to_string(params->useDPDP) + "_1LSrun_" + instanceBaseName + ".txt", std::ofstream::out | std::ofstream::app);
+			allSolutionsFile << std::to_string(offspring->myCostSol.penalizedCost) << std::endl;
+			allSolutionsFile.close();
+			break;
+		}
 
 		/* TRACKING THE NUMBER OF ITERATIONS SINCE LAST SOLUTION IMPROVEMENT */
 		if (isNewBest)
@@ -131,10 +194,6 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 		{
 			population->restart();
 			nbIterNonProd = 1;
-		}
-
-		if (params->useDPDP)
-		{
 		}
 	}
 
