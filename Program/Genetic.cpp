@@ -21,7 +21,7 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 		std::string content;
 
 		//Avoiding baseline to enter
-		if (heatmapFile.is_open() && params->useDPDP != 1 && params->useDPDP == 2)
+		if (heatmapFile.is_open() && params->useDPDP != 1 && params->useDPDP != 2)
 		{
 			for (int i = 0; i < (int)params->correlatedVertices.size(); i++)
 			{
@@ -105,7 +105,7 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 		if (params->useDPDP == 1 || params->useDPDP == 3 || params->useDPDP == 5)
 		{
 			std::string instanceBaseName = params->pathToInstance.substr(params->pathToInstance.find_last_of("/\\") + 1);
-			std::ofstream allSolutionsFile("all_solutions_useDPDP" + std::to_string(params->useDPDP) + "_1LSrun_" + instanceBaseName + ".txt", std::ofstream::out | std::ofstream::app);
+			std::ofstream allSolutionsFile("Solutions-DPDP/solutions_useDPDP" + std::to_string(params->useDPDP) + "_1LSrun_" + instanceBaseName + ".txt", std::ofstream::out | std::ofstream::app);
 			allSolutionsFile << std::to_string(offspring->myCostSol.penalizedCost) << std::endl;
 			allSolutionsFile.close();
 			break;
