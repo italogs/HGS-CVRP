@@ -43,17 +43,52 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 						heatList.push_back(std::make_pair(customer_id, -edge_heat));
 					}
 				}
-				std::sort(heatList.begin(), heatList.end(), orderPairSecond);
-
-				//Options 3 and 4 are ordered with removal
-				if (params->useDPDP == 3 || params->useDPDP == 4)
-					params->correlatedVertices[i].clear();
-
-				for (int j = 0; j < heatList.size() && j < params->nbGranular; j++)
+				if (params->useDPDP == 11 || params->useDPDP == 12)
 				{
-					if (std::find(params->correlatedVertices[i].begin(), params->correlatedVertices[i].end(), heatList[j].first) == params->correlatedVertices[i].end())
+					std::sort(heatList.begin(), heatList.end(), orderPairSecond);
+					std::vector<int> newCorrelatedVertices;
+
+					for (int j = 0; j < heatList.size() && j < params->nbGranular; j++)
 					{
-						params->correlatedVertices[i].push_back(heatList[j].first);
+						newCorrelatedVertices.push_back(heatList[j].first);
+					}
+
+					if (newCorrelatedVertices.size() < params->nbGranular)
+					{
+						for (int j = 0; j < params->correlatedVertices[i].size() && newCorrelatedVertices.size() < params->nbGranular; j++)
+						{
+							newCorrelatedVertices.push_back(params->correlatedVertices[i][j]);
+						}
+					}
+
+					params->correlatedVertices[i].assign(newCorrelatedVertices.begin(), newCorrelatedVertices.end());
+				}
+				else if (params->useDPDP == 7 || params->useDPDP == 8 || params->useDPDP == 9 || params->useDPDP == 10)
+				{
+					if (params->useDPDP == 7 || params->useDPDP == 8)
+						params->correlatedVertices[i].clear();
+					for (int j = 0; j < heatList.size(); j++)
+					{
+						if (std::find(params->correlatedVertices[i].begin(), params->correlatedVertices[i].end(), heatList[j].first) == params->correlatedVertices[i].end())
+						{
+							params->correlatedVertices[i].push_back(heatList[j].first);
+						}
+					}
+				}
+				else
+				{
+					std::sort(heatList.begin(), heatList.end(), orderPairSecond);
+
+					//Options 3 and 4 are ordered with removal
+					if (params->useDPDP == 3 || params->useDPDP == 4)
+						params->correlatedVertices[i].clear();
+
+					for (int j = 0; j < heatList.size() && j < params->nbGranular; j++)
+					{
+						if (std::find(params->correlatedVertices[i].begin(), params->correlatedVertices[i].end(), heatList[j].first) == params->correlatedVertices[i].end())
+						{
+							params->correlatedVertices[i].push_back(heatList[j].first);
+						}
 					}
 				}
 			}
@@ -102,10 +137,11 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 		// MINING SEQUENCE INFORMATION ON A PERCENTAGE OF THE LOCAL MINIMA
 		total_time_local_search += (clock() - local_search_start);
 
-		if (params->useDPDP == 1 || params->useDPDP == 3 || params->useDPDP == 5)
+		if (params->useDPDP == 1 || params->useDPDP == 3 || params->useDPDP == 5 || params->useDPDP == 7 || params->useDPDP == 9 || params->useDPDP == 11)
 		{
 			std::string instanceBaseName = params->pathToInstance.substr(params->pathToInstance.find_last_of("/\\") + 1);
-			std::ofstream allSolutionsFile("Solutions-DPDP/solutions_useDPDP" + std::to_string(params->useDPDP) + "_1LSrun_" + instanceBaseName + ".txt", std::ofstream::out | std::ofstream::app);
+			std::string instanceFilePath = "Solutions-DPDP/solutions_useDPDP" + std::to_string(params->useDPDP) + "_1LSrun_" + instanceBaseName + ".txt";
+			std::ofstream allSolutionsFile(instanceFilePath, std::ofstream::out | std::ofstream::app);
 			allSolutionsFile << std::to_string(offspring->myCostSol.penalizedCost) << std::endl;
 			allSolutionsFile.close();
 			break;
