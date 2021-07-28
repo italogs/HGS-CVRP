@@ -57,7 +57,10 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 					{
 						for (int j = 0; j < params->correlatedVertices[i].size() && newCorrelatedVertices.size() < params->nbGranular; j++)
 						{
-							newCorrelatedVertices.push_back(params->correlatedVertices[i][j]);
+							if (std::find(newCorrelatedVertices.begin(), newCorrelatedVertices.end(), params->correlatedVertices[i][j]) == newCorrelatedVertices.end())
+							{
+								newCorrelatedVertices.push_back(params->correlatedVertices[i][j]);
+							}
 						}
 					}
 

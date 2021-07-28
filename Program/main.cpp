@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 			if (params.useDPDP == 2 || params.useDPDP == 4 || params.useDPDP == 6 || params.useDPDP == 8 || params.useDPDP == 10 || params.useDPDP == 12)
 			{
 				std::string instanceBaseName = params.pathToInstance.substr(params.pathToInstance.find_last_of("/\\") + 1);
-				std::ofstream allSolutionsFile("Solutions-DPDP/solutions_useDPDP" + std::to_string(params.useDPDP) + "_1sec_" + instanceBaseName + ".txt", std::ios::out | std::ios::app);
+				std::ofstream allSolutionsFile("Solutions-DPDP/solutions_useDPDP" + std::to_string(params.useDPDP) + "_" + std::to_string(commandline.timeLimit) + "sec_" + instanceBaseName + ".txt", std::ios::out | std::ios::app);
 				allSolutionsFile << std::to_string(population.getBestFound()->myCostSol.penalizedCost) << std::endl;
 				allSolutionsFile.close();
 			}
