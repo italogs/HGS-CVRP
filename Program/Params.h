@@ -66,6 +66,8 @@ public:
 	double targetFeasible   = 0.2;		// Reference proportion for the number of feasible individuals, used for the adaptation of the penalty parameters
 	int crossoverType       = 1;
 	int useDPDP 			= 0;
+	double heat_threshold   = 1e-5;
+	std::vector<int> bestCustomerHeat;
 	
 	/* PARAMETERS OF THE PILS */
 	int minSeqMining;			    // Minimum size of the sequences used in the mining mechanism	
@@ -98,7 +100,7 @@ public:
 	std::vector < std::vector < int > > edgeFrequencyForCorrelatedVertices; // Tracks the frequency of edge (i,j)
 
 	// Initialization from a given data set
-	Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossoverType, int useDPDP);
+	Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossoverType, int useDPDP, int heatThresholdType);
 
 };
 #endif

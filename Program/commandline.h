@@ -38,13 +38,14 @@ public:
 	std::string pathInstance;		// Instance path
 	std::string pathSolution;		// Solution path
 	std::string pathBKS = "";		// BKS path
-	int useDPDP = 0;		    // Process DPDP approach
+	int useDPDP = 0;		    	// Process DPDP approach
+	int heatThresholdType = 2;		// heat Threshold Type (0 = no threshold; 1 = 1e-5; 2 = 0.5)
 	int crossoverType = 1;			// Crossover type (OX=1;EAX=2)
 
 	// Reads the line of command and extracts possible options
 	CommandLine(int argc, char* argv[])
 	{
-		if (argc % 2 != 1 || argc > 15 || argc < 3)
+		if (argc % 2 != 1 || argc > 19 || argc < 3)
 		{
 			std::cout << "----- NUMBER OF COMMANDLINE ARGUMENTS IS INCORRECT: " << argc << std::endl;
 			display_help(); throw std::string("Incorrect line of command");
@@ -69,6 +70,8 @@ public:
 					crossoverType = atoi(argv[i+1]);
 				else if (std::string(argv[i]) == "-useDPDP")
 					useDPDP = std::atoi(argv[i+1]);
+				else if (std::string(argv[i]) == "-heatThresholdType")
+					heatThresholdType = std::atoi(argv[i+1]);
 				else
 				{
 					std::cout << "----- ARGUMENT NOT RECOGNIZED: " << std::string(argv[i]) << std::endl;

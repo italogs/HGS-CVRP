@@ -45,6 +45,7 @@ private:
 
 	// OX Crossover
 	void crossoverOX(Individual * result, const Individual * parent1, const Individual * parent2);
+	void crossoverHeatmap(Individual * result, const Individual * parent1, const Individual * parent2);
 	void crossoverEAX(Individual *result, const Individual *parentA, const Individual *parentB);
 	void crossover_newOX(Individual * result, const Individual * parent1, const Individual * parent2);
 	void crossover_PILS(Individual *result, const Individual *parent1, const Individual *parent2);
