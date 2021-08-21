@@ -881,12 +881,12 @@ void Genetic::crossoverHeatmap(Individual *result, const Individual *parent1, co
 	std::vector<bool> freqClient = std::vector<bool>(params->nbClients + 1, false);
 
 	// Picking the beginning and end of the crossover zone
-	int start = (std::rand() % params->nbClients-1) + 1;
+	int start = (std::rand() % params->nbClients - 1) + 1;
 
 	int best_I = parent1->chromT[start];
 	int best_J = params->bestCustomerHeat[best_I];
 
-	if(best_I == 0 || best_J == 0)
+	if (best_I == 0 || best_J == 0)
 	{
 		std::cout << "best_I " << best_I << "; best_J: " << best_J << std::endl;
 	}
@@ -933,53 +933,6 @@ void Genetic::crossoverHeatmap(Individual *result, const Individual *parent1, co
 			j++;
 		}
 	}
-
-	// std::cout << "parent1\n";
-	// for (int i = 0; i < parent1->chromT.size(); i++)
-	// {
-	// 	std::cout << parent1->chromT[i] << ", ";
-	// }
-	// std::cout << "\n";
-
-	// std::cout << "parent2\n";
-	// for (int i = 0; i < parent2->chromT.size(); i++)
-	// {
-	// 	std::cout << parent2->chromT[i] << ", ";
-	// }
-	// std::cout << "\n";
-
-	// std::cout << "pair (" << best_I << "," << best_J << ")" << std::endl;
-	// std::cout << "Result\n";
-	// for (int i = 0; i < result->chromT.size(); i++)
-	// {
-	// 	std::cout << result->chromT[i] << ", ";
-	// }
-
-	// for (int i = 0; i < params->nbClients; i++)
-	// {
-	// 	if (result->chromT[i] == best_I)
-	// 	{
-	// 		if (result->chromT[i + 1] != best_J)
-	// 		{
-	// 			std::cout << "\n"
-	// 					  << result->chromT[i + 1] << "NAO DEU CERTO" << std::endl;
-	// 			exit(0);
-	// 		}
-	// 		else
-	// 			break;
-	// 	}
-	// 	else if (result->chromT[i] == best_J)
-	// 	{
-	// 		if (result->chromT[i + 1] != best_I)
-	// 		{
-	// 			std::cout << "\n"
-	// 					  << result->chromT[i + 1] << "NAO DEU CERTO 222" << std::endl;
-	// 			exit(0);
-	// 		}
-	// 		else
-	// 			break;
-	// 	}
-	// }
 
 	// Completing the individual with the Split algorithm
 	split->generalSplit(result, parent1->myCostSol.nbRoutes);

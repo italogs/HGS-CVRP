@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
 		{
 			allSolutionsFile << std::to_string(population.getBestFound()->myCostSol.penalizedCost) << std::endl;
 			population.getBestFound()->exportCVRPLibFormat(commandline.pathSolution);
-			population.exportSearchProgress(commandline.pathSolution + ".PG.csv", commandline.pathInstance, commandline.seed);
+			population.exportSearchProgress(commandline.pathSolution + "_crossover" + std::to_string(params.crossoverType) + ".PG.csv", commandline.pathInstance, commandline.seed);
 			if (commandline.pathBKS != "")
 				population.exportBKS(commandline.pathBKS);
 		}

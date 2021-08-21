@@ -59,14 +59,14 @@ public:
 
 	/* PARAMETERS OF THE GENETIC ALGORITHM */
 	int nbGranular			= 20;		// Granular search parameter, limits the number of moves in the RI local search
-	int mu					= 25;		// Minimum population size
-	int lambda				= 40;		// Number of solutions created before reaching the maximum population size (i.e., generation size)
-	int nbElite				= 4;		// Number of elite individuals (reduced in HGS-2020)
-	int nbClose				= 5;		// Number of closest solutions/individuals considered when calculating diversity contribution
+	int mu					= 12;		// Minimum population size
+	int lambda				= 20;		// Number of solutions created before reaching the maximum population size (i.e., generation size)
+	int nbElite				= 2;		// Number of elite individuals (reduced in HGS-2020)
+	int nbClose				= 2;		// Number of closest solutions/individuals considered when calculating diversity contribution
 	double targetFeasible   = 0.2;		// Reference proportion for the number of feasible individuals, used for the adaptation of the penalty parameters
 	int crossoverType       = 1;
 	int useDPDP 			= 0;
-	double heat_threshold   = 1e-5;
+	double heat_threshold   = 0.5;
 	std::vector<int> bestCustomerHeat;
 	
 	/* PARAMETERS OF THE PILS */
