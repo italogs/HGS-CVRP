@@ -1,9 +1,9 @@
-from dpdp.utils.data_utils import load_dataset
+from utils.data_utils import load_dataset
 import os
 
 
 def write_solutions():
-    filenames = ["dpdp/results/vrp/vrp_uchoa100_test_seed1234/main_results/beam1000000.pkl", "dpdp/results/vrp/vrp_uchoa100_test_seed1234/main_results/beam100000.pkl", "dpdp/results/vrp/vrp_uchoa100_test_seed1234/main_results/beam10000.pkl"]
+    filenames = ["results/vrp/vrp_uchoa100_test_seed1234/main_results/beam1000000.pkl", "results/vrp/vrp_uchoa100_test_seed1234/main_results/beam100000.pkl", "results/vrp/vrp_uchoa100_test_seed1234/main_results/beam10000.pkl"]
 
     
     for filename in filenames:

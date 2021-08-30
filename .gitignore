@@ -1,4 +1,12 @@
 Program/*.o
 Program/genvrp
 Program/Solutions/*
+Program/lkh/*
+Program/outputs/*
+Program/Solutions-DPDP/*
 .vscode/settings.json
+
+# Ignore all above file except these files below
+!Program/lkh/LKH-3.0.6.tgz
+!Program/lkh/prepare-lkh.sh
+

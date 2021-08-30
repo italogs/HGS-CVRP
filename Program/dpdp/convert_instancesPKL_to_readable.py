@@ -1,17 +1,17 @@
-from dpdp.utils.data_utils import load_dataset
+from utils.data_utils import load_dataset
 import os
 
 
 def write_instances():
 
-    filename = "dpdp/data/vrp/vrp_uchoa100_test_seed1234.pkl"
+    filename = "data/vrp/vrp_uchoa100_test_seed1234.pkl"
     print(os.path.isfile(filename))
 
     instances = load_dataset(filename)
 
     for index, instance in enumerate(instances):
         new_filename = "WK_test_" + str(index) 
-        with open("../Instances/CVRP/" + new_filename + ".vrp","w") as f:
+        with open("../../Instances/CVRP/" + new_filename + ".vrp","w") as f:
 
 
             depot = instances[index][0]
