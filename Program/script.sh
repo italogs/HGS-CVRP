@@ -12,7 +12,7 @@ do
         wait;
     fi
 
-    if ((id % 64 == 0));
+    if ((id % 100 == 0));
     then
         echo "Current ID: ${id}" 
     fi
@@ -22,9 +22,9 @@ do
 
     useDPDP=2
     crossover=1
-    ./genvrp ../Instances/CVRP/WK_test_${id}.vrp Solutions/WK_test_${id}_useDPDP${useDPDP}_crossover${crossover}_seed${seed}_time${time}.sol -crossover ${crossover} -seed $seed -t ${time} -useDPDP ${useDPDP} #> outputs/output_WK_test_${id}_useDPDP${useDPDP}_crossover${crossover}_seed${seed}_time${time}.txt
-    crossover=9
-    ./genvrp ../Instances/CVRP/WK_test_${id}.vrp Solutions/WK_test_${id}_useDPDP${useDPDP}_crossover${crossover}_seed${seed}_time${time}.sol -crossover ${crossover} -seed $seed -t ${time} -useDPDP ${useDPDP} #> outputs/output_WK_test_${id}_useDPDP${useDPDP}_crossover${crossover}_seed${seed}_time${time}.txt
+    ./genvrp ../Instances/CVRP/WK_test_${id}.vrp Solutions/WK_test_${id}_useDPDP${useDPDP}_crossover${crossover}_seed${seed}_time${time}.sol -crossover ${crossover} -seed $seed -t ${time} -useDPDP ${useDPDP} > outputs/output_WK_test_${id}_useDPDP${useDPDP}_crossover${crossover}_seed${seed}_time${time}.txt &
+    crossover=9 
+    ./genvrp ../Instances/CVRP/WK_test_${id}.vrp Solutions/WK_test_${id}_useDPDP${useDPDP}_crossover${crossover}_seed${seed}_time${time}.sol -crossover ${crossover} -seed $seed -t ${time} -useDPDP ${useDPDP} > outputs/output_WK_test_${id}_useDPDP${useDPDP}_crossover${crossover}_seed${seed}_time${time}.txt &
     
 
     useDPDP=4
