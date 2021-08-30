@@ -1,9 +1,0 @@
-data/
-logs/
-results/
-plots/
-__pycache__/
-.idea
-*/.ipynb_checkpoints
-*.log
-*.bak

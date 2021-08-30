@@ -13,8 +13,7 @@ OBJS2 = \
         $(TARGETDIR)/LocalSearch.o \
         $(TARGETDIR)/Params.o \
         $(TARGETDIR)/Population.o \
-        $(TARGETDIR)/Split.o \
-        $(TARGETDIR)/DPDPWrapper.o
+        $(TARGETDIR)/Split.o
         
 
 $(TARGETDIR)/genvrp: $(OBJS2)
@@ -41,9 +40,6 @@ $(TARGETDIR)/Population.o: Population.h Population.cpp
 $(TARGETDIR)/Split.o: Split.h Split.cpp
 	$(CCC) $(CCFLAGS) -c Split.cpp -o $(TARGETDIR)/Split.o
 
-$(TARGETDIR)/DPDPWrapper.o: DPDPWrapper.h DPDPWrapper.cpp
-	$(CCC) $(CCFLAGS) -c DPDPWrapper.cpp -o $(TARGETDIR)/DPDPWrapper.o
-
 test: genvrp
 	./genvrp ../Instances/CVRP/X-n101-k25.vrp mySolution.sol -seed 1 
 
@@ -56,6 +52,5 @@ clean:
     $(TARGETDIR)/Params.o \
     $(TARGETDIR)/Population.o \
     $(TARGETDIR)/Split.o \
-    $(TARGETDIR)/DPDPWrapper.o \
     $(TARGETDIR)/genvrp
      

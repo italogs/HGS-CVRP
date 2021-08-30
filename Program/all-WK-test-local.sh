@@ -5,7 +5,7 @@ mkdir -p Solutions/
 mkdir -p Solutions-DPDP/
 mkdir -p outputs/
 
-for ((id=0; id <= 9999; id++));
+for ((id=0; id <= 5; id++));
 do
     if ((id % 4 == 0));
     then

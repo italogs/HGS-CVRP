@@ -3,7 +3,6 @@
 #include "LocalSearch.h"
 #include "Split.h"
 #include "Mining.h"
-#include "DPDPWrapper.h"
 
 using namespace std;
 
@@ -87,8 +86,6 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		DPDPWrapper dpdp(&params);
-
 		// Initial population
 		std::cout << "----- INSTANCE LOADED WITH " << params.nbClients << " CLIENTS AND " << params.nbVehicles << " VEHICLES" << std::endl;
 		std::cout << "----- BUILDING INITIAL POPULATION" << std::endl;
@@ -96,7 +93,7 @@ int main(int argc, char *argv[])
 
 		// Genetic algorithm
 		std::cout << "----- STARTING GENETIC ALGORITHM - CROSSOVER TYPE: " << params.crossoverType << std::endl;
-		Genetic solver(&params, &split, &population, &localSearch, &mining, &dpdp);
+		Genetic solver(&params, &split, &population, &localSearch, &mining);
 		solver.run(commandline.nbIter, commandline.timeLimit);
 		std::cout << "----- GENETIC ALGORITHM FINISHED, TIME SPENT: " << (double)clock() / (double)CLOCKS_PER_SEC << std::endl;
 

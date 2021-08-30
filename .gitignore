@@ -6,8 +6,12 @@ Program/outputs/*
 Program/Solutions-DPDP/*
 .vscode/settings.json
 
+
+
 # Ignore all above file except these files below
 !Program/lkh/LKH-3.0.6.tgz
 !Program/lkh/prepare-lkh.sh
 !Program/lkh/execute-lkh.sh
-
+!Program/Solutions/empty.txt
+!Program/Solutions-DPDP/empty.txt
+!Program/outputs/empty.txt

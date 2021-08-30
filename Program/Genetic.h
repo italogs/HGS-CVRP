@@ -25,7 +25,6 @@ SOFTWARE.*/
 
 #include "Population.h"
 #include "Individual.h"
-#include "DPDPWrapper.h"
 class Genetic
 {
 private:
@@ -36,7 +35,6 @@ private:
 	LocalSearch * localSearch;		// Local Search structure
 	Mining * mining;				// Mining structure
 	Individual * offspring;			// First individual to be used as input for the crossover
-	DPDPWrapper *dpdp;				// dpdp structure
 
 	short int **GAB_A = NULL;				// EAX: ParentA edges
 	short int **GAB_B = NULL;				// EAX: ParentB edges
@@ -63,7 +61,7 @@ public:
     void run(int maxIterNonProd, unsigned long timeLimit) ;
 
 	// Constructor
-	Genetic(Params * params, Split * split, Population * population, LocalSearch * localSearch, Mining * mining, DPDPWrapper *dpdp);
+	Genetic(Params * params, Split * split, Population * population, LocalSearch * localSearch, Mining * mining);
 
 	// Destructor
 	~Genetic(void);

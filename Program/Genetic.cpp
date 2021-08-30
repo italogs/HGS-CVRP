@@ -938,7 +938,7 @@ void Genetic::crossoverHeatmap(Individual *result, const Individual *parent1, co
 	split->generalSplit(result, parent1->myCostSol.nbRoutes);
 }
 
-Genetic::Genetic(Params *params, Split *split, Population *population, LocalSearch *localSearch, Mining *mining, DPDPWrapper *dpdp) : params(params), split(split), population(population), localSearch(localSearch), mining(mining), dpdp(dpdp)
+Genetic::Genetic(Params *params, Split *split, Population *population, LocalSearch *localSearch, Mining *mining) : params(params), split(split), population(population), localSearch(localSearch), mining(mining)
 {
 	namesX[0] = new char[100];
 
