@@ -1,6 +1,6 @@
 #include "Params.h"
 
-Params::Params(std::string pathToInstance, int seedRNG, int crossoverType, int useDPDP, int nbVeh, int heatThresholdType) : pathToInstance(pathToInstance), crossoverType(crossoverType), useDPDP(useDPDP), nbVehicles(nbVeh)
+Params::Params(std::string pathToInstance, int seedRNG, int crossoverType, int useDPDP, int nbVeh, float heatmapThreshold) : pathToInstance(pathToInstance), crossoverType(crossoverType), useDPDP(useDPDP), nbVehicles(nbVeh), heatmapThreshold(heatmapThreshold)
 {
 	std::string content, content2, content3;
 	double serviceTimeData = 0.;
@@ -164,10 +164,4 @@ Params::Params(std::string pathToInstance, int seedRNG, int crossoverType, int u
 	penaltyDuration = 1;
 	penaltyCapacity = std::max<double>(0.1, std::min<double>(1000., maxDist / maxDemand));
 
-	if (heatThresholdType == 0)
-		heat_threshold = 0.0;
-	else if (heatThresholdType == 1)
-		heat_threshold = 1e-5;
-	else
-		heat_threshold = 0.5;
 }

@@ -138,16 +138,6 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 			nbIterNonProd = 1;
 		}
 
-		if (params->useDPDP == 1 || params->useDPDP == 3 || params->useDPDP == 5 || params->useDPDP == 7 || params->useDPDP == 9 || params->useDPDP == 11)
-		{
-			std::cout << "Resulting solution: " << std::to_string(offspring->myCostSol.penalizedCost) << " feasible? " << std::to_string(offspring->isFeasible) << std::endl;
-			std::string instanceBaseName = params->pathToInstance.substr(params->pathToInstance.find_last_of("/\\") + 1);
-			std::string instanceFilePath = "Solutions-DPDP/solutions_useDPDP" + std::to_string(params->useDPDP) + "_1LSrun_crossover" + std::to_string(params->crossoverType) + "_" + instanceBaseName + ".txt";
-			std::ofstream allSolutionsFile(instanceFilePath, std::ofstream::out | std::ofstream::app);
-			allSolutionsFile << std::to_string(offspring->myCostSol.penalizedCost) << std::endl;
-			allSolutionsFile.close();
-			break;
-		}
 	}
 
 	std::cout << "nbIter: " << nbIter << std::endl;
