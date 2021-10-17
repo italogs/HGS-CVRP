@@ -9,9 +9,8 @@ Program/Solutions-DPDP/*
 
 
 # Ignore all above file except these files below
-!Program/lkh/LKH-3.0.6.tgz
-!Program/lkh/prepare-lkh.sh
-!Program/lkh/execute-lkh.sh
+!Program/lkh/LKH-3.0.6.zip
+!Program/lkh/*.sh
 !Program/Solutions/empty.txt
 !Program/Solutions-DPDP/empty.txt
 !Program/outputs/empty.txt
