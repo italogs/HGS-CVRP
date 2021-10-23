@@ -28,5 +28,4 @@ $HOME/bap-singularity.sh /CVRP/src/run.jl /CVRP/data/WK_test/WK_test_${instance_
 instance_id=$(($instance_id + 1))
 $HOME/bap-singularity.sh /CVRP/src/run.jl /CVRP/data/WK_test/WK_test_${instance_id}.vrp -s /CVRP/input_sol/WK_test_${instance_id}.sol -o /CVRP/sol/WK_test_${instance_id}.sol &> $HOME/CVRP/Solutions/WK_test_${instance_id}.txt &
 
-
 wait

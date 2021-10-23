@@ -7,4 +7,3 @@ do
 	sbatch --export=instance_id=${instance_id} $HOME/script-for-VRPSolver-CC-2step.sh
 	instance_id=$(($instance_id + 5))
 done
-
