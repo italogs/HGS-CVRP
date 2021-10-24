@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 			std::cout << "params.heatmapThreshold: " << params.heatmapThreshold << std::endl;
 			std::string instanceBaseName = params.pathToInstance.substr(params.pathToInstance.find_last_of("/\\") + 1);
 			std::string heatmapName = instanceBaseName.substr(0, instanceBaseName.find_last_of("."));
-			bool isUchoaInstance = (heatmapName.substr(0,3) == "X-n");
+			bool isUchoaInstance = (heatmapName.substr(0, 3) == "X-n");
 			if (isUchoaInstance)
 			{
 				std::string heatmapFullPath = "DPDP/Heatmaps_for_HGS/" + heatmapName + "/" + heatmapName;
@@ -68,10 +68,10 @@ int main(int argc, char *argv[])
 									bestHeatCustomer = customer_id;
 								}
 								// we also ignore 'heats' that points customer i to itself
-								//  if (edge_heat >= params.heatmapThreshold)
-								//  {
-								heatList.push_back(std::make_pair(customer_id, -edge_heat));
-								// }
+								if (edge_heat >= params.heatmapThreshold)
+								{
+									heatList.push_back(std::make_pair(customer_id, -edge_heat));
+								}
 							}
 						}
 						// std::cout << "heatList.size(): " << heatList.size() << std::endl;
@@ -125,8 +125,7 @@ int main(int argc, char *argv[])
 									bestHeatCustomer = customer_id;
 								}
 								// we also ignore 'heats' that points customer i to itself
-								// edge_heat >= params.heatmapThreshold && 
-								if (customer_id != i)
+								if (edge_heat >= params.heatmapThreshold && customer_id != i)
 								{
 									heatList.push_back(std::make_pair(customer_id, -edge_heat));
 								}
