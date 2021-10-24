@@ -6,7 +6,7 @@
 #SBATCH --mem=20G
 
 
-for (( it = ${instance_id} ; it <= ${instance_id} + 100; it++))
+for (( it = ${instance_id} ; it < ${instance_id} + 100; it++))
 do
     useDPDP=0
     crossover=1
