@@ -83,12 +83,13 @@ int main(int argc, char *argv[])
 						if (params.useDPDP)
 						{
 							// Reset the original list of correlatedVertices (closest criteria)
+							int granularSize = params.correlatedVertices[client_i].size();
 							params.correlatedVertices[client_i].clear();
 
 							// Sort list of heats and including them into correlatedVertices
 							std::sort(heatList.begin(), heatList.end(), orderPairSecond);
 
-							for (int j = 0; j < heatList.size() && j < (params.nbGranular + 2); j++)
+							for (int j = 0; j < heatList.size() && j < granularSize; j++)
 							{
 								params.correlatedVertices[client_i].push_back(params.closestVertices[client_i][heatList[j].first]);
 							}
@@ -139,12 +140,13 @@ int main(int argc, char *argv[])
 						if (params.useDPDP)
 						{
 							// Reset the original list of correlatedVertices (closest criteria)
+							int granularSize = params.correlatedVertices[i].size();
 							params.correlatedVertices[i].clear();
 
 							// Sort list of heats and including them into correlatedVertices
 							std::sort(heatList.begin(), heatList.end(), orderPairSecond);
 
-							for (int j = 0; j < heatList.size() && j < params.nbGranular; j++)
+							for (int j = 0; j < heatList.size() && j < granularSize; j++)
 								params.correlatedVertices[i].push_back(heatList[j].first);
 						}
 					}
