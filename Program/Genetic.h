@@ -48,6 +48,8 @@ private:
 	void crossover_newOX(Individual * result, const Individual * parent1, const Individual * parent2);
 	void crossover_PILS(Individual *result, const Individual *parent1, const Individual *parent2);
 
+	void crossoverOXClosest(Individual *result, const Individual *parent1, const Individual *parent2);
+
 public:
 
 	double *costX = new double[1];

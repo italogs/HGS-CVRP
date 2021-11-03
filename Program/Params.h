@@ -68,6 +68,7 @@ public:
 	int useDPDP 			= 0;
 	double heatmapThreshold = 0.5;
 	std::vector<int> bestCustomerHeat;
+	std::vector<int> bestCustomerClosest;
 	
 	/* PARAMETERS OF THE PILS */
 	int minSeqMining;			    // Minimum size of the sequences used in the mining mechanism	

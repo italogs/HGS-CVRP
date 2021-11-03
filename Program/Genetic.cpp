@@ -37,6 +37,11 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 		{
 			crossoverHeatmap(offspring, population->getBinaryTournament(), population->getBinaryTournament());
 		}
+		else if (params->crossoverType == 10)
+		{
+			crossoverOXClosest(offspring, population->getBinaryTournament(), population->getBinaryTournament());
+		}
+
 		total_time_crossover += (clock() - crossover_start);
 
 		/* LOCAL SEARCH */
@@ -926,6 +931,70 @@ void Genetic::crossoverHeatmap(Individual *result, const Individual *parent1, co
 
 	// Completing the individual with the Split algorithm
 	split->generalSplit(result, parent1->myCostSol.nbRoutes);
+}
+
+
+void Genetic::crossoverOXClosest(Individual *result, const Individual *parent1, const Individual *parent2)
+{
+	// Frequency table to track the customers which have been already inserted
+	std::vector<bool> freqClient = std::vector<bool>(params->nbClients + 1, false);
+
+	// Picking the beginning and end of the crossover zone
+	int start = (std::rand() % params->nbClients - 1) + 1;
+
+	int best_I = parent1->chromT[start];
+	int best_J = params->bestCustomerClosest[best_I];
+
+	if (best_I == 0 || best_J == 0)
+	{
+		std::cout << "best_I " << best_I << "; best_J: " << best_J << std::endl;
+	}
+
+	int posChromT = 0;
+	for (; posChromT <= params->nbClients; posChromT++)
+	{
+		result->chromT[posChromT] = parent1->chromT[posChromT];
+		freqClient[result->chromT[posChromT]] = true;
+		if (result->chromT[posChromT] == best_I)
+		{
+			posChromT++;
+			result->chromT[posChromT] = best_J;
+			freqClient[best_J] = true;
+			break;
+		}
+		if (result->chromT[posChromT] == best_J)
+		{
+			posChromT++;
+			result->chromT[posChromT] = best_I;
+			freqClient[best_I] = true;
+
+			std::swap(best_I, best_J);
+			break;
+		}
+	}
+
+	int posParent2 = 0;
+	for (; posParent2 < parent2->chromT.size(); posParent2++)
+	{
+		if (parent2->chromT[posParent2] == best_J || parent2->chromT[posParent2] == best_I)
+		{
+			break;
+		}
+	}
+	int j = posChromT + 1;
+	// Fill the remaining elements in the order given by the second parent
+	for (int i = 1; i <= params->nbClients; i++)
+	{
+		int temp = parent2->chromT[(posParent2 + i) % params->nbClients];
+		if (freqClient[temp] == false)
+		{
+			result->chromT[j % params->nbClients] = temp;
+			j++;
+		}
+	}
+
+	// Completing the individual with the Split algorithm
+	split->generalSplit(result, parent1->myCostSol.nbRoutes+1);
 }
 
 Genetic::Genetic(Params *params, Split *split, Population *population, LocalSearch *localSearch, Mining *mining) : params(params), split(split), population(population), localSearch(localSearch), mining(mining)

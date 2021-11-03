@@ -153,7 +153,28 @@ int main(int argc, char *argv[])
 				}
 			}
 		}
+		else if (params.crossoverType == 10)
+		{
+			params.bestCustomerClosest.push_back(0);
+			for (int client_i = 1; client_i <= params.nbClients; client_i++)
+			{
+				int best_client_j = client_i == 1 ? 2 : 1;
+				double minDistance = params.timeCost[client_i][best_client_j];
 
+				for (int client_j = 1; client_j <= params.nbClients; client_j++)
+				{
+					if (client_i == client_j)
+						continue;
+					if (params.timeCost[client_i][client_j] < minDistance)
+					{
+						best_client_j = client_j;
+						minDistance = params.timeCost[client_i][client_j];
+					}
+				}
+
+				params.bestCustomerClosest.push_back(best_client_j);
+			}
+		}
 		// Initial population
 		std::cout << "----- INSTANCE LOADED WITH " << params.nbClients << " CLIENTS AND " << params.nbVehicles << " VEHICLES" << std::endl;
 		std::cout << "----- BUILDING INITIAL POPULATION" << std::endl;
