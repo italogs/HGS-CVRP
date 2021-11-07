@@ -5,43 +5,25 @@
 #SBATCH --cpus-per-task=5
 #SBATCH --mem=20G
 
-
 for (( it = ${instance_id} ; it < ${instance_id} + 100; it++))
 do
+    seed=1
+    time=5
+    
     useDPDP=0
     crossover=1
-    for (( seed=1; seed <= 1; seed++));
-    do
-        ./genvrp ../Instances/CVRP/WK_test_${it}.vrp Solutions/WK_test_${it}.vrp_crossover${crossover}_useDPDP${useDPDP}_time${time}_seed${seed}.sol -crossover ${crossover} -useDPDP ${useDPDP} -t ${time} -seed ${seed} &> outputs/output_WK_test_${it}.vrp_crossover${crossover}_useDPDP${useDPDP}_time${time}_seed${seed}.txt &
-    done
-    # wait
+    ./genvrp ../Instances/CVRP/WK_test_${it}.vrp Solutions/WK_test_${it}.vrp_crossover${crossover}_useDPDP${useDPDP}_time${time}_seed${seed}.sol -crossover ${crossover} -useDPDP ${useDPDP} -t ${time} -seed ${seed} &> outputs/output_WK_test_${it}.vrp_crossover${crossover}_useDPDP${useDPDP}_time${time}_seed${seed}.txt &
 
     useDPDP=1
     crossover=1
-    for (( seed=1; seed <= 1; seed++));
-    do
-        ./genvrp ../Instances/CVRP/WK_test_${it}.vrp Solutions/WK_test_${it}.vrp_crossover${crossover}_useDPDP${useDPDP}_time${time}_seed${seed}.sol -crossover ${crossover} -useDPDP ${useDPDP} -t ${time} -seed ${seed} &> outputs/output_WK_test_${it}.vrp_crossover${crossover}_useDPDP${useDPDP}_time${time}_seed${seed}.txt &
-    done
-    # wait
+    ./genvrp ../Instances/CVRP/WK_test_${it}.vrp Solutions/WK_test_${it}.vrp_crossover${crossover}_useDPDP${useDPDP}_time${time}_seed${seed}.sol -crossover ${crossover} -useDPDP ${useDPDP} -t ${time} -seed ${seed} &> outputs/output_WK_test_${it}.vrp_crossover${crossover}_useDPDP${useDPDP}_time${time}_seed${seed}.txt &
 
-    useDPDP=0
-    crossover=9
-    for (( seed=1; seed <= 1; seed++));
-    do
-        ./genvrp ../Instances/CVRP/WK_test_${it}.vrp Solutions/WK_test_${it}.vrp_crossover${crossover}_useDPDP${useDPDP}_time${time}_seed${seed}.sol -crossover ${crossover} -useDPDP ${useDPDP} -t ${time} -seed ${seed} &> outputs/output_WK_test_${it}.vrp_crossover${crossover}_useDPDP${useDPDP}_time${time}_seed${seed}.txt &
-    done
-    # wait
-
-    useDPDP=1
-    crossover=9
-    for (( seed=1; seed <= 1; seed++));
-    do
-        ./genvrp ../Instances/CVRP/WK_test_${it}.vrp Solutions/WK_test_${it}.vrp_crossover${crossover}_useDPDP${useDPDP}_time${time}_seed${seed}.sol -crossover ${crossover} -useDPDP ${useDPDP} -t ${time} -seed ${seed} &> outputs/output_WK_test_${it}.vrp_crossover${crossover}_useDPDP${useDPDP}_time${time}_seed${seed}.txt &
-    done
-    # wait
-
-    wait
-
+    if ((it % 2 == 1));
+    then
+        
+        wait
+    fi
 
 done
 
+wait

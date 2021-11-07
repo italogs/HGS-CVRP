@@ -37,6 +37,8 @@ int main(int argc, char *argv[])
 			{
 				std::string heatmapFullPath = "DPDP/Heatmaps_for_HGS/" + heatmapName + "/" + heatmapName;
 				params.bestCustomerHeat.push_back(0);
+
+				// Each client has its own file (depot + 100 closest elements)
 				for (int client_i = 1; client_i <= params.nbClients; client_i++)
 				{
 					std::ifstream heatmapFile(heatmapFullPath + "_" + std::to_string(client_i) + ".hm");
@@ -44,38 +46,38 @@ int main(int argc, char *argv[])
 					{
 						double edge_heat = 0.0;
 						std::vector<std::pair<int, double>> heatList;
-
 						double bestHeatValue = -1.0;
 						int bestHeatCustomer = 1;
-						for (int customer_id = 0; customer_id <= 100; customer_id++)
-						{
-							heatmapFile >> edge_heat;
-						}
-						for (int customer_id = 0; customer_id <= 100; customer_id++)
-						{
-							if (customer_id > 0)
-							{
-								heatmapFile >> edge_heat;
 
+						// Reading the first line of the heatmap (depot line)
+						for (int client_j = 0; client_j <= 100; client_j++)
+							heatmapFile >> edge_heat;
+
+						// Reading the remaining lines,
+						for (int client_j = 0; client_j <= 100; client_j++)
+						{
+
+							heatmapFile >> edge_heat;
+							if (client_j > 0)
+							{
 								// we entirely ignore 'heats' involving the depot
 								if (edge_heat > bestHeatValue)
 								{
 									bestHeatValue = edge_heat;
-									bestHeatCustomer = customer_id;
+									bestHeatCustomer = client_j;
 								}
 								// we also ignore 'heats' that points customer i to itself
-								if (edge_heat >= params.heatmapThreshold)
+								if (edge_heat >= params.heatmapThreshold && client_i != client_j)
 								{
-									heatList.push_back(std::make_pair(customer_id, -edge_heat));
+									heatList.push_back(std::make_pair(client_j, -edge_heat));
 								}
 							}
 						}
 						// std::cout << "heatList.size(): " << heatList.size() << std::endl;
 						// The save the best heat of each customer for crossover (if enabled)
 						if (params.crossoverType == 9)
-						{
 							params.bestCustomerHeat.push_back(params.closestVertices[client_i][bestHeatCustomer]);
-						}
+
 						if (params.useDPDP)
 						{
 							// Reset the original list of correlatedVertices (closest criteria)
@@ -96,59 +98,36 @@ int main(int argc, char *argv[])
 			else
 			{
 
-				std::string heatmapFullPath = "../Heatmaps/" + heatmapName + ".hm";
+				std::string heatmapFullPath = "DPDP/Heatmaps_for_HGS/WK_test/" + heatmapName + ".hm";
 				std::ifstream heatmapFile(heatmapFullPath);
 				std::string content;
-
-				// Avoiding baseline to enter
 				if (heatmapFile.is_open())
 				{
-					for (int i = 0; i <= (int)params.nbClients; i++)
-					{
-						double edge_heat = 0.0;
-						std::vector<std::pair<int, double>> heatList;
+					double edge_heat = 0.0;
+					// Reading the first line of the heatmap (depot line)
+					for (int client_i = 0; client_i <= 100; client_i++)
+						heatmapFile >> edge_heat;
 
+					for (int client_i = 1; client_i <= (int)params.nbClients; client_i++)
+					{
+						std::vector<std::pair<int, double>> heatList;
 						double bestHeatValue = -1.0;
 						int bestHeatCustomer = 1;
-						for (int customer_id = 0; customer_id <= params.nbClients; customer_id++)
+						for (int client_j = 0; client_j <= params.nbClients; client_j++)
 						{
 							heatmapFile >> edge_heat;
 							// we entirely ignore 'heats' involving the depot
-							if (customer_id > 0)
+							if (client_j > 0)
 							{
 								if (edge_heat > bestHeatValue)
 								{
 									bestHeatValue = edge_heat;
-									bestHeatCustomer = customer_id;
+									bestHeatCustomer = client_j;
 								}
 								// we also ignore 'heats' that points customer i to itself
-								if (edge_heat >= params.heatmapThreshold && customer_id != i)
+								if (edge_heat >= params.heatmapThreshold && client_i != client_j)
 								{
-									heatList.push_back(std::make_pair(customer_id, -edge_heat));
-								}
-							}
-						}
-						if (heatList.size() < 5)
-						{
-							heatList.clear();
-							double bestHeatValue = -1.0;
-							int bestHeatCustomer = 1;
-							for (int customer_id = 0; customer_id <= params.nbClients; customer_id++)
-							{
-								heatmapFile >> edge_heat;
-								// we entirely ignore 'heats' involving the depot
-								if (customer_id > 0)
-								{
-									if (edge_heat > bestHeatValue)
-									{
-										bestHeatValue = edge_heat;
-										bestHeatCustomer = customer_id;
-									}
-									// we also ignore 'heats' that points customer i to itself
-									if (customer_id != i)
-									{
-										heatList.push_back(std::make_pair(customer_id, -edge_heat));
-									}
+									heatList.push_back(std::make_pair(client_j, -edge_heat));
 								}
 							}
 						}
@@ -160,14 +139,14 @@ int main(int argc, char *argv[])
 						if (params.useDPDP)
 						{
 							// Reset the original list of correlatedVertices (closest criteria)
-							int granularSize = params.correlatedVertices[i].size();
-							params.correlatedVertices[i].clear();
+							int granularSize = params.correlatedVertices[client_i].size();
+							params.correlatedVertices[client_i].clear();
 
 							// Sort list of heats and including them into correlatedVertices
 							std::sort(heatList.begin(), heatList.end(), orderPairSecond);
 
 							for (int j = 0; j < heatList.size() && j < granularSize; j++)
-								params.correlatedVertices[i].push_back(heatList[j].first);
+								params.correlatedVertices[client_i].push_back(heatList[j].first);
 						}
 					}
 				}
