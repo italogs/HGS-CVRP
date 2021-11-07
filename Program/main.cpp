@@ -2,7 +2,6 @@
 #include "commandline.h"
 #include "LocalSearch.h"
 #include "Split.h"
-#include "Mining.h"
 
 using namespace std;
 
@@ -24,9 +23,6 @@ int main(int argc, char *argv[])
 
 		// Creating the Split and local search structures
 		Split split(&params);
-
-		// Creating the structure to mine frequent sequences
-		Mining mining(&params);
 
 		LocalSearch localSearch(&params);
 
@@ -132,6 +128,30 @@ int main(int argc, char *argv[])
 								}
 							}
 						}
+						if (heatList.size() < 5)
+						{
+							heatList.clear();
+							double bestHeatValue = -1.0;
+							int bestHeatCustomer = 1;
+							for (int customer_id = 0; customer_id <= params.nbClients; customer_id++)
+							{
+								heatmapFile >> edge_heat;
+								// we entirely ignore 'heats' involving the depot
+								if (customer_id > 0)
+								{
+									if (edge_heat > bestHeatValue)
+									{
+										bestHeatValue = edge_heat;
+										bestHeatCustomer = customer_id;
+									}
+									// we also ignore 'heats' that points customer i to itself
+									if (customer_id != i)
+									{
+										heatList.push_back(std::make_pair(customer_id, -edge_heat));
+									}
+								}
+							}
+						}
 
 						// The save the best heat of each customer for crossover (if enabled)
 						if (params.crossoverType == 9)
@@ -153,7 +173,8 @@ int main(int argc, char *argv[])
 				}
 			}
 		}
-		else if (params.crossoverType == 10)
+
+		if (params.crossoverType == 10)
 		{
 			params.bestCustomerClosest.push_back(0);
 			for (int client_i = 1; client_i <= params.nbClients; client_i++)
@@ -178,11 +199,11 @@ int main(int argc, char *argv[])
 		// Initial population
 		std::cout << "----- INSTANCE LOADED WITH " << params.nbClients << " CLIENTS AND " << params.nbVehicles << " VEHICLES" << std::endl;
 		std::cout << "----- BUILDING INITIAL POPULATION" << std::endl;
-		Population population(&params, &split, &localSearch, &mining);
+		Population population(&params, &split, &localSearch);
 
 		// Genetic algorithm
 		std::cout << "----- STARTING GENETIC ALGORITHM - CROSSOVER TYPE: " << params.crossoverType << std::endl;
-		Genetic solver(&params, &split, &population, &localSearch, &mining);
+		Genetic solver(&params, &split, &population, &localSearch);
 		solver.run(commandline.nbIter, commandline.timeLimit);
 		std::cout << "----- GENETIC ALGORITHM FINISHED, TIME SPENT: " << (double)clock() / (double)CLOCKS_PER_SEC << std::endl;
 

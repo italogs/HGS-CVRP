@@ -69,16 +69,6 @@ public:
 	double heatmapThreshold = 0.5;
 	std::vector<int> bestCustomerHeat;
 	std::vector<int> bestCustomerClosest;
-	
-	/* PARAMETERS OF THE PILS */
-	int minSeqMining;			    // Minimum size of the sequences used in the mining mechanism	
-	int maxSeqMining;			    // Maximum size of the sequences used in the mining mechanism
-	int samplingRatioMining;		// Fraction of (locally minimum) solutions mined will be 1/samplingRatioMining, to avoid overhead due to pattern extraction
-	double factorPatternMining;	// The number of "most frequent" sequences which will be tracked
-
-	/* STATISTICS COLLECTED ON THE RUN */
-	double totalExtractionTimePILS = 0.;
-	int totalExtractions = 0;
 
 	/* ADAPTIVE PENALTY COEFFICIENTS */
 	double penaltyCapacity;				// Penalty for one unit of capacity excess (adapted through the search)

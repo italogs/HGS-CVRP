@@ -12,12 +12,6 @@ Params::Params(std::string pathToInstance, int seedRNG, int crossoverType, int u
 	isRoundingInteger = true;
 	isDurationConstraint = false;
 
-	// Baseline parameters
-	minSeqMining = 2;
-	maxSeqMining = 3;
-	factorPatternMining = 5;
-	samplingRatioMining = 10;
-
 	// Initialize RNG
 	srand(seedRNG);
 
