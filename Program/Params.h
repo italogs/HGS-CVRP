@@ -66,7 +66,7 @@ public:
 	double targetFeasible   = 0.2;		// Reference proportion for the number of feasible individuals, used for the adaptation of the penalty parameters
 	int crossoverType       = 1;
 	int useDPDP 			= 0;
-	double heatmapThreshold = 0.5;
+	float heatmapThreshold = 0.5;
 	std::vector<int> bestCustomerHeat;
 	std::vector<int> bestCustomerClosest;
 
