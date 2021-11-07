@@ -35,6 +35,7 @@ public:
 	int timeLimit   = INT_MAX;		// CPU time limit until termination in seconds. Default value: infinity
 	int seed		= 0;			// Random seed. Default value: 0
 	int nbVeh		= INT_MAX;		// Number of vehicles. Default value: infinity
+	int nbGranular  = 20;			// Number of customers evaluated in neighborhood moves
 	std::string pathInstance;		// Instance path
 	std::string pathSolution;		// Solution path
 	std::string pathBKS = "";		// BKS path
@@ -72,6 +73,8 @@ public:
 					useDPDP = std::atoi(argv[i+1]);
 				else if (std::string(argv[i]) == "-heatmapThreshold")
 					heatmapThreshold = std::atof(argv[i+1]);
+				else if (std::string(argv[i]) == "-nbGranular")
+					nbGranular = std::atoi(argv[i+1]);
 				else
 				{
 					std::cout << "----- ARGUMENT NOT RECOGNIZED: " << std::string(argv[i]) << std::endl;

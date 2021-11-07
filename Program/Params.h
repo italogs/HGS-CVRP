@@ -91,7 +91,7 @@ public:
 	std::vector < std::vector < int > > edgeFrequencyForCorrelatedVertices; // Tracks the frequency of edge (i,j)
 
 	// Initialization from a given data set
-	Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossoverType, int useDPDP, float heatmapThreshold);
+	Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossoverType, int useDPDP, float heatmapThreshold, int nbGranular);
 
 };
 #endif
