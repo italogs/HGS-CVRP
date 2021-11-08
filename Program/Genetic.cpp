@@ -32,7 +32,7 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 		bool isNewBest = population->addIndividual(offspring, true);
 		if (!offspring->isFeasible && std::rand() % 2 == 0) // Repair half of the solutions in case of infeasibility
 		{
-			localSearch->run(offspring, params->penaltyCapacity * 10., params->penaltyDuration * 10.);
+			localSearch->run(offspring, params->penaltyCapacity * 50., params->penaltyDuration * 50.);
 			if (offspring->isFeasible)
 				isNewBest = (population->addIndividual(offspring, false) || isNewBest);
 		}
@@ -59,7 +59,6 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 			population->restart();
 			nbIterNonProd = 1;
 		}
-
 	}
 
 	std::cout << "nbIter: " << nbIter << std::endl;
@@ -74,9 +73,6 @@ bool minHeapComparisonFn(const std::pair<std::pair<int, int>, double> &elem1, co
 {
 	return (elem1.second > elem2.second);
 }
-
-
-
 
 void Genetic::crossoverOX(Individual *result, const Individual *parent1, const Individual *parent2)
 {
@@ -176,7 +172,6 @@ void Genetic::crossoverHeatmap(Individual *result, const Individual *parent1, co
 	split->generalSplit(result, parent1->myCostSol.nbRoutes);
 }
 
-
 void Genetic::crossoverOXClosest(Individual *result, const Individual *parent1, const Individual *parent2)
 {
 	// Frequency table to track the customers which have been already inserted
@@ -237,7 +232,7 @@ void Genetic::crossoverOXClosest(Individual *result, const Individual *parent1, 
 	}
 
 	// Completing the individual with the Split algorithm
-	split->generalSplit(result, parent1->myCostSol.nbRoutes+1);
+	split->generalSplit(result, parent1->myCostSol.nbRoutes + 1);
 }
 
 Genetic::Genetic(Params *params, Split *split, Population *population, LocalSearch *localSearch) : params(params), split(split), population(population), localSearch(localSearch)

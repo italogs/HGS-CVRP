@@ -11,7 +11,7 @@ void Population::generatePopulation()
 		addIndividual(randomIndiv, true);
 		if (!randomIndiv->isFeasible && std::rand() % 2 == 0)  // Repair half of the solutions in case of infeasibility
 		{
-			localSearch->run(randomIndiv, params->penaltyCapacity*10., params->penaltyDuration*10.);
+			localSearch->run(randomIndiv, params->penaltyCapacity * 50., params->penaltyDuration * 50.);
 			if (randomIndiv->isFeasible) addIndividual(randomIndiv, false);
 		}
 

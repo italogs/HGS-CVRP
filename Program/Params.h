@@ -83,6 +83,7 @@ public:
 	double vehicleCapacity;									// Capacity limit
 	double totalDemand ;									// Total demand required by the clients
 	double maxDemand;										// Maximum demand of a client
+	double minDemand;										// Minimum demand of a client
 	double maxDist;											// Maximum distance between two clients
 	std::vector < Client > cli ;							// Vector containing information on each client
 	std::vector < std::vector < double > > timeCost ;		// Distance matrix

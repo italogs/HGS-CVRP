@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
 		// Exporting the best solution
 
 		std::string instanceBaseName = params.pathToInstance.substr(params.pathToInstance.find_last_of("/\\") + 1);
-		std::ofstream allSolutionsFile("Solutions-DPDP/solutions_useDPDP" + std::to_string(params.useDPDP) + "_" + std::to_string(commandline.timeLimit) + "sec_crossover" + std::to_string(commandline.crossoverType) + "_" + instanceBaseName + ".txt", std::ios::out | std::ios::app);
+		std::ofstream allSolutionsFile("Solutions-DPDP/solutions_useDPDP" + std::to_string(params.useDPDP) + "_crossover" + std::to_string(commandline.crossoverType) + "_nbGranular" + std::to_string(commandline.nbGranular) + "_time" + std::to_string(commandline.timeLimit) + "_" + instanceBaseName + ".txt", std::ios::out | std::ios::app);
 		if (population.getBestFound() != NULL)
 		{
 			allSolutionsFile << std::to_string(population.getBestFound()->myCostSol.penalizedCost) << std::endl;

@@ -7,6 +7,7 @@ Params::Params(std::string pathToInstance, int seedRNG, int crossoverType, int u
 	nbClients = 0;
 	totalDemand = 0.;
 	maxDemand = 0.;
+	minDemand = 1.e30;
 	durationLimit = 1.e30;
 	vehicleCapacity = 1.e30;
 	isRoundingInteger = true;
@@ -70,6 +71,8 @@ Params::Params(std::string pathToInstance, int seedRNG, int crossoverType, int u
 			cli[i].serviceDuration = (i == 0) ? 0. : serviceTimeData;
 			if (cli[i].demand > maxDemand)
 				maxDemand = cli[i].demand;
+			if (cli[i].demand < minDemand && i != 0)
+				minDemand = cli[i].demand;
 			totalDemand += cli[i].demand;
 		}
 
@@ -156,6 +159,7 @@ Params::Params(std::string pathToInstance, int seedRNG, int crossoverType, int u
 
 	// A reasonable scale for the initial values of the penalties
 	penaltyDuration = 1;
-	penaltyCapacity = std::max<double>(0.1, std::min<double>(1000., maxDist / maxDemand));
+	// penaltyCapacity = std::max<double>(0.1, std::min<double>(1000., maxDist / maxDemand));
+	penaltyCapacity = std::max<double>(0.1, std::min<double>(1000., maxDist / minDemand));
 
 }
