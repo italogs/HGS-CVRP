@@ -105,6 +105,7 @@ int main(int argc, char *argv[])
 				{
 					double edge_heat = 0.0;
 					// Reading the first line of the heatmap (depot line)
+					params.bestCustomerHeat.push_back(0);
 					for (int client_i = 0; client_i <= 100; client_i++)
 						heatmapFile >> edge_heat;
 

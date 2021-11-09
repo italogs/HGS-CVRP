@@ -35,15 +35,9 @@ private:
 	LocalSearch * localSearch;		// Local Search structure
 	Individual * offspring;			// First individual to be used as input for the crossover
 
-	short int **GAB_A = NULL;				// EAX: ParentA edges
-	short int **GAB_B = NULL;				// EAX: ParentB edges
-
-	std::map<std::pair<int,int>,int> heat_map_stl;
-
 	// OX Crossover
 	void crossoverOX(Individual * result, const Individual * parent1, const Individual * parent2);
 	void crossoverHeatmap(Individual * result, const Individual * parent1, const Individual * parent2);
-	void crossoverOXClosest(Individual *result, const Individual *parent1, const Individual *parent2);
 
 public:
 
