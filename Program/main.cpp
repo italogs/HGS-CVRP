@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 
 		// Reading the data file and initializing some data structures
 		std::cout << "----- READING DATA SET: " << commandline.pathInstance << std::endl;
-		Params params(commandline.pathInstance, commandline.seed, commandline.crossoverType, commandline.useDPDP, commandline.nbVeh, commandline.heatmapThreshold, commandline.nbGranular);
+		Params params(commandline.pathInstance, commandline.seed, commandline.crossoverType, commandline.useDPDP, commandline.nbVeh, commandline.nbGranular);
 
 		// Creating the Split and local search structures
 		Split split(&params);
@@ -29,7 +29,6 @@ int main(int argc, char *argv[])
 		if (params.useDPDP || params.crossoverType == 9)
 		{
 			std::cout << "Using DPDP: " << params.useDPDP << std::endl;
-			std::cout << "params.heatmapThreshold: " << params.heatmapThreshold << std::endl;
 			std::string instanceBaseName = params.pathToInstance.substr(params.pathToInstance.find_last_of("/\\") + 1);
 			std::string heatmapName = instanceBaseName.substr(0, instanceBaseName.find_last_of("."));
 			bool isUchoaInstance = (heatmapName.substr(0, 3) == "X-n");
@@ -56,9 +55,8 @@ int main(int argc, char *argv[])
 						// Reading the remaining lines,
 						for (int client_j = 0; client_j <= 100; client_j++)
 						{
-
 							heatmapFile >> edge_heat;
-							if (client_j > 0)
+							if (client_j > 0 && client_i != client_j)
 							{
 								// we entirely ignore 'heats' involving the depot
 								if (edge_heat > bestHeatValue)
@@ -67,10 +65,7 @@ int main(int argc, char *argv[])
 									bestHeatCustomer = client_j;
 								}
 								// we also ignore 'heats' that points customer i to itself
-								if (edge_heat >= params.heatmapThreshold && client_i != client_j)
-								{
-									heatList.push_back(std::make_pair(client_j, -edge_heat));
-								}
+								heatList.push_back(std::make_pair(client_j, -edge_heat));
 							}
 						}
 						// std::cout << "heatList.size(): " << heatList.size() << std::endl;
@@ -118,7 +113,7 @@ int main(int argc, char *argv[])
 						{
 							heatmapFile >> edge_heat;
 							// we entirely ignore 'heats' involving the depot
-							if (client_j > 0)
+							if (client_j > 0 && client_i != client_j)
 							{
 								if (edge_heat > bestHeatValue)
 								{
@@ -126,10 +121,7 @@ int main(int argc, char *argv[])
 									bestHeatCustomer = client_j;
 								}
 								// we also ignore 'heats' that points customer i to itself
-								if (edge_heat >= params.heatmapThreshold && client_i != client_j)
-								{
-									heatList.push_back(std::make_pair(client_j, -edge_heat));
-								}
+								heatList.push_back(std::make_pair(client_j, -edge_heat));
 							}
 						}
 

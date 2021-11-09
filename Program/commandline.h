@@ -40,7 +40,6 @@ public:
 	std::string pathSolution;		// Solution path
 	std::string pathBKS = "";		// BKS path
 	int useDPDP = 0;		    	// Process DPDP approach
-	float heatmapThreshold = 0.5;	// heatmap threhold (float)
 	int crossoverType = 1;			// Crossover type (OX=1;EAX=2)
 
 	// Reads the line of command and extracts possible options
@@ -71,8 +70,6 @@ public:
 					crossoverType = atoi(argv[i+1]);
 				else if (std::string(argv[i]) == "-useDPDP")
 					useDPDP = std::atoi(argv[i+1]);
-				else if (std::string(argv[i]) == "-heatmapThreshold")
-					heatmapThreshold = std::atof(argv[i+1]);
 				else if (std::string(argv[i]) == "-nbGranular")
 					nbGranular = std::atoi(argv[i+1]);
 				else
