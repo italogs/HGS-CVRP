@@ -82,9 +82,18 @@ int main(int argc, char *argv[])
 							// Sort list of heats and including them into correlatedVertices
 							std::sort(heatList.begin(), heatList.end(), orderPairSecond);
 
-							for (int j = 0; j < heatList.size() && j < params.nbGranular; j++)
+							for (int j = 0; j < heatList.size() && j < params.nbGranular / 2; j++)
 							{
 								params.correlatedVertices[client_i].push_back(params.closestVertices[client_i][heatList[j].first]);
+							}
+							int posClosest = 0;
+							for (int j = 0; params.correlatedVertices[client_i].size() < params.nbGranular; j++)
+							{
+								if (std::find(params.correlatedVertices[client_i].begin(), params.correlatedVertices[client_i].end(), params.closestVertices[client_i][posClosest]) == params.correlatedVertices[client_i].end())
+								{
+									params.correlatedVertices[client_i].push_back(params.closestVertices[client_i][posClosest]);
+								}
+								posClosest++;
 							}
 						}
 					}
