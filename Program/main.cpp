@@ -76,7 +76,6 @@ int main(int argc, char *argv[])
 						if (params.useDPDP)
 						{
 							// Reset the original list of correlatedVertices (closest criteria)
-							int granularSize = params.correlatedVertices[client_i].size();
 							params.correlatedVertices[client_i].clear();
 
 							// Sort list of heats and including them into correlatedVertices
@@ -141,7 +140,6 @@ int main(int argc, char *argv[])
 						if (params.useDPDP)
 						{
 							// Reset the original list of correlatedVertices (closest criteria)
-							int granularSize = params.correlatedVertices[client_i].size();
 							params.correlatedVertices[client_i].clear();
 
 							// Sort list of heats and including them into correlatedVertices
