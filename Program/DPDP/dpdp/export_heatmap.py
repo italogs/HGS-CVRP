@@ -159,8 +159,12 @@ end = time.time()
 duration = end - start
 device_count = torch.cuda.device_count() if torch.cuda.is_available() else 0
 
-print("Took", timedelta(seconds=int(duration)), "s on ", device_count, "GPUs")
+print("Took", duration, "s on ", device_count, "GPUs")
 heatmaps = torch.cat(all_prob_preds, 0)
 os.makedirs(heatmap_dir, exist_ok=True)
 save_dataset((heatmaps.numpy(), {'duration': duration, 'device_count': device_count, 'args': args}), heatmap_filename)
 print("Saved", len(heatmaps), "heatmaps to", heatmap_filename)
+
+with open(heatmap_dir + "/time.txt","w") as f:
+    f.write(str(duration))
+    
