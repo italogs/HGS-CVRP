@@ -69,6 +69,9 @@ public:
 	std::vector<int> bestCustomerHeat;
 	std::vector<int> bestCustomerClosest;
 
+	/* PARAMETER FOR Heatmap*/
+	double time_shift_export_heatmap = 0.0;
+
 	/* ADAPTIVE PENALTY COEFFICIENTS */
 	double penaltyCapacity;				// Penalty for one unit of capacity excess (adapted through the search)
 	double penaltyDuration;				// Penalty for one unit of duration excess (adapted through the search)

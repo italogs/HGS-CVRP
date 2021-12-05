@@ -7,7 +7,7 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 	clock_t total_time_crossover = 0;
 	clock_t total_time_local_search = 0;
 
-	for (nbIter = 0; nbIterNonProd <= maxIterNonProd && clock() / CLOCKS_PER_SEC < timeLimit; nbIter++)
+	for (nbIter = 0; nbIterNonProd <= maxIterNonProd && (clock() / CLOCKS_PER_SEC) + params->time_shift_export_heatmap < timeLimit; nbIter++)
 	{
 		/* SELECTION AND CROSSOVER */
 		clock_t crossover_start = clock();

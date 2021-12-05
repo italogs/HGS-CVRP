@@ -201,7 +201,7 @@ Individual * Population::getBestFound()
 
 void Population::printState(int nbIter, int nbIterNoImprovement)
 {
-	std::printf("It %6d %6d | T(s) %.2f", nbIter, nbIterNoImprovement, (double)clock() / (double)CLOCKS_PER_SEC);
+	std::printf("It %6d %6d | T(s) %.2f", nbIter, nbIterNoImprovement, ((double)clock() / (double)CLOCKS_PER_SEC) + params->time_shift_export_heatmap);
 
 	if (getBestFeasible() != NULL) std::printf(" | Feas %zu %.2f %.2f", feasibleSubpopulation.size(), getBestFeasible()->myCostSol.penalizedCost, getAverageCost(feasibleSubpopulation));
 	else std::printf(" | NO-FEASIBLE");
@@ -250,7 +250,7 @@ void Population::exportSearchProgress(std::string fileName, std::string instance
 {
 	std::ofstream myfile(fileName);
 	for (std::pair<clock_t, double> state : searchProgress)
-		myfile << instanceName << ";" << seedRNG << ";" << state.second << ";" << (double)state.first / (double)CLOCKS_PER_SEC << std::endl;
+		myfile << instanceName << ";" << seedRNG << ";" << state.second << ";" << ((double)state.first / (double)CLOCKS_PER_SEC) + params->time_shift_export_heatmap << std::endl;
 }
 
 Population::Population(Params * params, Split * split, LocalSearch * localSearch) : params(params), split(split), localSearch(localSearch)

@@ -34,6 +34,10 @@ int main(int argc, char *argv[])
 			bool isUchoaInstance = (heatmapName.substr(0, 3) == "X-n");
 			if (isUchoaInstance)
 			{
+				std::ifstream timeSpentFile("DPDP/dpdp/results/vrp/" + heatmapName + "/heatmaps/time.txt");
+				if (timeSpentFile.is_open())
+					timeSpentFile >> params.time_shift_export_heatmap;
+				std::cout << "Time Shift from HeatmapGeneration: " << params.time_shift_export_heatmap << std::endl;
 				std::string heatmapFullPath = "DPDP/Heatmaps_for_HGS/" + heatmapName + "/" + heatmapName;
 				params.bestCustomerHeat.push_back(0);
 

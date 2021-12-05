@@ -87,7 +87,7 @@ void Individual::exportCVRPLibFormat(std::string fileName)
 			}
 		}
 		myfile << "Cost " << myCostSol.penalizedCost << std::endl;
-		myfile << "Time " << (double)clock()/(double)CLOCKS_PER_SEC << std::endl;
+		myfile << "Time " << ((double)clock()/(double)CLOCKS_PER_SEC) + params->time_shift_export_heatmap << std::endl;
 	}
 	else std::cout << "----- IMPOSSIBLE TO OPEN: " << fileName << std::endl;
 }
