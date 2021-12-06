@@ -3,7 +3,7 @@
 mkdir Solutions
 mkdir Solutions-DPDP
 mkdir outputs
-
+mkdir -p DPDP/Heatmaps_for_HGS/
 
 mkdir -p Solutions/useDPDP0_crossover1/
 mkdir -p outputs/useDPDP0_crossover1/
