@@ -31,16 +31,12 @@ int main(int argc, char *argv[])
 			std::cout << "Using DPDP: " << params.useDPDP << std::endl;
 			std::string instanceBaseName = params.pathToInstance.substr(params.pathToInstance.find_last_of("/\\") + 1);
 			std::string heatmapName = instanceBaseName.substr(0, instanceBaseName.find_last_of("."));
-			bool isUchoaInstance = (heatmapName.substr(0, 3) == "X-n");
+			std::string heatmapFullPath = "DPDP/Heatmaps_for_HGS/" + heatmapName + "/" + heatmapName;
+
+			bool isUchoaInstance = (heatmapName.substr(0, 3) == "X-n") && !(heatmapName.substr(0, 10) == "X-n101-k25");
 			if (isUchoaInstance)
 			{
-				std::ifstream timeSpentFile("DPDP/dpdp/results/vrp/" + heatmapName + "/heatmaps/time.txt");
-				if (timeSpentFile.is_open())
-					timeSpentFile >> params.time_shift_export_heatmap;
-				std::cout << "Time Shift from HeatmapGeneration: " << params.time_shift_export_heatmap << std::endl;
-				std::string heatmapFullPath = "DPDP/Heatmaps_for_HGS/" + heatmapName + "/" + heatmapName;
 				params.bestCustomerHeat.push_back(0);
-
 				// Each client has its own file (depot + 100 closest elements)
 				for (int client_i = 1; client_i <= params.nbClients; client_i++)
 				{
@@ -56,7 +52,7 @@ int main(int argc, char *argv[])
 						for (int client_j = 0; client_j <= 100; client_j++)
 							heatmapFile >> edge_heat;
 
-						// Reading the remaining lines,
+						// Reading the second line of the file, which is related to client_i
 						for (int client_j = 0; client_j <= 100; client_j++)
 						{
 							heatmapFile >> edge_heat;
@@ -72,8 +68,10 @@ int main(int argc, char *argv[])
 								heatList.push_back(std::make_pair(client_j, -edge_heat));
 							}
 						}
-						// std::cout << "heatList.size(): " << heatList.size() << std::endl;
+
 						// The save the best heat of each customer for crossover (if enabled)
+						// Careful with wrong interpretations. Each client_j refers to the jth closest customer to client_i
+						// Therefore, we use closestVertices below
 						if (params.crossoverType == 9)
 							params.bestCustomerHeat.push_back(params.closestVertices[client_i][bestHeatCustomer]);
 
@@ -104,9 +102,7 @@ int main(int argc, char *argv[])
 			}
 			else
 			{
-
-				std::string heatmapFullPath = "DPDP/Heatmaps_for_HGS/WK_test/" + heatmapName + ".hm";
-				std::ifstream heatmapFile(heatmapFullPath);
+				std::ifstream heatmapFile(heatmapFullPath + ".hm");
 				std::string content;
 				if (heatmapFile.is_open())
 				{
@@ -116,12 +112,13 @@ int main(int argc, char *argv[])
 					for (int client_i = 0; client_i <= 100; client_i++)
 						heatmapFile >> edge_heat;
 
-					for (int client_i = 1; client_i <= (int)params.nbClients; client_i++)
+					for (int client_i = 1; client_i <= (int)100; client_i++)
 					{
 						std::vector<std::pair<int, double>> heatList;
 						double bestHeatValue = -1.0;
 						int bestHeatCustomer = 1;
-						for (int client_j = 0; client_j <= params.nbClients; client_j++)
+						// Reading the line of client_i
+						for (int client_j = 0; client_j <= 100; client_j++)
 						{
 							heatmapFile >> edge_heat;
 							// we entirely ignore 'heats' involving the depot
@@ -164,6 +161,18 @@ int main(int argc, char *argv[])
 						}
 					}
 				}
+			}
+
+			// Including the generation of heatmaps into the time
+			std::ifstream timeSpentFile("DPDP/dpdp/results/vrp/" + heatmapName + "/heatmaps/time.txt");
+			if (timeSpentFile.is_open())
+				timeSpentFile >> params.time_shift_export_heatmap;
+			std::cout << "Time Shift from HeatmapGeneration: " << params.time_shift_export_heatmap << std::endl;
+
+			if (params.time_shift_export_heatmap > commandline.timeLimit)
+			{
+				std::cout << "params.time_shift_export_heatmap > commandline.timeLimit: " << params.time_shift_export_heatmap << ":" << commandline.timeLimit << std::endl;
+				exit(0);
 			}
 		}
 
