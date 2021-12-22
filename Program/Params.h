@@ -65,7 +65,7 @@ public:
 	int nbClose				= 2;		// Number of closest solutions/individuals considered when calculating diversity contribution
 	double targetFeasible   = 0.2;		// Reference proportion for the number of feasible individuals, used for the adaptation of the penalty parameters
 	int crossoverType       = 1;
-	int useDPDP 			= 0;
+	int useHeatmap 			= 0;
 	std::vector<int> bestCustomerHeat;
 	std::vector<int> bestCustomerClosest;
 
@@ -94,7 +94,7 @@ public:
 	std::vector < std::vector < int > > edgeFrequencyForCorrelatedVertices; // Tracks the frequency of edge (i,j)
 
 	// Initialization from a given data set
-	Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossoverType, int useDPDP, int nbGranular);
+	Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossoverType, int useHeatmap, int nbGranular);
 
 };
 #endif

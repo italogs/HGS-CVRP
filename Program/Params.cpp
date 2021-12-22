@@ -1,6 +1,6 @@
 #include "Params.h"
 
-Params::Params(std::string pathToInstance, int seedRNG, int crossoverType, int useDPDP, int nbVeh, int nbGranular) : pathToInstance(pathToInstance), crossoverType(crossoverType), useDPDP(useDPDP), nbVehicles(nbVeh), nbGranular(nbGranular)
+Params::Params(std::string pathToInstance, int seedRNG, int crossoverType, int useHeatmap, int nbVeh, int nbGranular) : pathToInstance(pathToInstance), crossoverType(crossoverType), useHeatmap(useHeatmap), nbVehicles(nbVeh), nbGranular(nbGranular)
 {
 	std::string content, content2, content3;
 	double serviceTimeData = 0.;

@@ -19,16 +19,16 @@ int main(int argc, char *argv[])
 
 		// Reading the data file and initializing some data structures
 		std::cout << "----- READING DATA SET: " << commandline.pathInstance << std::endl;
-		Params params(commandline.pathInstance, commandline.seed, commandline.crossoverType, commandline.useDPDP, commandline.nbVeh, commandline.nbGranular);
+		Params params(commandline.pathInstance, commandline.seed, commandline.crossoverType, commandline.useHeatmap, commandline.nbVeh, commandline.nbGranular);
 
 		// Creating the Split and local search structures
 		Split split(&params);
 
 		LocalSearch localSearch(&params);
 
-		if (params.useDPDP || params.crossoverType == 9)
+		if (params.useHeatmap || params.crossoverType == 9)
 		{
-			std::cout << "Using DPDP: " << params.useDPDP << std::endl;
+			std::cout << "Using Heatmap: " << params.useHeatmap << std::endl;
 			std::string instanceBaseName = params.pathToInstance.substr(params.pathToInstance.find_last_of("/\\") + 1);
 			std::string heatmapName = instanceBaseName.substr(0, instanceBaseName.find_last_of("."));
 			std::string heatmapFullPath = "DPDP/Heatmaps_for_HGS/" + heatmapName + "/" + heatmapName;
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 						if (params.crossoverType == 9)
 							params.bestCustomerHeat.push_back(params.closestVertices[client_i][bestHeatCustomer]);
 
-						if (params.useDPDP)
+						if (params.useHeatmap)
 						{
 							// Reset the original list of correlatedVertices (closest criteria)
 							params.correlatedVertices[client_i].clear();
@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
 						if (params.crossoverType == 9)
 							params.bestCustomerHeat.push_back(bestHeatCustomer);
 
-						if (params.useDPDP)
+						if (params.useHeatmap)
 						{
 							// Reset the original list of correlatedVertices (closest criteria)
 							params.correlatedVertices[client_i].clear();
@@ -210,22 +210,13 @@ int main(int argc, char *argv[])
 		std::cout << "----- GENETIC ALGORITHM FINISHED, TIME SPENT: " << (double)clock() / (double)CLOCKS_PER_SEC << std::endl;
 
 		// Exporting the best solution
-
-		std::string instanceBaseName = params.pathToInstance.substr(params.pathToInstance.find_last_of("/\\") + 1);
-		std::ofstream allSolutionsFile("Solutions-DPDP/solutions_useDPDP" + std::to_string(params.useDPDP) + "_crossover" + std::to_string(commandline.crossoverType) + "_nbGranular" + std::to_string(commandline.nbGranular) + "_time" + std::to_string(commandline.timeLimit) + "_" + instanceBaseName + ".txt", std::ios::out | std::ios::app);
 		if (population.getBestFound() != NULL)
 		{
-			allSolutionsFile << std::to_string(population.getBestFound()->myCostSol.penalizedCost) << std::endl;
 			population.getBestFound()->exportCVRPLibFormat(commandline.pathSolution);
 			population.exportSearchProgress(commandline.pathSolution + ".PG.csv", commandline.pathInstance, commandline.seed);
 			if (commandline.pathBKS != "")
 				population.exportBKS(commandline.pathBKS);
 		}
-		else
-		{
-			allSolutionsFile << "Exporting best solution is not valid" << std::endl;
-		}
-		allSolutionsFile.close();
 	}
 	catch (const string &e)
 	{

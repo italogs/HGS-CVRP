@@ -39,7 +39,7 @@ public:
 	std::string pathInstance;		// Instance path
 	std::string pathSolution;		// Solution path
 	std::string pathBKS = "";		// BKS path
-	int useDPDP = 0;		    	// Process DPDP approach
+	int useHeatmap = 0;		    	// Use heatmaps to define neighborhoods
 	int crossoverType = 1;			// Crossover type (OX=1;EAX=2)
 
 	// Reads the line of command and extracts possible options
@@ -68,8 +68,8 @@ public:
 					nbVeh = atoi(argv[i+1]);
 				else if (std::string(argv[i]) == "-crossover")
 					crossoverType = atoi(argv[i+1]);
-				else if (std::string(argv[i]) == "-useDPDP")
-					useDPDP = std::atoi(argv[i+1]);
+				else if (std::string(argv[i]) == "-useHeatmap")
+					useHeatmap = std::atoi(argv[i+1]);
 				else if (std::string(argv[i]) == "-nbGranular")
 					nbGranular = std::atoi(argv[i+1]);
 				else
