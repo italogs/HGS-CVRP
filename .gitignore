@@ -5,6 +5,7 @@ Program/lkh/*
 Program/outputs/*
 Program/Solutions-DPDP/*
 .vscode/settings.json
+Program/DPDP/Heatmaps_for_HGS/*
 
 
 # Ignore all above file except these files below
@@ -13,3 +14,4 @@ Program/Solutions-DPDP/*
 !Program/Solutions/empty.txt
 !Program/Solutions-DPDP/empty.txt
 !Program/outputs/empty.txt
+!Program/DPDP/Heatmaps_for_HGS/empty.txt
