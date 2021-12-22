@@ -21,12 +21,11 @@ done
 
 
 # It will solve k instances at each sbatch
-step_instances=5
+step_instances=500
 time=5
 
 for (( instance_id=0; instance_id <= 9999; ));
 do
     sbatch --export=instance_id=${instance_id},time=${time},step_instances=${step_instances} all-WK_test-CC-script2.sh
     instance_id=$(($instance_id + $step_instances))
-    break
 done

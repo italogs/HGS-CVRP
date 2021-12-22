@@ -2,6 +2,7 @@ from dpdp.utils.data_utils import load_heatmaps
 import numpy as np
 import os
 import sys
+from tqdm import tqdm
 
 def write_heatmaps():
 
@@ -20,17 +21,21 @@ def write_heatmaps():
     if not(os.path.exists(file_dir)):
         os.makedirs(file_dir)
 
-    for index, heatmap in enumerate(heatmaps):
-        
-        new_filename = instance + "_" + str(index+1)
-
+    for index, heatmap in enumerate(tqdm(heatmaps)):
         if instance == "X-n101-k25" or "WK_test_" in instance:
             new_filename = instance
+            with open(file_dir + new_filename + ".hm","w") as f:
+                for customer_heatmap in heatmap:
+                    f.write(" ".join([ str(value) for value in customer_heatmap]))
+                    f.write("\n")
+        else:
+            new_filename = instance + "_" + str(index+1)
+            with open(file_dir + new_filename + ".hm","w") as f:
+                for customer_heatmap in heatmap[:2]:
+                    f.write(" ".join([ str(value) for value in customer_heatmap]))
+                    f.write("\n")
 
-        with open(file_dir + new_filename + ".hm","w") as f:
-            for customer_heatmap in heatmap:
-                f.write(" ".join([ str(value) for value in customer_heatmap]))
-                f.write("\n")
+
 
 if __name__ == "__main__":
     write_heatmaps()

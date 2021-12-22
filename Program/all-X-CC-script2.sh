@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --gres=gpu:1   
-#SBATCH --cpus-per-task=6
-#SBATCH --mem=20GB       
+#SBATCH --cpus-per-task=32
+#SBATCH --mem=64GB       
 #SBATCH --time=0:30:00
 #SBATCH --nodes=1
 
@@ -37,19 +37,19 @@ do
     for nbGranular in "${arr_nbGranular[@]}"
     do
         echo ${nbGranular}
-        useDPDP=0
+        useHeatmap=0
         crossover=1
         ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/useHeatmap${useHeatmap}_crossover${crossover}/${model}/${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -crossover ${crossover} -useHeatmap ${useHeatmap} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/useHeatmap${useHeatmap}_crossover${crossover}/${model}/output_${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
 
-        useDPDP=1
+        useHeatmap=1
         crossover=1
         ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/useHeatmap${useHeatmap}_crossover${crossover}/${model}/${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -crossover ${crossover} -useHeatmap ${useHeatmap} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/useHeatmap${useHeatmap}_crossover${crossover}/${model}/output_${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
 
-        useDPDP=0
+        useHeatmap=0
         crossover=9
         ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/useHeatmap${useHeatmap}_crossover${crossover}/${model}/${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -crossover ${crossover} -useHeatmap ${useHeatmap} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/useHeatmap${useHeatmap}_crossover${crossover}/${model}/output_${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &            
 
-        useDPDP=1
+        useHeatmap=1
         crossover=9
         ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/useHeatmap${useHeatmap}_crossover${crossover}/${model}/${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -crossover ${crossover} -useHeatmap ${useHeatmap} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/useHeatmap${useHeatmap}_crossover${crossover}/${model}/output_${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
     done
@@ -65,19 +65,19 @@ do
     for nbGranular in "${arr_nbGranular[@]}"
     do
         echo ${nbGranular}
-        useDPDP=0
+        useHeatmap=0
         crossover=1
         ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/useHeatmap${useHeatmap}_crossover${crossover}/${model}/${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -crossover ${crossover} -useHeatmap ${useHeatmap} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/useHeatmap${useHeatmap}_crossover${crossover}/${model}/output_${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
 
-        useDPDP=1
+        useHeatmap=1
         crossover=1
         ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/useHeatmap${useHeatmap}_crossover${crossover}/${model}/${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -crossover ${crossover} -useHeatmap ${useHeatmap} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/useHeatmap${useHeatmap}_crossover${crossover}/${model}/output_${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
 
-        useDPDP=0
+        useHeatmap=0
         crossover=9
         ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/useHeatmap${useHeatmap}_crossover${crossover}/${model}/${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -crossover ${crossover} -useHeatmap ${useHeatmap} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/useHeatmap${useHeatmap}_crossover${crossover}/${model}/output_${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &            
 
-        useDPDP=1
+        useHeatmap=1
         crossover=9
         ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/useHeatmap${useHeatmap}_crossover${crossover}/${model}/${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -crossover ${crossover} -useHeatmap ${useHeatmap} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/useHeatmap${useHeatmap}_crossover${crossover}/${model}/output_${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
     done

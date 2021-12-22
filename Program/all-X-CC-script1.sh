@@ -29,5 +29,4 @@ batches_size=(100 105 109 114 119 124 128 133 138 142 147 152 156 161 166 171 17
 for ((index=${#instances[@]} - 1; index>=0; index--))
 do
     sbatch --export=instance=${instances[$index]},batch_size=${batches_size[$index]},timeClassic=${instances_time[$index]},timeReduced=${instances_time_reduced[$index]} all-X-CC-script2.sh
-    break
 done
