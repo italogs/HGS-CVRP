@@ -126,7 +126,7 @@ if args.problem == 'vrp':
 else:
     reader = TSPReader(num_nodes, num_neighbors, batch_size, instance_filepath, do_prep=not do_prepwrap)
 
-assert len(reader.filedata) % batch_size == 0, f"Number of instances {len(reader.filedata)} must be divisible by batch size {batch_size}"
+# assert len(reader.filedata) % batch_size == 0, f"Number of instances {len(reader.filedata)} must be divisible by batch size {batch_size}"
 
 dataset = iter(reader)
 

@@ -61,7 +61,10 @@ class VRPReader(object):
         if do_shuffle:
             self.shuffle()
 
-        self.max_iter = (len(self.filedata) // batch_size)
+        if(len(self.filedata) % batch_size == 0):
+            self.max_iter = (len(self.filedata) // batch_size)
+        else:
+            self.max_iter = (len(self.filedata) // batch_size) + 1
         assert self.max_iter > 0, "Not enough instances ({}) for batch size ({})".format(len(self.filedata), batch_size)
 
     def shuffle(self):
