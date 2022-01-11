@@ -93,7 +93,7 @@ Params::Params(std::string pathToInstance, int seedRNG, int crossoverType, int u
 	// Default initialization if the number of vehicles has not been provided by the user
 	if (nbVehicles == INT_MAX)
 	{
-		nbVehicles = std::ceil(1.2 * totalDemand / vehicleCapacity) + 2; // Safety margin: 20% + 2 more vehicles than the trivial bin packing LB
+		nbVehicles = std::ceil(1.3 * totalDemand / vehicleCapacity) + 2; // Safety margin: 30% + 2 more vehicles than the trivial bin packing LB
 		std::cout << "----- FLEET SIZE WAS NOT SPECIFIED. DEFAULT INITIALIZATION TO: " << nbVehicles << std::endl;
 	}
 
@@ -158,8 +158,6 @@ Params::Params(std::string pathToInstance, int seedRNG, int crossoverType, int u
 		throw("ERROR: The demand quantities are of very small or large scale. This could impact numerical stability. Please rescale the dataset and run again.");
 
 	// A reasonable scale for the initial values of the penalties
-	penaltyDuration = 1;
-	// penaltyCapacity = std::max<double>(0.1, std::min<double>(1000., maxDist / maxDemand));
-	penaltyCapacity = std::max<double>(0.1, std::min<double>(1000., maxDist / minDemand));
-
+	penaltyDuration = 10;
+	penaltyCapacity = std::max<double>(0.1, std::min<double>(1000., (maxDist*10.) / minDemand));
 }
