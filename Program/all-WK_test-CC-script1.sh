@@ -6,17 +6,17 @@ mkdir -p DPDP/Heatmaps_for_HGS/
 trained_models=(10dim-5layers-1500epochs 10dim-5layers-500epochs Kool-300dim-30layers-1500epochs) 
 for model in "${trained_models[@]}"
 do
-    mkdir -p Solutions/useHeatmap0_crossover1/${model}/
-    mkdir -p outputs/useHeatmap0_crossover1/${model}/
+    mkdir -p Solutions/${model}/useHeatmap0_crossover1/
+    mkdir -p outputs/${model}/useHeatmap0_crossover1/
 
-    mkdir -p Solutions/useHeatmap0_crossover9/${model}/
-    mkdir -p outputs/useHeatmap0_crossover9/${model}/
+    mkdir -p Solutions/${model}/useHeatmap0_crossover9/
+    mkdir -p outputs/${model}/useHeatmap0_crossover9/
 
-    mkdir -p Solutions/useHeatmap1_crossover1/${model}/
-    mkdir -p outputs/useHeatmap1_crossover1/${model}/
+    mkdir -p Solutions/${model}/useHeatmap1_crossover1/
+    mkdir -p outputs/${model}/useHeatmap1_crossover1/
 
-    mkdir -p Solutions/useHeatmap1_crossover9/${model}/
-    mkdir -p outputs/useHeatmap1_crossover9/${model}/
+    mkdir -p Solutions/${model}/useHeatmap1_crossover9/
+    mkdir -p outputs/${model}/useHeatmap1_crossover9/
 done
 
 
