@@ -40,6 +40,8 @@ with open("../../Instances/CVRP/" + instance_name + ".vrp") as instance:
             index_DEMAND_SECTION +=1
             break
         x = line.split('\t')
+        if len(x) == 1:
+            x = line.split()
         x[0] = int(x[0])
         x[1] = float(x[1])
         x[2] = float(x[2])
@@ -52,6 +54,8 @@ with open("../../Instances/CVRP/" + instance_name + ".vrp") as instance:
             break
 
         x = line.split('\t')
+        if len(x) == 1:
+            x = line.split()
         x[0] = int(x[0].strip())
         x[1] = int(x[1].strip())
         demandas[x[0]] = x[1]
