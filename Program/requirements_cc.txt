@@ -1,10 +1,11 @@
-module load python
+module load python/3.8
 virtualenv --no-download ~/env
 
 source ~/env/bin/activate
 
-pip install fastprogress  gdown  torch  torch-scatter torchaudio torchvision  pycuda  tqdm  tensorboardX sklearn scikit-learn scipy scikit-cuda
-
+pip install --no-index torch
+pip install --no-index fastprogress torch-scatter torchaudio torchvision  pycuda  tqdm  tensorboardX sklearn scikit-learn scipy scikit-cuda
+pip install gdown
 
 mkdir -p data/vrp
 cd data/vrp
