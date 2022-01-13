@@ -77,6 +77,12 @@ do
         done        
         wait
     done
+
+    for (( it = ${instance_id} ; it < ${cap_instance_id}; it++))
+    do
+        instance="WK_test_${it}"
+        rm -rf DPDP/Heatmaps_for_HGS/${instance}
+    done
 done
 
 echo "FIM"

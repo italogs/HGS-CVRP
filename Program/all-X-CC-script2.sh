@@ -83,6 +83,8 @@ do
     done
     wait
 
+
+    rm -rf DPDP/Heatmaps_for_HGS/${instance}
 done 
 
 echo "FIM"

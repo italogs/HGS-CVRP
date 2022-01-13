@@ -78,6 +78,13 @@ do
         done        
         wait
     done
+
+    for (( it = ${offset} ; it < ${cap_instance_id}; it++))
+    do
+        instance=${instances[$it]}
+        rm -rf DPDP/Heatmaps_for_HGS/${instance}
+    done
+
 done
 
 echo "FIM"
