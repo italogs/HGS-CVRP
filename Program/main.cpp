@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
 								setCorrelatedVertices[params.closestVertices[client_i][heatList[j].first]].insert(client_i);
 							}
 							int posClosest = 0;
-							for (int j = 0; j < params.nbGranular && setCorrelatedVertices[client_i].size() < (params.nbGranular); j++)
+							for (int j = 0; j < params.nbGranular && setCorrelatedVertices[client_i].size() < params.nbGranular && posClosest < params.nbClients; j++)
 							{
 								// If i is correlated with j, then j should be correlated with i
 								setCorrelatedVertices[client_i].insert(params.closestVertices[client_i][posClosest]);
@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
 								setCorrelatedVertices[heatList[j].first].insert(client_i);
 							}
 							int posClosest = 0;
-							for (int j = 0; j < params.nbGranular && setCorrelatedVertices[client_i].size() < (params.nbGranular); j++)
+							for (int j = 0; j < params.nbGranular && setCorrelatedVertices[client_i].size() < (params.nbGranular) && posClosest < params.nbClients; j++)
 							{
 								// If i is correlated with j, then j should be correlated with i
 								setCorrelatedVertices[client_i].insert(params.closestVertices[client_i][posClosest]);
@@ -166,7 +166,14 @@ int main(int argc, char *argv[])
 				// Reset the original list of correlatedVertices (closest criteria)
 				params.correlatedVertices[i].clear();
 				for (int x : setCorrelatedVertices[i])
+				{
+					if (x == 0)
+					{
+						std::cout << "Safety check. This cannot happen" << std::endl;
+						exit(0);
+					}
 					params.correlatedVertices[i].push_back(x);
+				}
 			}
 
 			// Including the generation of heatmaps into the time
@@ -196,7 +203,7 @@ int main(int argc, char *argv[])
 		// Exporting the best solution
 		if (population.getBestFound() != NULL)
 		{
-			population.getBestFound()->exportCVRPLibFormat(commandline.pathSolution);
+			// population.getBestFound()->exportCVRPLibFormat(commandline.pathSolution);
 			population.exportSearchProgress(commandline.pathSolution + ".PG.csv", commandline.pathInstance, commandline.seed);
 			if (commandline.pathBKS != "")
 				population.exportBKS(commandline.pathBKS);
