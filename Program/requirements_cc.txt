@@ -7,15 +7,14 @@ pip install --no-index torch
 pip install --no-index fastprogress torch-scatter torchaudio torchvision  pycuda  tqdm  tensorboardX sklearn scikit-learn scipy scikit-cuda
 pip install gdown
 
-mkdir -p data/vrp
-cd data/vrp
+mkdir -p data/vrp && cd data/vrp
 
 gdown --id 1e6cUGCD5_iC3OQTA6NM38UDFEaKWsGGt && gdown --id 1Se_x7gfkeVNq-crGTCsOCtda97XiEwJr && gdown --id 16nYaVr3cloxpVBeb3ueXYtnpdeCZCMkj
 
 
 
-mkdir -p results/vrp
-cd results/vrp
+mkdir -p results/vrp && cd results/vrp
+
 
 mkdir -p vrp_uchoa100_train_seed42 && gdown --id 1HjBIX-eh6cY0f2hpEry6tnUh1GnTQMe8 --output vrp_uchoa100_train_seed42/vrp_uchoa100_train_seed42n250000-lkh.pkl && mkdir -p vrp_uchoa100_validation_seed4321 && gdown --id 1JdcrWcYKMWdvs-oud7juc3zeJpPcJkj3 --output vrp_uchoa100_validation_seed4321/vrp_uchoa100_validation_seed4321-lkh.pkl && mkdir -p vrp_uchoa100_test_seed1234 && gdown --id 1sMyxYOQhJ3uI2bIY09EisjvLz0lLBfX- --output vrp_uchoa100_test_seed1234/vrp_uchoa100_test_seed1234-lkh.pkl
 
