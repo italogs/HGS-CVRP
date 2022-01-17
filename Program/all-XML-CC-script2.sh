@@ -1,8 +1,9 @@
 #!/bin/bash
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=24GB
+#SBATCH --cpus-per-task=6
+#SBATCH --mem=12GB
 #SBATCH --time=48:00:00
 #SBATCH --nodes=1
+#SBATCH --gres=gpu:1
 
 
 module load python
@@ -67,6 +68,7 @@ do
             useHeatmap=1
             crossover=1
             ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/${model}/useHeatmap${useHeatmap}_crossover${crossover}/${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -crossover ${crossover} -useHeatmap ${useHeatmap} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/${model}/useHeatmap${useHeatmap}_crossover${crossover}/output_${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
+            wait
 
             useHeatmap=0
             crossover=9
@@ -75,17 +77,18 @@ do
             useHeatmap=1
             crossover=9
             ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/${model}/useHeatmap${useHeatmap}_crossover${crossover}/${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -crossover ${crossover} -useHeatmap ${useHeatmap} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/${model}/useHeatmap${useHeatmap}_crossover${crossover}/output_${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
-        done        
-        wait
+            wait
+        done
     done
-
-    for (( it = ${offset} ; it < ${cap_instance_id}; it++))
-    do
-        instance=${instances[$it]}
-        rm -rf DPDP/Heatmaps_for_HGS/${instance}
-    done
-
 done
+
+for (( it = ${offset} ; it < ${cap_instance_id}; it++))
+do
+    instance=${instances[$it]}
+    rm -rf DPDP/Heatmaps_for_HGS/${instance}/
+    rm -rf DPDP/dpdp/results/vrp/${instance}/
+done
+
 
 echo "FIM"
 

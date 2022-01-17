@@ -3,7 +3,7 @@
 # Creating folders
 mkdir -p DPDP/Heatmaps_for_HGS/
 
-trained_models=(10dim-5layers-1500epochs) 
+trained_models=(10dim-5layers-1500epochs 10dim-5layers-500epochs Kool-300dim-30layers-1500epochs) 
 for model in "${trained_models[@]}"
 do
     mkdir -p Solutions/${model}/useHeatmap0_crossover1/

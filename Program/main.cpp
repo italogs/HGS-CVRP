@@ -97,6 +97,11 @@ int main(int argc, char *argv[])
 							}
 						}
 					}
+					else
+					{
+						std::cout << "Heatmap could not be found. Terminating program." << std::endl;
+						exit(0);
+					}
 				}
 			}
 			else
@@ -159,6 +164,11 @@ int main(int argc, char *argv[])
 						}
 					}
 				}
+				else
+				{
+					std::cout << "Heatmap could not be found. Terminating program." << std::endl;
+					exit(0);
+				}
 			}
 			// Filling the vector of correlated vertices
 			for (int i = 1; i < setCorrelatedVertices.size(); i++)
@@ -179,7 +189,14 @@ int main(int argc, char *argv[])
 			// Including the generation of heatmaps into the time
 			std::ifstream timeSpentFile("DPDP/dpdp/results/vrp/" + heatmapName + "/heatmaps/time.txt");
 			if (timeSpentFile.is_open())
+			{
 				timeSpentFile >> params.time_shift_export_heatmap;
+			}
+			else
+			{
+				std::cout << "Heatmap file does not exist. Terminating code." << std::endl;
+				exit(0);
+			}
 			std::cout << "Time Shift from HeatmapGeneration: " << params.time_shift_export_heatmap << std::endl;
 
 			if (params.time_shift_export_heatmap > commandline.timeLimit)
