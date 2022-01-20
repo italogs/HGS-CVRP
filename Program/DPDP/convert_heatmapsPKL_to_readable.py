@@ -22,7 +22,7 @@ def write_heatmaps():
         os.makedirs(file_dir)
 
     for index, heatmap in enumerate(tqdm(heatmaps)):
-        if instance == "X-n101-k25" or "WK_test_" in instance or "XML100_":
+        if instance == "X-n101-k25" or "WK_test_" in instance or "XML100_" in instance:
             new_filename = instance
             with open(file_dir + new_filename + ".hm","w") as f:
                 for customer_heatmap in heatmap:

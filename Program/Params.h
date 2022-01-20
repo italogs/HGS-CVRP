@@ -90,6 +90,7 @@ public:
 	std::vector < Client > cli ;							// Vector containing information on each client
 	std::vector < std::vector < double > > timeCost ;		// Distance matrix
 	std::vector < std::vector < int > > correlatedVertices;	// Neighborhood restrictions: For each client, list of nearby customers
+	std::vector < std::vector < int > > correlatedVerticesCrossover;	// Only correlated vertices from heatmap crossover
 	std::vector < std::vector < int > > closestVertices;	// lists of nearby costumers
 	std::vector < std::vector < int > > edgeFrequencyForCorrelatedVertices; // Tracks the frequency of edge (i,j)
 

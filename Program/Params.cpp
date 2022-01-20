@@ -118,6 +118,7 @@ Params::Params(std::string pathToInstance, int seedRNG, int crossoverType, int u
 
 	// Calculation of the correlated vertices for each customer (for the granular restriction)
 	correlatedVertices = std::vector<std::vector<int>>(nbClients + 1);
+	correlatedVerticesCrossover = std::vector<std::vector<int>>(nbClients + 1);
 	closestVertices = std::vector<std::vector<int>>(nbClients + 1);
 
 	std::vector<std::set<int>> setCorrelatedVertices = std::vector<std::set<int>>(nbClients + 1);

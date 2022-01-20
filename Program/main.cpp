@@ -70,31 +70,22 @@ int main(int argc, char *argv[])
 							}
 						}
 
-						// The save the best heat of each customer for crossover (if enabled)
-						// Careful with wrong interpretations. Each client_j refers to the jth closest customer to client_i
-						// Therefore, we use closestVertices below
-						if (params.crossoverType == 9)
-							params.bestCustomerHeat.push_back(params.closestVertices[client_i][bestHeatCustomer]);
+						// Sort list of heats and including them into correlatedVertices
+						std::sort(heatList.begin(), heatList.end(), orderPairSecond);
 
-						if (params.useHeatmap)
+						for (int j = 0; j < heatList.size() && j < params.nbGranular / 2; j++)
 						{
-							// Sort list of heats and including them into correlatedVertices
-							std::sort(heatList.begin(), heatList.end(), orderPairSecond);
-
-							for (int j = 0; j < heatList.size() && j < params.nbGranular / 2; j++)
-							{
-								// If i is correlated with j, then j should be correlated with i
-								setCorrelatedVertices[client_i].insert(params.closestVertices[client_i][heatList[j].first]);
-								setCorrelatedVertices[params.closestVertices[client_i][heatList[j].first]].insert(client_i);
-							}
-							int posClosest = 0;
-							for (int j = 0; j < params.nbGranular && setCorrelatedVertices[client_i].size() < params.nbGranular && posClosest < params.nbClients; j++)
-							{
-								// If i is correlated with j, then j should be correlated with i
-								setCorrelatedVertices[client_i].insert(params.closestVertices[client_i][posClosest]);
-								setCorrelatedVertices[params.closestVertices[client_i][posClosest]].insert(client_i);
-								posClosest++;
-							}
+							// If i is correlated with j, then j should be correlated with i
+							setCorrelatedVertices[client_i].insert(params.closestVertices[client_i][heatList[j].first]);
+							setCorrelatedVertices[params.closestVertices[client_i][heatList[j].first]].insert(client_i);
+						}
+						int posClosest = 0;
+						for (int j = 0; j < params.nbGranular && setCorrelatedVertices[client_i].size() < params.nbGranular && posClosest < params.nbClients; j++)
+						{
+							// If i is correlated with j, then j should be correlated with i
+							setCorrelatedVertices[client_i].insert(params.closestVertices[client_i][posClosest]);
+							setCorrelatedVertices[params.closestVertices[client_i][posClosest]].insert(client_i);
+							posClosest++;
 						}
 					}
 					else
@@ -138,29 +129,22 @@ int main(int argc, char *argv[])
 							}
 						}
 
-						// The save the best heat of each customer for crossover (if enabled)
-						if (params.crossoverType == 9)
-							params.bestCustomerHeat.push_back(bestHeatCustomer);
+						// Sort list of heats and including them into correlatedVertices
+						std::sort(heatList.begin(), heatList.end(), orderPairSecond);
 
-						if (params.useHeatmap)
+						for (int j = 0; j < heatList.size() && j < params.nbGranular / 2; j++)
 						{
-							// Sort list of heats and including them into correlatedVertices
-							std::sort(heatList.begin(), heatList.end(), orderPairSecond);
-
-							for (int j = 0; j < heatList.size() && j < params.nbGranular / 2; j++)
-							{
-								// If i is correlated with j, then j should be correlated with i
-								setCorrelatedVertices[client_i].insert(heatList[j].first);
-								setCorrelatedVertices[heatList[j].first].insert(client_i);
-							}
-							int posClosest = 0;
-							for (int j = 0; j < params.nbGranular && setCorrelatedVertices[client_i].size() < (params.nbGranular) && posClosest < params.nbClients; j++)
-							{
-								// If i is correlated with j, then j should be correlated with i
-								setCorrelatedVertices[client_i].insert(params.closestVertices[client_i][posClosest]);
-								setCorrelatedVertices[params.closestVertices[client_i][posClosest]].insert(client_i);
-								posClosest++;
-							}
+							// If i is correlated with j, then j should be correlated with i
+							setCorrelatedVertices[client_i].insert(heatList[j].first);
+							setCorrelatedVertices[heatList[j].first].insert(client_i);
+						}
+						int posClosest = 0;
+						for (int j = 0; j < params.nbGranular && setCorrelatedVertices[client_i].size() < (params.nbGranular) && posClosest < params.nbClients; j++)
+						{
+							// If i is correlated with j, then j should be correlated with i
+							setCorrelatedVertices[client_i].insert(params.closestVertices[client_i][posClosest]);
+							setCorrelatedVertices[params.closestVertices[client_i][posClosest]].insert(client_i);
+							posClosest++;
 						}
 					}
 				}
@@ -170,11 +154,16 @@ int main(int argc, char *argv[])
 					exit(0);
 				}
 			}
+
 			// Filling the vector of correlated vertices
 			for (int i = 1; i < setCorrelatedVertices.size(); i++)
 			{
+
 				// Reset the original list of correlatedVertices (closest criteria)
-				params.correlatedVertices[i].clear();
+				if (params.useHeatmap)
+					params.correlatedVertices[i].clear();
+				if (params.crossoverType == 9)
+					params.correlatedVerticesCrossover[i].clear();
 				for (int x : setCorrelatedVertices[i])
 				{
 					if (x == 0)
@@ -182,7 +171,10 @@ int main(int argc, char *argv[])
 						std::cout << "Safety check. This cannot happen" << std::endl;
 						exit(0);
 					}
-					params.correlatedVertices[i].push_back(x);
+					if (params.useHeatmap)
+						params.correlatedVertices[i].push_back(x);
+					if (params.crossoverType == 9)
+						params.correlatedVerticesCrossover[i].push_back(x);
 				}
 			}
 
@@ -194,7 +186,7 @@ int main(int argc, char *argv[])
 			}
 			else
 			{
-				std::cout << "Heatmap file does not exist. Terminating code." << std::endl;
+				std::cout << "Heatmap time file does not exist. Terminating code." << std::endl;
 				exit(0);
 			}
 			std::cout << "Time Shift from HeatmapGeneration: " << params.time_shift_export_heatmap << std::endl;

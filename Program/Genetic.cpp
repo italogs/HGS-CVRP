@@ -114,7 +114,7 @@ void Genetic::crossoverHeatmap(Individual *result, const Individual *parent1, co
 	int start = (std::rand() % params->nbClients - 1) + 1;
 
 	int best_I = parent1->chromT[start];
-	int best_J = params->bestCustomerHeat[best_I];
+	int best_J = params->correlatedVerticesCrossover[best_I][std::rand() % params->correlatedVerticesCrossover[best_I].size()];
 
 	if (best_I == 0 || best_J == 0)
 	{
