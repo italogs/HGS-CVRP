@@ -19,76 +19,27 @@ seed=1
 cap_instance_id=$((${offset} + ${step_instances}))
 echo "Instances: ${offset} to ${cap_instance_id}"
 
-trained_models=(10dim-5layers-1500epochs 10dim-5layers-500epochs) 
-for model in "${trained_models[@]}"
+for (( seed = 1 ; seed <= 1; seed++))
 do
-    for (( it = ${offset} ; it < ${offset} + 1; it++))
-    do
-        instance=${instances[$it]}
-        cd DPDP/
-        python generate_instancePKL_each_100_customers.py ${instance}
-
-        cd dpdp
-        CUDA_VISIBLE_DEVICES=0,0 python export_heatmap.py --problem vrp --checkpoint logs/vrp_uchoa100/best_val_loss_checkpoint_${model}.tar --instances data/vrp/${instance}.pkl -f -o results/vrp/${instance}/heatmaps/${instance}.pkl --batch_size 1 -c logs/vrp_uchoa100/config_${model}.json
-
-        cd ..
-        python convert_heatmapsPKL_to_readable.py ${instance}
-        cd ..
-    done
-
     for (( it = ${offset} ; it < ${cap_instance_id}; it++))
     do
         instance=${instances[$it]}
-        cd DPDP/
-        python generate_instancePKL_each_100_customers.py ${instance}
+        echo "${instance}"
 
-        cd dpdp
-        CUDA_VISIBLE_DEVICES=0,0 python export_heatmap.py --problem vrp --checkpoint logs/vrp_uchoa100/best_val_loss_checkpoint_${model}.tar --instances data/vrp/${instance}.pkl -f -o results/vrp/${instance}/heatmaps/${instance}.pkl --batch_size 1 -c logs/vrp_uchoa100/config_${model}.json
-
-        cd ..
-        python convert_heatmapsPKL_to_readable.py ${instance}
-        cd ..
-    done 
-
-    for (( seed = 1 ; seed <= 1; seed++))
-    do
-        for (( it = ${offset} ; it < ${cap_instance_id}; it++))
+        arr_nbGranular=(5 10 15)
+        for nbGranular in "${arr_nbGranular[@]}"
         do
-            arr_nbGranular=(15 20 30)
-            instance=${instances[$it]}
-            echo "${instance}"
-            # Spawn 12 processes at once
-            for nbGranular in "${arr_nbGranular[@]}"
-            do
-                useHeatmapLS=0
-                useHeatmapOX=0
-                ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/${model}/useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}/${instance}_useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -useHeatmapOX ${useHeatmapOX} -useHeatmapLS ${useHeatmapLS} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/${model}/useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}/output_${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
-
-                useHeatmapLS=0
-                useHeatmapOX=1
-                ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/${model}/useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}/${instance}_useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -useHeatmapOX ${useHeatmapOX} -useHeatmapLS ${useHeatmapLS} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/${model}/useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}/output_${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
-                wait
-
-                useHeatmapLS=1
-                useHeatmapOX=0
-                ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/${model}/useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}/${instance}_useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -useHeatmapOX ${useHeatmapOX} -useHeatmapLS ${useHeatmapLS} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/${model}/useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}/output_${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
-
-                useHeatmapLS=1
-                useHeatmapOX=1
-                ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/${model}/useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}/${instance}_useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -useHeatmapOX ${useHeatmapOX} -useHeatmapLS ${useHeatmapLS} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/${model}/useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}/output_${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
-                wait
-            done
+            ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/5.1/${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/5.1/output_${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
         done
+        wait
+        arr_nbGranular=(20 30 50 100)
+        for nbGranular in "${arr_nbGranular[@]}"
+        do
+            ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/5.1/${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/5.1/output_${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
+        done
+        wait
     done
 done
-
-for (( it = ${offset} ; it < ${cap_instance_id}; it++))
-do
-    instance=${instances[$it]}
-    rm -rf DPDP/Heatmaps_for_HGS/${instance}/
-    rm -rf DPDP/dpdp/results/vrp/${instance}/
-done
-
 
 echo "FIM"
 

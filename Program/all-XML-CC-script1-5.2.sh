@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Creating folders
+mkdir -p DPDP/Heatmaps_for_HGS/
+
+trained_models=(10dim-5layers-1500epochs 10dim-5layers-500epochs) 
+for model in "${trained_models[@]}"
+do
+    mkdir -p Solutions/5.2/${model}/useHeatmapLS0_useHeatmapOX0/
+    mkdir -p outputs/5.2/${model}/useHeatmapLS0_useHeatmapOX0/
+
+    mkdir -p Solutions/5.2/${model}/useHeatmapLS0_useHeatmapOX1/
+    mkdir -p outputs/5.2/${model}/useHeatmapLS0_useHeatmapOX1/
+
+    mkdir -p Solutions/5.2/${model}/useHeatmapLS1_useHeatmapOX0/
+    mkdir -p outputs/5.2/${model}/useHeatmapLS1_useHeatmapOX0/
+
+    mkdir -p Solutions/5.2/${model}/useHeatmapLS1_useHeatmapOX1/
+    mkdir -p outputs/5.2/${model}/useHeatmapLS1_useHeatmapOX1/
+done
+
+
+# It will solve k instances at each sbatch
+step_instances=100
+time=5
+
+for (( offset=0; offset <= 9999; ));
+do
+    sbatch --export=offset=${offset},time=${time},step_instances=${step_instances} all-XML-CC-script2-5.2.sh
+    offset=$((${offset} + ${step_instances}))
+done
