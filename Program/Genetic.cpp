@@ -57,12 +57,13 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 		}
 	}
 
-	std::cout << "nbIter: " << nbIter << std::endl;
-	std::cout << "total_time_crossover: " << (((double)total_time_crossover) / CLOCKS_PER_SEC) << std::endl;
-	std::cout << "avg per iteration total_time_crossover: " << ((((double)total_time_crossover) / CLOCKS_PER_SEC) / nbIter) << std::endl;
+	std::cout << "Stats" << std::endl;
+	std::cout << "Stats-nbIter: " << nbIter << std::endl;
+	std::cout << "Stats-total_time_crossover: " << (((double)total_time_crossover) / CLOCKS_PER_SEC) << std::endl;
+	std::cout << "Stats-avg_total_time_crossover_per_nbIter: " << ((((double)total_time_crossover) / CLOCKS_PER_SEC) / nbIter) << std::endl;
 
-	std::cout << "total_time_local_search: " << (((double)total_time_local_search) / CLOCKS_PER_SEC) << std::endl;
-	std::cout << "avg per iteration total_time_local_search: " << ((((double)total_time_local_search) / CLOCKS_PER_SEC) / nbIter) << std::endl;
+	std::cout << "Stats-total_time_local_search: " << (((double)total_time_local_search) / CLOCKS_PER_SEC) << std::endl;
+	std::cout << "Stats-avg_total_time_local_search_per_nbIter: " << ((((double)total_time_local_search) / CLOCKS_PER_SEC) / nbIter) << std::endl;
 }
 
 bool minHeapComparisonFn(const std::pair<std::pair<int, int>, double> &elem1, const std::pair<std::pair<int, int>, double> &elem2)
