@@ -21,7 +21,7 @@ done
 
 
 # It will solve k instances at each sbatch
-step_instances=500
+step_instances=100
 time=5
 
 for (( offset=0; offset <= 9999; ));

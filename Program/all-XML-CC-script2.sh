@@ -19,7 +19,7 @@ seed=1
 cap_instance_id=$((${offset} + ${step_instances}))
 echo "Instances: ${offset} to ${cap_instance_id}"
 
-trained_models=(10dim-5layers-1500epochs 10dim-5layers-500epochs Kool-300dim-30layers-1500epochs) 
+trained_models=(10dim-5layers-1500epochs 10dim-5layers-500epochs) 
 for model in "${trained_models[@]}"
 do
     for (( it = ${offset} ; it < ${offset} + 1; it++))
@@ -34,10 +34,8 @@ do
         cd ..
         python convert_heatmapsPKL_to_readable.py ${instance}
         cd ..
-    done 
+    done
 
-
-    
     for (( it = ${offset} ; it < ${cap_instance_id}; it++))
     do
         instance=${instances[$it]}
@@ -52,32 +50,34 @@ do
         cd ..
     done 
 
-
-    for (( it = ${offset} ; it < ${cap_instance_id}; it++))
+    for (( seed = 1 ; seed <= 1; seed++))
     do
-        arr_nbGranular=(20 30 50)
-        instance=${instances[$it]}
-        echo "${instance}"
-        # Spawn 12 processes at once
-        for nbGranular in "${arr_nbGranular[@]}"
+        for (( it = ${offset} ; it < ${cap_instance_id}; it++))
         do
-            useHeatmap=0
-            crossover=1
-            ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/${model}/useHeatmap${useHeatmap}_crossover${crossover}/${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -crossover ${crossover} -useHeatmap ${useHeatmap} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/${model}/useHeatmap${useHeatmap}_crossover${crossover}/output_${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
+            arr_nbGranular=(15 20 30)
+            instance=${instances[$it]}
+            echo "${instance}"
+            # Spawn 12 processes at once
+            for nbGranular in "${arr_nbGranular[@]}"
+            do
+                useHeatmapLS=0
+                useHeatmapOX=0
+                ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/${model}/useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}/${instance}_useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -useHeatmapOX ${useHeatmapOX} -useHeatmapLS ${useHeatmapLS} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/${model}/useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}/output_${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
 
-            useHeatmap=1
-            crossover=1
-            ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/${model}/useHeatmap${useHeatmap}_crossover${crossover}/${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -crossover ${crossover} -useHeatmap ${useHeatmap} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/${model}/useHeatmap${useHeatmap}_crossover${crossover}/output_${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
-            wait
+                useHeatmapLS=0
+                useHeatmapOX=1
+                ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/${model}/useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}/${instance}_useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -useHeatmapOX ${useHeatmapOX} -useHeatmapLS ${useHeatmapLS} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/${model}/useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}/output_${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
+                wait
 
-            useHeatmap=0
-            crossover=9
-            ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/${model}/useHeatmap${useHeatmap}_crossover${crossover}/${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -crossover ${crossover} -useHeatmap ${useHeatmap} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/${model}/useHeatmap${useHeatmap}_crossover${crossover}/output_${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
+                useHeatmapLS=1
+                useHeatmapOX=0
+                ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/${model}/useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}/${instance}_useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -useHeatmapOX ${useHeatmapOX} -useHeatmapLS ${useHeatmapLS} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/${model}/useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}/output_${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
 
-            useHeatmap=1
-            crossover=9
-            ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/${model}/useHeatmap${useHeatmap}_crossover${crossover}/${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -crossover ${crossover} -useHeatmap ${useHeatmap} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/${model}/useHeatmap${useHeatmap}_crossover${crossover}/output_${instance}_useHeatmap${useHeatmap}_crossover${crossover}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
-            wait
+                useHeatmapLS=1
+                useHeatmapOX=1
+                ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/${model}/useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}/${instance}_useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -useHeatmapOX ${useHeatmapOX} -useHeatmapLS ${useHeatmapLS} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/${model}/useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}/output_${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
+                wait
+            done
         done
     done
 done
