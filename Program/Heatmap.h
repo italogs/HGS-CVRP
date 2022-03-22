@@ -30,28 +30,33 @@ SOFTWARE.*/
 
 class Heatmap
 {
+private:
+    // This parameter refers to the output size of the network, which can be translated as the size of the instances used for training and testing.
+    const int GNN_OUTPUT_SIZE = 100;
+    Params *params;
+
 public:
     bool static orderPairSecond(const std::pair<int, double> &a, const std::pair<int, double> &b)
     {
         return a.second < b.second;
     }
 
-    Params *params;
     // Reads the line of command and extracts possible options
     Heatmap(Params *params, unsigned long timeLimit) : params(params)
     {
         if (params->useHeatmapLS || params->useHeatmapOX)
         {
+            // List of lists to temporary store all correlated vertices
             std::vector<std::set<int>> setCorrelatedVertices = std::vector<std::set<int>>(params->nbClients + 1);
             std::string instanceBaseName = params->pathToInstance.substr(params->pathToInstance.find_last_of("/\\") + 1);
             std::string heatmapName = instanceBaseName.substr(0, instanceBaseName.find_last_of("."));
             std::string heatmapFullPath = "DPDP/Heatmaps_for_HGS/" + heatmapName + "/" + heatmapName;
 
-            bool isUchoaInstance = (heatmapName.substr(0, 3) == "X-n") && !(heatmapName.substr(0, 10) == "X-n101-k25");
-            if (isUchoaInstance)
+            // If the nb of customers is greater than GNN_OUTPUT_SIZE, we apply the scale-up technique
+            if (params->nbClients > GNN_OUTPUT_SIZE)
             {
                 params->bestCustomerHeat.push_back(0);
-                // Each client has its own file (depot + 100 closest elements)
+                // Each client has its own file (depot + GNN_OUTPUT_SIZE closest elements)
                 for (int client_i = 1; client_i <= params->nbClients; client_i++)
                 {
                     std::ifstream heatmapFile(heatmapFullPath + "_" + std::to_string(client_i) + ".hm");
@@ -63,11 +68,11 @@ public:
                         int bestHeatCustomer = 1;
 
                         // Reading the first line of the heatmap (depot line)
-                        for (int client_j = 0; client_j <= 100; client_j++)
+                        for (int client_j = 0; client_j <= GNN_OUTPUT_SIZE; client_j++)
                             heatmapFile >> edge_heat;
 
                         // Reading the second line of the file, which is related to client_i
-                        for (int client_j = 0; client_j <= 100; client_j++)
+                        for (int client_j = 0; client_j <= GNN_OUTPUT_SIZE; client_j++)
                         {
                             heatmapFile >> edge_heat;
                             if (client_j > 0 && client_i != client_j)
@@ -117,16 +122,16 @@ public:
                     double edge_heat = 0.0;
                     // Reading the first line of the heatmap (depot line)
                     params->bestCustomerHeat.push_back(0);
-                    for (int client_i = 0; client_i <= 100; client_i++)
+                    for (int client_i = 0; client_i <= GNN_OUTPUT_SIZE; client_i++)
                         heatmapFile >> edge_heat;
 
-                    for (int client_i = 1; client_i <= (int)100; client_i++)
+                    for (int client_i = 1; client_i <= (int)GNN_OUTPUT_SIZE; client_i++)
                     {
                         std::vector<std::pair<int, double>> heatList;
                         double bestHeatValue = -1.0;
                         int bestHeatCustomer = 1;
                         // Reading the line of client_i
-                        for (int client_j = 0; client_j <= 100; client_j++)
+                        for (int client_j = 0; client_j <= GNN_OUTPUT_SIZE; client_j++)
                         {
                             heatmapFile >> edge_heat;
                             // we entirely ignore 'heats' involving the depot
