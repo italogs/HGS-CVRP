@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 
 		// Reading the data file and initializing some data structures
 		std::cout << "----- READING DATA SET: " << commandline.pathInstance << std::endl;
-		Params params(commandline.pathInstance, commandline.seed, commandline.crossoverType, commandline.useHeatmap, commandline.nbVeh, commandline.nbGranular);
+		Params params(commandline.pathInstance, commandline.seed, commandline.useHeatmapOX, commandline.useHeatmapLS, commandline.nbVeh, commandline.nbGranular);
 
 		// Creating the Split and local search structures
 		Split split(&params);
@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
 		Population population(&params, &split, &localSearch);
 
 		// Genetic algorithm
-		std::cout << "----- STARTING GENETIC ALGORITHM - CROSSOVER TYPE: " << params.crossoverType << std::endl;
+		std::cout << " - Granular Search with heatmaps: " << params.useHeatmapLS << std::endl;
 		Genetic solver(&params, &split, &population, &localSearch);
 		solver.run(commandline.nbIter, commandline.timeLimit);
 		std::cout << "----- GENETIC ALGORITHM FINISHED, TIME SPENT: " << (double)clock() / (double)CLOCKS_PER_SEC << std::endl;

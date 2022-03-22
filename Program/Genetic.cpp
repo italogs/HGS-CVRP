@@ -11,11 +11,11 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 	{
 		/* SELECTION AND CROSSOVER */
 		clock_t crossover_start = clock();
-		if (params->crossoverType == 1)
+		if (params->useHeatmapOX == 0)
 		{
 			crossoverOX(offspring, population->getBinaryTournament(), population->getBinaryTournament());
 		}
-		else if (params->crossoverType == 9)
+		else
 		{
 			crossoverHeatmap(offspring, population->getBinaryTournament(), population->getBinaryTournament());
 		}
