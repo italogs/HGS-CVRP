@@ -93,8 +93,11 @@ Params::Params(std::string pathToInstance, int seedRNG, int useHeatmapOX, int us
 	// Default initialization if the number of vehicles has not been provided by the user
 	if (nbVehicles == INT_MAX)
 	{
-		nbVehicles = std::ceil(1.3 * totalDemand / vehicleCapacity) + 2; // Safety margin: 30% + 2 more vehicles than the trivial bin packing LB
+		nbVehicles = std::ceil(1.3 * totalDemand / vehicleCapacity) + 3; // Safety margin: 30% + 3 more vehicles than the trivial bin packing LB
 		std::cout << "----- FLEET SIZE WAS NOT SPECIFIED. DEFAULT INITIALIZATION TO: " << nbVehicles << std::endl;
+	}
+	{
+		std::cout << "----- FLEET SIZE SPECIFIED IN THE COMMANDLINE: SET TO " << nbVehicles << " VEHICLES" << std::endl;
 	}
 
 	// Calculation of the distance matrix
@@ -154,11 +157,13 @@ Params::Params(std::string pathToInstance, int seedRNG, int useHeatmapOX, int us
 
 	// Safeguards to avoid possible numerical instability in case of instances containing arbitrarily small or large numerical values
 	if (maxDist < 0.1 || maxDist > 100000)
-		throw("ERROR: The distances are of very small or large scale. This could impact numerical stability. Please rescale the dataset and run again.");
+		throw std::string("The distances are of very small or large scale. This could impact numerical stability. Please rescale the dataset and run again.");
 	if (maxDemand < 0.1 || maxDemand > 100000)
-		throw("ERROR: The demand quantities are of very small or large scale. This could impact numerical stability. Please rescale the dataset and run again.");
+		throw std::string("The demand quantities are of very small or large scale. This could impact numerical stability. Please rescale the dataset and run again.");
+	if (nbVehicles < std::ceil(totalDemand / vehicleCapacity))
+		throw std::string("Fleet size is insufficient to service the considered clients.");
 
 	// A reasonable scale for the initial values of the penalties
-	penaltyDuration = 10;
-	penaltyCapacity = std::max<double>(0.1, std::min<double>(1000., (maxDist*10.) / minDemand));
+	penaltyDuration = 1;
+	penaltyCapacity = std::max<double>(0.1, std::min<double>(1000., maxDist / maxDemand));
 }
