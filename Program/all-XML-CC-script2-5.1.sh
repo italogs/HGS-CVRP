@@ -19,26 +19,18 @@ seed=1
 cap_instance_id=$((${offset} + ${step_instances}))
 echo "Instances: ${offset} to ${cap_instance_id}"
 
-for (( seed = 1 ; seed <= 1; seed++))
-do
-    for (( it = ${offset} ; it < ${cap_instance_id}; it++))
-    do
-        instance=${instances[$it]}
-        echo "${instance}"
 
-        arr_nbGranular=(5 10 15)
-        for nbGranular in "${arr_nbGranular[@]}"
-        do
-            ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/5.1/${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/5.1/output_${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
-        done
-        wait
-        arr_nbGranular=(20 30 50 100)
-        for nbGranular in "${arr_nbGranular[@]}"
-        do
-            ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/5.1/${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/5.1/output_${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
-        done
-        wait
+for (( it = ${offset} ; it < ${cap_instance_id}; it++))
+do
+    instance=${instances[$it]}
+    echo "${instance}"
+
+    arr_nbGranular=(5 10 15 20 30 50 100)
+    for nbGranular in "${arr_nbGranular[@]}"
+    do
+        ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/5.1/${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/5.1/output_${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
     done
+    wait
 done
 
 echo "FIM"

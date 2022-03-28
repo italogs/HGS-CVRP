@@ -2,10 +2,11 @@
 
 # Creating folders
 mkdir -p Solutions/5.1/
+mkdir -p outputs/5.1/
 
 
 # It will solve k instances at each sbatch
-step_instances=100
+step_instances=250
 time=5
 
 for (( offset=0; offset <= 9999; ));
