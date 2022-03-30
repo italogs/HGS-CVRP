@@ -32,7 +32,7 @@ do
     echo "Convert heatmaps"
     time=${timeClassic}
     echo ${time}
-    arr_nbGranular=(15 20 30)
+    arr_nbGranular=(15 20 30 50)
     for (( seed = 1 ; seed <= 10; seed++))
     do
         time=${timeReduced}

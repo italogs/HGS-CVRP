@@ -54,7 +54,7 @@ do
     do
         for (( it = ${offset} ; it < ${cap_instance_id}; it++))
         do
-            arr_nbGranular=(15 20 30)
+            arr_nbGranular=(15 20 30 50)
             instance=${instances[$it]}
             echo "${instance}"
             # Spawn 12 processes at once
