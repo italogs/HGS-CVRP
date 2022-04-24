@@ -19,36 +19,36 @@ seed=1
 cap_instance_id=$((${offset} + ${step_instances}))
 echo "Instances: ${offset} to ${cap_instance_id}"
 
-trained_models=(10dim-5layers-500epochs) # 10dim-5layers-1500epochs)
+trained_models=(10dim-5layers-500epochs)
 for model in "${trained_models[@]}"
 do
-    # for (( it = ${offset} ; it < ${offset} + 1; it++))
-    # do
-    #     instance=${instances[$it]}
-    #     cd DPDP/
-    #     python generate_instancePKL_each_100_customers.py ${instance}
+    for (( it = ${offset} ; it < ${offset} + 1; it++))
+    do
+        instance=${instances[$it]}
+        cd DPDP/
+        python generate_instancePKL_each_100_customers.py ${instance}
 
-    #     cd dpdp
-    #     CUDA_VISIBLE_DEVICES=0,0 python export_heatmap.py --problem vrp --checkpoint logs/vrp_uchoa100/best_val_loss_checkpoint_${model}.tar --instances data/vrp/${instance}.pkl -f -o results/vrp/${instance}/heatmaps/${instance}.pkl --batch_size 1 -c logs/vrp_uchoa100/config_${model}.json
+        cd dpdp
+        CUDA_VISIBLE_DEVICES=0,0 python export_heatmap.py --problem vrp --checkpoint logs/vrp_uchoa100/best_val_loss_checkpoint_${model}.tar --instances data/vrp/${instance}.pkl -f -o results/vrp/${instance}/heatmaps/${instance}.pkl --batch_size 1 -c logs/vrp_uchoa100/config_${model}.json
 
-    #     cd ..
-    #     python convert_heatmapsPKL_to_readable.py ${instance}
-    #     cd ..
-    # done
+        cd ..
+        python convert_heatmapsPKL_to_readable.py ${instance}
+        cd ..
+    done
 
-    # for (( it = ${offset} ; it < ${cap_instance_id}; it++))
-    # do
-    #     instance=${instances[$it]}
-    #     cd DPDP/
-    #     python generate_instancePKL_each_100_customers.py ${instance}
+    for (( it = ${offset} ; it < ${cap_instance_id}; it++))
+    do
+        instance=${instances[$it]}
+        cd DPDP/
+        python generate_instancePKL_each_100_customers.py ${instance}
 
-    #     cd dpdp
-    #     CUDA_VISIBLE_DEVICES=0,0 python export_heatmap.py --problem vrp --checkpoint logs/vrp_uchoa100/best_val_loss_checkpoint_${model}.tar --instances data/vrp/${instance}.pkl -f -o results/vrp/${instance}/heatmaps/${instance}.pkl --batch_size 1 -c logs/vrp_uchoa100/config_${model}.json
+        cd dpdp
+        CUDA_VISIBLE_DEVICES=0,0 python export_heatmap.py --problem vrp --checkpoint logs/vrp_uchoa100/best_val_loss_checkpoint_${model}.tar --instances data/vrp/${instance}.pkl -f -o results/vrp/${instance}/heatmaps/${instance}.pkl --batch_size 1 -c logs/vrp_uchoa100/config_${model}.json
 
-    #     cd ..
-    #     python convert_heatmapsPKL_to_readable.py ${instance}
-    #     cd ..
-    # done 
+        cd ..
+        python convert_heatmapsPKL_to_readable.py ${instance}
+        cd ..
+    done 
 
     for (( seed = 1 ; seed <= 1; seed++))
     do
@@ -61,12 +61,34 @@ do
             for nbGranular in "${arr_nbGranular[@]}"
             do
                 useHeatmapLS=0
-                useHeatmapOX=0
-                ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/5.2/${model}/useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}/${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -useHeatmapOX ${useHeatmapOX} -useHeatmapLS ${useHeatmapLS} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/5.2/${model}/useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}/output_${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
+                crossoverType=0
+                ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/5.2/${model}/useHeatmapLS${useHeatmapLS}_crossoverType${crossoverType}/${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -crossoverType ${crossoverType} -useHeatmapLS ${useHeatmapLS} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/5.2/${model}/useHeatmapLS${useHeatmapLS}_crossoverType${crossoverType}/output_${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
 
                 useHeatmapLS=0
-                useHeatmapOX=1
-                ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/5.2/${model}/useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}/${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -useHeatmapOX ${useHeatmapOX} -useHeatmapLS ${useHeatmapLS} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/5.2/${model}/useHeatmapLS${useHeatmapLS}_useHeatmapOX${useHeatmapOX}/output_${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
+                crossoverType=2
+                ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/5.2/${model}/useHeatmapLS${useHeatmapLS}_crossoverType${crossoverType}/${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -crossoverType ${crossoverType} -useHeatmapLS ${useHeatmapLS} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/5.2/${model}/useHeatmapLS${useHeatmapLS}_crossoverType${crossoverType}/output_${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
+
+
+                useHeatmapLS=1
+                crossoverType=2
+                ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/5.2/${model}/useHeatmapLS${useHeatmapLS}_crossoverType${crossoverType}/${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -crossoverType ${crossoverType} -useHeatmapLS ${useHeatmapLS} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/5.2/${model}/useHeatmapLS${useHeatmapLS}_crossoverType${crossoverType}/output_${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
+
+                wait
+
+
+                useHeatmapLS=0
+                crossoverType=1
+                ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/5.2/${model}/useHeatmapLS${useHeatmapLS}_crossoverType${crossoverType}/${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -crossoverType ${crossoverType} -useHeatmapLS ${useHeatmapLS} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/5.2/${model}/useHeatmapLS${useHeatmapLS}_crossoverType${crossoverType}/output_${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
+
+                useHeatmapLS=1
+                crossoverType=0
+                ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/5.2/${model}/useHeatmapLS${useHeatmapLS}_crossoverType${crossoverType}/${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -crossoverType ${crossoverType} -useHeatmapLS ${useHeatmapLS} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/5.2/${model}/useHeatmapLS${useHeatmapLS}_crossoverType${crossoverType}/output_${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
+
+
+                useHeatmapLS=1
+                crossoverType=1
+                ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/5.2/${model}/useHeatmapLS${useHeatmapLS}_crossoverType${crossoverType}/${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.sol -crossoverType ${crossoverType} -useHeatmapLS ${useHeatmapLS} -t ${time} -seed ${seed} -nbGranular ${nbGranular} &> outputs/5.2/${model}/useHeatmapLS${useHeatmapLS}_crossoverType${crossoverType}/output_${instance}_time${time}_seed${seed}_nbGranular${nbGranular}.txt &
+
                 wait
             done
         done

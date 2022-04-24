@@ -44,7 +44,7 @@ public:
     // Reads the line of command and extracts possible options
     Heatmap(Params *params, unsigned long timeLimit) : params(params)
     {
-        if (params->useHeatmapLS || params->useHeatmapOX)
+        if (params->useHeatmapLS == 1 || params->crossoverType == 1)
         {
             // List of lists to temporary store all correlated vertices
             std::vector<std::set<int>> setCorrelatedVertices = std::vector<std::set<int>>(params->nbClients + 1);
@@ -91,14 +91,14 @@ public:
                         // Sort list of heats and including them into correlatedVertices
                         std::sort(heatList.begin(), heatList.end(), orderPairSecond);
 
-                        for (int j = 0; j < heatList.size() && j < params->nbGranular / 2; j++)
+                        for (int j = 0; j < heatList.size() && j < params->correlatedVertices[client_i].size() / 2; j++)
                         {
                             // If i is correlated with j, then j should be correlated with i
                             setCorrelatedVertices[client_i].insert(params->closestVertices[client_i][heatList[j].first]);
                             setCorrelatedVertices[params->closestVertices[client_i][heatList[j].first]].insert(client_i);
                         }
                         int posClosest = 0;
-                        for (int j = 0; j < params->nbGranular && setCorrelatedVertices[client_i].size() < params->nbGranular && posClosest < params->nbClients; j++)
+                        for (int j = 0; j < params->correlatedVertices[client_i].size() && setCorrelatedVertices[client_i].size() < params->correlatedVertices[client_i].size() && posClosest < params->nbClients; j++)
                         {
                             // If i is correlated with j, then j should be correlated with i
                             setCorrelatedVertices[client_i].insert(params->closestVertices[client_i][posClosest]);
@@ -149,15 +149,14 @@ public:
 
                         // Sort list of heats and including them into correlatedVertices
                         std::sort(heatList.begin(), heatList.end(), orderPairSecond);
-
-                        for (int j = 0; j < heatList.size() && j < params->nbGranular / 2; j++)
+                        for (int j = 0; j < heatList.size() && j < params->correlatedVertices[client_i].size() / 2; j++)
                         {
                             // If i is correlated with j, then j should be correlated with i
                             setCorrelatedVertices[client_i].insert(heatList[j].first);
                             setCorrelatedVertices[heatList[j].first].insert(client_i);
                         }
                         int posClosest = 0;
-                        for (int j = 0; j < params->nbGranular && setCorrelatedVertices[client_i].size() < (params->nbGranular) && posClosest < params->nbClients; j++)
+                        for (int j = 0; j < params->correlatedVertices[client_i].size() && setCorrelatedVertices[client_i].size() < (params->correlatedVertices[client_i].size()) && posClosest < params->nbClients; j++)
                         {
                             // If i is correlated with j, then j should be correlated with i
                             setCorrelatedVertices[client_i].insert(params->closestVertices[client_i][posClosest]);
@@ -178,9 +177,9 @@ public:
             {
 
                 // Reset the original list of correlatedVertices (closest criteria)
-                if (params->useHeatmapLS)
+                if (params->useHeatmapLS == 1)
                     params->correlatedVertices[i].clear();
-                if (params->useHeatmapOX)
+                if (params->crossoverType == 1)
                     params->correlatedVerticesCrossover[i].clear();
                 for (int x : setCorrelatedVertices[i])
                 {
@@ -189,9 +188,9 @@ public:
                         std::cout << "Safety check. This cannot happen" << std::endl;
                         exit(0);
                     }
-                    if (params->useHeatmapLS)
+                    if (params->useHeatmapLS == 1)
                         params->correlatedVertices[i].push_back(x);
-                    if (params->useHeatmapOX)
+                    if (params->crossoverType == 1)
                         params->correlatedVerticesCrossover[i].push_back(x);
                 }
             }
@@ -213,16 +212,17 @@ public:
                 std::cout << "params->time_shift_export_heatmap > timeLimit: " << params->time_shift_export_heatmap << ":" << timeLimit << std::endl;
                 exit(0);
             }
+            printTimeShift();
         }
     }
 
     void printTimeShift()
     {
-        if (params->useHeatmapLS || params->useHeatmapOX)
+        if (params->useHeatmapLS == 1 || params->crossoverType == 1)
         {
-            std::cout << " - CrossoverOX with heatmaps: " << params->useHeatmapOX;
-            std::cout << " - Granular Search with heatmaps: " << params->useHeatmapLS;
-            std::cout << " - Time Shift from HeatmapGeneration: " << params->time_shift_export_heatmap;
+            std::cout << " - CrossoverOX with heatmaps: " << params->crossoverType << std::endl;
+            std::cout << " - Granular Search with heatmaps: " << params->useHeatmapLS << std::endl;
+            std::cout << " - Time Shift from HeatmapGeneration: " << params->time_shift_export_heatmap << std::endl;
         }
     }
 };

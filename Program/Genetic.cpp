@@ -11,13 +11,13 @@ void Genetic::run(int maxIterNonProd, unsigned long timeLimit)
 	{
 		/* SELECTION AND CROSSOVER */
 		clock_t crossover_start = clock();
-		if (params->useHeatmapOX == 0)
+		if (params->crossoverType == 0)
 		{
 			crossoverOX(offspring, population->getBinaryTournament(), population->getBinaryTournament());
 		}
-		else
+		else if (params->crossoverType == 1 || params->crossoverType == 2)
 		{
-			crossoverHeatmap(offspring, population->getBinaryTournament(), population->getBinaryTournament());
+			crossoverOXCorrelatedVertices(offspring, population->getBinaryTournament(), population->getBinaryTournament());
 		}
 
 		total_time_crossover += (clock() - crossover_start);
@@ -106,58 +106,31 @@ void Genetic::crossoverOX(Individual *result, const Individual *parent1, const I
 	split->generalSplit(result, parent1->myCostSol.nbRoutes);
 }
 
-void Genetic::crossoverHeatmap(Individual *result, const Individual *parent1, const Individual *parent2)
+void Genetic::crossoverOXCorrelatedVertices(Individual *result, const Individual *parent1, const Individual *parent2)
 {
 	// Frequency table to track the customers which have been already inserted
 	std::vector<bool> freqClient = std::vector<bool>(params->nbClients + 1, false);
 
 	// Picking the beginning and end of the crossover zone
-	int start = (std::rand() % params->nbClients - 1) + 1;
+	int customer_i = parent1->chromT[std::rand() % params->nbClients];
+	int customer_j = params->correlatedVerticesCrossover[customer_i][std::rand() % params->correlatedVerticesCrossover[customer_i].size()];
 
-	int best_I = parent1->chromT[start];
-	int best_J = params->correlatedVerticesCrossover[best_I][std::rand() % params->correlatedVerticesCrossover[best_I].size()];
+	int start = std::find(parent1->chromT.begin(), parent1->chromT.end(), customer_i) - parent1->chromT.begin();
+	int end = std::find(parent1->chromT.begin(), parent1->chromT.end(), customer_j) - parent1->chromT.begin();
 
-	if (best_I == 0 || best_J == 0)
+	// Copy in place the elements from start to end (possibly "wrapping around" the end of the array)
+	int j = start;
+	while (j % params->nbClients != (end + 1) % params->nbClients)
 	{
-		std::cout << "best_I " << best_I << "; best_J: " << best_J << std::endl;
+		result->chromT[j % params->nbClients] = parent1->chromT[j % params->nbClients];
+		freqClient[result->chromT[j % params->nbClients]] = true;
+		j++;
 	}
 
-	int posChromT = 0;
-	for (; posChromT <= params->nbClients; posChromT++)
-	{
-		result->chromT[posChromT] = parent1->chromT[posChromT];
-		freqClient[result->chromT[posChromT]] = true;
-		if (result->chromT[posChromT] == best_I)
-		{
-			posChromT++;
-			result->chromT[posChromT] = best_J;
-			freqClient[best_J] = true;
-			break;
-		}
-		if (result->chromT[posChromT] == best_J)
-		{
-			posChromT++;
-			result->chromT[posChromT] = best_I;
-			freqClient[best_I] = true;
-
-			std::swap(best_I, best_J);
-			break;
-		}
-	}
-
-	int posParent2 = 0;
-	for (; posParent2 < parent2->chromT.size(); posParent2++)
-	{
-		if (parent2->chromT[posParent2] == best_J || parent2->chromT[posParent2] == best_I)
-		{
-			break;
-		}
-	}
-	int j = posChromT + 1;
 	// Fill the remaining elements in the order given by the second parent
 	for (int i = 1; i <= params->nbClients; i++)
 	{
-		int temp = parent2->chromT[(posParent2 + i) % params->nbClients];
+		int temp = parent2->chromT[(end + i) % params->nbClients];
 		if (freqClient[temp] == false)
 		{
 			result->chromT[j % params->nbClients] = temp;

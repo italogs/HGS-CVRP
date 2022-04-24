@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 
 		// Reading the data file and initializing some data structures
 		std::cout << "----- READING DATA SET: " << commandline.pathInstance << std::endl;
-		Params params(commandline.pathInstance, commandline.seed, commandline.useHeatmapOX, commandline.useHeatmapLS, commandline.nbVeh, commandline.nbGranular);
+		Params params(commandline.pathInstance, commandline.seed, commandline.crossoverType, commandline.useHeatmapLS, commandline.nbVeh, commandline.nbGranular);
 
 		// Creating the Split and local search structures
 		Split split(&params);
@@ -32,13 +32,13 @@ int main(int argc, char *argv[])
 
 		// Genetic algorithm
 		std::cout << "----- STARTING GENETIC ALGORITHM ";
-		heatmap.printTimeShift();
+
 		std::cout << std::endl;
 
 		Genetic solver(&params, &split, &population, &localSearch);
 		solver.run(commandline.nbIter, commandline.timeLimit);
 		std::cout << "----- GENETIC ALGORITHM FINISHED, TIME SPENT: " << (double)clock() / (double)CLOCKS_PER_SEC << std::endl;
-
+		std::cout << "--- Best solution cost: " << population.getBestFound()->myCostSol.penalizedCost << std::endl;
 		// Exporting the best solution
 		if (population.getBestFound() != NULL)
 		{

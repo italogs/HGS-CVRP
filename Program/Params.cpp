@@ -1,6 +1,6 @@
 #include "Params.h"
 
-Params::Params(std::string pathToInstance, int seedRNG, int useHeatmapOX, int useHeatmapLS, int nbVeh, int nbGranular) : pathToInstance(pathToInstance), useHeatmapOX(useHeatmapOX), useHeatmapLS(useHeatmapLS), nbVehicles(nbVeh), nbGranular(nbGranular)
+Params::Params(std::string pathToInstance, int seedRNG, int crossoverType, int useHeatmapLS, int nbVeh, int nbGranular) : pathToInstance(pathToInstance), crossoverType(crossoverType), useHeatmapLS(useHeatmapLS), nbVehicles(nbVeh), nbGranular(nbGranular)
 {
 	std::string content, content2, content3;
 	double serviceTimeData = 0.;
@@ -154,6 +154,10 @@ Params::Params(std::string pathToInstance, int seedRNG, int useHeatmapOX, int us
 	for (int i = 1; i <= nbClients; i++)
 		for (int x : setCorrelatedVertices[i])
 			correlatedVertices[i].push_back(x);
+
+	for (int i = 1; i <= nbClients; i++)
+		for (int x : setCorrelatedVertices[i])
+			correlatedVerticesCrossover[i].push_back(x);
 
 	// Safeguards to avoid possible numerical instability in case of instances containing arbitrarily small or large numerical values
 	if (maxDist < 0.1 || maxDist > 100000)

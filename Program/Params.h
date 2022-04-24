@@ -64,7 +64,7 @@ public:
 	int nbElite				= 2;		// Number of elite individuals (reduced in HGS-2020)
 	int nbClose				= 2;		// Number of closest solutions/individuals considered when calculating diversity contribution
 	double targetFeasible   = 0.2;		// Reference proportion for the number of feasible individuals, used for the adaptation of the penalty parameters
-	int useHeatmapOX        = 0;
+	int crossoverType        = 0;
 	int useHeatmapLS 	    = 0;
 	std::vector<int> bestCustomerHeat;
 	std::vector<int> bestCustomerClosest;
@@ -95,7 +95,7 @@ public:
 	std::vector < std::vector < int > > edgeFrequencyForCorrelatedVertices; // Tracks the frequency of edge (i,j)
 
 	// Initialization from a given data set
-	Params(std::string pathToInstance, int nbVeh, int seedRNG, int useHeatmapOX, int useHeatmapLS, int nbGranular);
+	Params(std::string pathToInstance, int nbVeh, int seedRNG, int crossoverType, int useHeatmapLS, int nbGranular);
 
 };
 #endif

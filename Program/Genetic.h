@@ -35,9 +35,9 @@ private:
 	LocalSearch * localSearch;		// Local Search structure
 	Individual * offspring;			// First individual to be used as input for the crossover
 
-	// OX Crossover
+	// Crossovers
 	void crossoverOX(Individual * result, const Individual * parent1, const Individual * parent2);
-	void crossoverHeatmap(Individual * result, const Individual * parent1, const Individual * parent2);
+	void crossoverOXCorrelatedVertices(Individual * result, const Individual * parent1, const Individual * parent2);
 
 public:
 

@@ -3,20 +3,28 @@
 # Creating folders
 mkdir -p DPDP/Heatmaps_for_HGS/
 
-trained_models=(10dim-5layers-1500epochs 10dim-5layers-500epochs) 
+trained_models=( 10dim-5layers-500epochs) 
 for model in "${trained_models[@]}"
 do
-    mkdir -p Solutions/5.2/${model}/useHeatmapLS0_useHeatmapOX0/
-    mkdir -p outputs/5.2/${model}/useHeatmapLS0_useHeatmapOX0/
+    mkdir -p Solutions/5.2/${model}/useHeatmapLS0_crossoverType0/
+    mkdir -p outputs/5.2/${model}/useHeatmapLS0_crossoverType0/
 
-    mkdir -p Solutions/5.2/${model}/useHeatmapLS0_useHeatmapOX1/
-    mkdir -p outputs/5.2/${model}/useHeatmapLS0_useHeatmapOX1/
 
-    mkdir -p Solutions/5.2/${model}/useHeatmapLS1_useHeatmapOX0/
-    mkdir -p outputs/5.2/${model}/useHeatmapLS1_useHeatmapOX0/
+    mkdir -p Solutions/5.2/${model}/useHeatmapLS0_crossoverType2/
+    mkdir -p outputs/5.2/${model}/useHeatmapLS0_crossoverType2/
 
-    mkdir -p Solutions/5.2/${model}/useHeatmapLS1_useHeatmapOX1/
-    mkdir -p outputs/5.2/${model}/useHeatmapLS1_useHeatmapOX1/
+    mkdir -p Solutions/5.2/${model}/useHeatmapLS1_crossoverType2/
+    mkdir -p outputs/5.2/${model}/useHeatmapLS1_crossoverType2/
+
+
+    mkdir -p Solutions/5.2/${model}/useHeatmapLS0_crossoverType1/
+    mkdir -p outputs/5.2/${model}/useHeatmapLS0_crossoverType1/
+
+    mkdir -p Solutions/5.2/${model}/useHeatmapLS1_crossoverType0/
+    mkdir -p outputs/5.2/${model}/useHeatmapLS1_crossoverType0/
+
+    mkdir -p Solutions/5.2/${model}/useHeatmapLS1_crossoverType1/
+    mkdir -p outputs/5.2/${model}/useHeatmapLS1_crossoverType1/
 done
 
 

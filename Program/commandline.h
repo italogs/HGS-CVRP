@@ -40,7 +40,7 @@ public:
 	std::string pathSolution;		// Solution path
 	std::string pathBKS = "";		// BKS path
 	int useHeatmapLS = 0;		    // Use heatmaps to define neighborhoods
-	int useHeatmapOX = 0;			// Crossover type (OX=0;Neural-OX=1)
+	int crossoverType = 0;			// Crossover type (OX=0;Neural-OX=1;Proximity-OX=2)
 
 	// Reads the line of command and extracts possible options
 	CommandLine(int argc, char* argv[])
@@ -66,8 +66,8 @@ public:
 					seed    = atoi(argv[i+1]);
 				else if (std::string(argv[i]) == "-veh")
 					nbVeh = atoi(argv[i+1]);
-				else if (std::string(argv[i]) == "-useHeatmapOX")
-					useHeatmapOX = atoi(argv[i+1]);
+				else if (std::string(argv[i]) == "-crossoverType")
+					crossoverType = atoi(argv[i+1]);
 				else if (std::string(argv[i]) == "-useHeatmapLS")
 					useHeatmapLS = std::atoi(argv[i+1]);
 				else if (std::string(argv[i]) == "-nbGranular")
@@ -86,13 +86,13 @@ public:
 	{
 		std::cout << std::endl;
 		std::cout << "-------------------------------------------------- HGS-CVRP algorithm (2020) --------------------------------------------------" << std::endl;
-		std::cout << "Call with: ./genvrp instancePath solPath [-it nbIter] [-t myCPUtime] [-bks bksPath] [-seed mySeed] [-veh nbVehicles] [-useHeatmapOX flag] [-useHeatmapLS flag]" << std::endl;
+		std::cout << "Call with: ./genvrp instancePath solPath [-it nbIter] [-t myCPUtime] [-bks bksPath] [-seed mySeed] [-veh nbVehicles] [-crossoverType value] [-useHeatmapLS flag]" << std::endl;
 		std::cout << "[-it nbIterations] sets a maximum number of iterations without improvement. Defaults to 20,000                                 " << std::endl;
 		std::cout << "[-t myCPUtime] sets a time limit in seconds. If this parameter is set the code will be run iteratively until the time limit    " << std::endl;
 		std::cout << "[-bks bksPath] sets an optional path to a BKS. This file will be overwritten in case of improvement                            " << std::endl;
 		std::cout << "[-seed mySeed] sets a fixed seed. Defaults to 0                                                                                " << std::endl;
 		std::cout << "[-veh nbVehicles] sets a prescribed fleet size. Otherwise a reasonable UB on the the fleet size is calculated                  " << std::endl;
-		std::cout << "[-useHeatmapOX type] sets heatmaps for OX-crossover. 1 for activate      						                                 " << std::endl;
+		std::cout << "[-crossoverType type] sets heatmaps for OX-crossover (OX=0;Neural-OX=1;Proximity-OX=2)		                                 " << std::endl;
 		std::cout << "[-useHeatmapLS type] sets heatmaps for granular search. 1 for activate                                                         " << std::endl;
 		std::cout << "-------------------------------------------------------------------------------------------------------------------------------" << std::endl;
 		std::cout << std::endl;
