@@ -11,6 +11,6 @@ time=5
 
 for (( offset=0; offset <= 9999; ));
 do
-    sbatch --export=offset=${offset},time=${time},step_instances=${step_instances} all-XML-CC-script2-5.1.sh
+    sbatch --export=offset=${offset},time=${time},step_instances=${step_instances} all-XML-CC-script2-subsec5.1.sh
     offset=$((${offset} + ${step_instances}))
 done

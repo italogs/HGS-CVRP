@@ -22,14 +22,13 @@ do
 
         echo $instance_id
         
-        nbGranular=20
+        nbGranular=30
         ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/teste.sol -useHeatmapLS 0 -useHeatmapOX 0 -seed ${seed} -t ${time} -nbGranular ${nbGranular} 
 
         ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/teste.sol -useHeatmapLS 0 -useHeatmapOX 1 -seed ${seed} -t ${time} -nbGranular ${nbGranular} 
 
         ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/teste.sol -useHeatmapLS 1 -useHeatmapOX 0 -seed ${seed} -t ${time} -nbGranular ${nbGranular} 
-
-
+        
         ./genvrp ../Instances/CVRP/${instance}.vrp Solutions/teste.sol -useHeatmapLS 1 -useHeatmapOX 1 -seed ${seed} -t ${time} -nbGranular ${nbGranular} 
 
 
