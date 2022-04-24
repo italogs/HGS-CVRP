@@ -64,8 +64,6 @@ public:
                     {
                         double edge_heat = 0.0;
                         std::vector<std::pair<int, double>> heatList;
-                        double bestHeatValue = -1.0;
-                        int bestHeatCustomer = 1;
 
                         // Reading the first line of the heatmap (depot line)
                         for (int client_j = 0; client_j <= GNN_OUTPUT_SIZE; client_j++)
@@ -77,12 +75,6 @@ public:
                             heatmapFile >> edge_heat;
                             if (client_j > 0 && client_i != client_j)
                             {
-                                // we entirely ignore 'heats' involving the depot
-                                if (edge_heat > bestHeatValue)
-                                {
-                                    bestHeatValue = edge_heat;
-                                    bestHeatCustomer = client_j;
-                                }
                                 // we also ignore 'heats' that points customer i to itself
                                 heatList.push_back(std::make_pair(client_j, -edge_heat));
                             }
@@ -128,8 +120,6 @@ public:
                     for (int client_i = 1; client_i <= (int)GNN_OUTPUT_SIZE; client_i++)
                     {
                         std::vector<std::pair<int, double>> heatList;
-                        double bestHeatValue = -1.0;
-                        int bestHeatCustomer = 1;
                         // Reading the line of client_i
                         for (int client_j = 0; client_j <= GNN_OUTPUT_SIZE; client_j++)
                         {
@@ -137,11 +127,6 @@ public:
                             // we entirely ignore 'heats' involving the depot
                             if (client_j > 0 && client_i != client_j)
                             {
-                                if (edge_heat > bestHeatValue)
-                                {
-                                    bestHeatValue = edge_heat;
-                                    bestHeatCustomer = client_j;
-                                }
                                 // we also ignore 'heats' that points customer i to itself
                                 heatList.push_back(std::make_pair(client_j, -edge_heat));
                             }
