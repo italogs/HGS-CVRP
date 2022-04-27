@@ -114,23 +114,42 @@ void Genetic::crossoverOXCorrelatedVertices(Individual *result, const Individual
 	// Picking the beginning and end of the crossover zone
 	int customer_i = parent1->chromT[std::rand() % params->nbClients];
 	int customer_j = params->correlatedVerticesCrossover[customer_i][std::rand() % params->correlatedVerticesCrossover[customer_i].size()];
-
-	int start = std::find(parent1->chromT.begin(), parent1->chromT.end(), customer_i) - parent1->chromT.begin();
-	int end = std::find(parent1->chromT.begin(), parent1->chromT.end(), customer_j) - parent1->chromT.begin();
-
-	// Copy in place the elements from start to end (possibly "wrapping around" the end of the array)
-	int j = start;
-	while (j % params->nbClients != (end + 1) % params->nbClients)
+	int posChromT = 0;
+	for (; posChromT <= params->nbClients; posChromT++)
 	{
-		result->chromT[j % params->nbClients] = parent1->chromT[j % params->nbClients];
-		freqClient[result->chromT[j % params->nbClients]] = true;
-		j++;
+		result->chromT[posChromT] = parent1->chromT[posChromT];
+		freqClient[result->chromT[posChromT]] = true;
+		if (result->chromT[posChromT] == customer_i)
+		{
+			posChromT++;
+			result->chromT[posChromT] = customer_j;
+			freqClient[customer_j] = true;
+			break;
+		}
+		if (result->chromT[posChromT] == customer_j)
+		{
+			posChromT++;
+			result->chromT[posChromT] = customer_i;
+			freqClient[customer_i] = true;
+
+			std::swap(customer_i, customer_j);
+			break;
+		}
 	}
 
+	int posParent2 = 0;
+	for (; posParent2 < parent2->chromT.size(); posParent2++)
+	{
+		if (parent2->chromT[posParent2] == customer_j || parent2->chromT[posParent2] == customer_i)
+		{
+			break;
+		}
+	}
+	int j = posChromT + 1;
 	// Fill the remaining elements in the order given by the second parent
 	for (int i = 1; i <= params->nbClients; i++)
 	{
-		int temp = parent2->chromT[(end + i) % params->nbClients];
+		int temp = parent2->chromT[(posParent2 + i) % params->nbClients];
 		if (freqClient[temp] == false)
 		{
 			result->chromT[j % params->nbClients] = temp;

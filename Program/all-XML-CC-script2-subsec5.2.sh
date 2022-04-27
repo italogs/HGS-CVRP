@@ -1,10 +1,9 @@
 #!/bin/bash
-#SBATCH --cpus-per-task=6
+#SBATCH --cpus-per-task=8
 #SBATCH --mem=12GB
 #SBATCH --time=48:00:00
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:1
-
 
 module load python
 source ~/env/bin/activate
