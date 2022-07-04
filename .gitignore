@@ -9,8 +9,6 @@ Program/DPDP/Heatmaps_for_HGS/*
 
 
 # Ignore all above file except these files below
-!Program/lkh/LKH-3.0.6.zip
-!Program/lkh/*.sh
 !Program/Solutions/empty.txt
 !Program/Solutions-DPDP/empty.txt
 !Program/outputs/empty.txt

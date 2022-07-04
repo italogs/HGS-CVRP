@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 		// Exporting the best solution
 		if (population.getBestFound() != NULL)
 		{
-			// population.getBestFound()->exportCVRPLibFormat(commandline.pathSolution);
+			population.getBestFound()->exportCVRPLibFormat(commandline.pathSolution);
 			population.exportSearchProgress(commandline.pathSolution + ".PG.csv", commandline.pathInstance, commandline.seed);
 			if (commandline.pathBKS != "")
 				population.exportBKS(commandline.pathBKS);
