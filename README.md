@@ -1,6 +1,6 @@
-# Enhancing Local-Search and Crossover Operators with Neural Networks: A Case Study on the Vehicle Routing Problem
+# Neural Networks for Local Search and Crossover in Vehicle Routing: A Possible Overkill?
 
-This is the repository for [Enhancing Local-Search and Crossover Operators with Neural Networks: A Case Study on the Vehicle Routing Problem](...) by Italo Santana and Thibaut Vidal.
+This is the repository for [Neural Networks for Local Search and Crossover in Vehicle Routing: A Possible Overkill?](https://arxiv.org/abs/2210.12075) by Italo Santana, Andrea Lodi, and Thibaut Vidal.
 
 ## Scope
 
